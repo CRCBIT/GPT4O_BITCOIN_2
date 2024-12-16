@@ -315,7 +315,7 @@ def ai_trading():
     df_hourly = add_indicators(df_hourly)
 
     # 최근 데이터만 사용하도록 설정 (메모리 절약)
-    df_daily_recent = df_daily.tail(90)
+    df_daily_recent = df_daily.tail(120)
     df_hourly_recent = df_hourly.tail(48)
 
     # 4. 공포 탐욕 지수 가져오기
@@ -386,7 +386,7 @@ Example Response 3:
                 messages=[
                     {
                         "role": "system",
-                        "content": f"""You are an expert in Bitcoin investing. This analysis is performed every 4 hours. Analyze in detail the provided data and determine whether to buy, sell, or hold at the current moment. Consider the following in your analysis step by step:
+                        "content": f"""You are an expert in Bitcoin investing. This analysis is performed every 1 hours. Analyze in detail the provided data and determine whether to buy, sell, or hold at the current moment. Consider the following in your analysis step by step:
 
 - Technical indicators and market data
 - Recent news headlines and their potential impact on Bitcoin price
@@ -550,15 +550,33 @@ if __name__ == "__main__":
         finally:
             trading_in_progress = False
 
-    # job()
+    job()
 
-    # 매 4시간마다 실행
+    # 매 1시간마다 실행
     schedule.every().day.at("01:30").do(job)
+    schedule.every().day.at("02:30").do(job)
+    schedule.every().day.at("03:30").do(job)
+    schedule.every().day.at("04:30").do(job)
     schedule.every().day.at("05:30").do(job)
+    schedule.every().day.at("06:30").do(job)
+    schedule.every().day.at("07:30").do(job)
+    schedule.every().day.at("08:30").do(job)
     schedule.every().day.at("09:30").do(job)
+    schedule.every().day.at("10:30").do(job)
+    schedule.every().day.at("11:30").do(job)
+    schedule.every().day.at("12:30").do(job)
     schedule.every().day.at("13:30").do(job)
+    schedule.every().day.at("14:30").do(job)
+    schedule.every().day.at("15:30").do(job)
+    schedule.every().day.at("16:30").do(job)
     schedule.every().day.at("17:30").do(job)
+    schedule.every().day.at("18:30").do(job)
+    schedule.every().day.at("19:30").do(job)
+    schedule.every().day.at("20:30").do(job)
     schedule.every().day.at("21:30").do(job)
+    schedule.every().day.at("22:30").do(job)
+    schedule.every().day.at("23:30").do(job)
+    schedule.every().day.at("00:30").do(job)    
 
     while True:
         schedule.run_pending()

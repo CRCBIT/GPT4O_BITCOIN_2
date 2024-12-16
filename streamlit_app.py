@@ -127,7 +127,7 @@ def main():
                         range=[ohlc['index'].iloc[-288], ohlc['index'].iloc[-1]]  # Show last day only
                     ),
                     yaxis=dict(title="Price (KRW)"),
-                    margin=dict(l=0, r=0, t=0, b=0),
+                    margin=dict(l=0, r=0, t=30, b=0),
                     dragmode="pan"  # Enable panning for scrolling
                 )
                 st.plotly_chart(fig, use_container_width=True)
@@ -149,7 +149,7 @@ def main():
                 fig.update_layout(
                     xaxis=dict(title="Date", rangeslider=dict(visible=True)),
                     yaxis=dict(title="Price (KRW)"),
-                    margin=dict(l=0, r=0, t=0, b=0)
+                    margin=dict(l=0, r=0, t=30, b=0)
                 )
                 st.plotly_chart(fig, use_container_width=True)
 
