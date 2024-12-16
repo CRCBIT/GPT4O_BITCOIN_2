@@ -550,7 +550,7 @@ if __name__ == "__main__":
         finally:
             trading_in_progress = False
 
-    job()
+    # job()
 
     # 매 4시간마다 실행
     schedule.every().day.at("01:30").do(job)
