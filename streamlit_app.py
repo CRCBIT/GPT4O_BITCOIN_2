@@ -42,9 +42,8 @@ def add_buy_sell_markers(fig, df, x_col, y_col):
             x=buy_points[x_col],
             y=buy_points[y_col],
             mode='markers',
-            marker=dict(size=12, color='green', symbol='triangle-up'),
-            name='Buy',
-            hovertemplate="<b>Buy</b><br>Time: %{x}<br>Price: %{y:,} KRW"
+            marker=dict(size=10, color='green', symbol='triangle-up'),
+            name='Buy'
         ))
 
     if not sell_points.empty:
@@ -52,9 +51,8 @@ def add_buy_sell_markers(fig, df, x_col, y_col):
             x=sell_points[x_col],
             y=sell_points[y_col],
             mode='markers',
-            marker=dict(size=12, color='red', symbol='triangle-down'),
-            name='Sell',
-            hovertemplate="<b>Sell</b><br>Time: %{x}<br>Price: %{y:,} KRW"
+            marker=dict(size=10, color='red', symbol='triangle-down'),
+            name='Sell'
         ))
 
     return fig
@@ -91,52 +89,18 @@ def main():
 
         st.header("💲Total Assets")
         df['total_assets'] = df['krw_balance'] + (df['btc_balance'] * df['btc_krw_price'])
-        
-        # 모던한 스타일 적용을 위한 그래프 수정
         total_assets_fig = px.line(
-            df, 
-            x='timestamp', 
-            y='total_assets',
+            df, x='timestamp', y='total_assets',
             title='Total Assets',
             markers=True,
-            template='plotly_dark',  # 모던한 테마 적용
-            line_shape='spline',     # 부드러운 라인
-            hover_data={'total_assets': ':.0f'}  # 호버 데이터 포맷 지정
+            template='plotly_dark'
         )
-
-        # 라인 색상과 마커 스타일 커스터마이징
-        total_assets_fig.update_traces(
-            line=dict(color='teal', width=3),
-            marker=dict(size=6, symbol='circle', color='teal')
-        )
-
-        # 레이아웃 조정
         total_assets_fig.update_layout(
-            margin=dict(l=20, r=20, t=50, b=20),
-            height=200,  # 사용자 요청에 따라 높이 조정
+            margin=dict(l=0, r=0, t=30, b=0),
+            height=200,  # 동일한 높이 설정
             xaxis_title=None,
-            yaxis_title="Total Assets (KRW)",
-            xaxis=dict(
-                showgrid=False,
-                showticklabels=False
-            ),
-            yaxis=dict(
-                showgrid=True,
-                gridcolor='gray',
-                tickprefix="₩",
-                showline=False,
-                zeroline=False
-            ),
-            showlegend=False,
-            plot_bgcolor='rgba(0,0,0,0)',  # 투명 배경
-            paper_bgcolor='rgba(0,0,0,0)'  # 투명 배경
+            yaxis_title="Total Assets (KRW)"
         )
-
-        # 호버 모드 설정
-        total_assets_fig.update_layout(
-            hovermode="x unified"
-        )
-
         st.plotly_chart(total_assets_fig, use_container_width=True)
 
     with col3:
@@ -164,10 +128,9 @@ def main():
                         range=[ohlc['index'].iloc[-288], ohlc['index'].iloc[-1]]  # Show last day only
                     ),
                     yaxis=dict(title="Price (KRW)"),
-                    margin=dict(l=40, r=20, t=30, b=20),
-                    dragmode="pan",
-                    height=400,
-                    template='plotly_dark'  # 동일한 테마 적용
+                    margin=dict(l=0, r=0, t=30, b=0),
+                    dragmode="pan",  # Enable panning for scrolling
+                    height=400  # 동일한 높이 설정
                 )
                 st.plotly_chart(fig, use_container_width=True)
 
@@ -188,114 +151,92 @@ def main():
                 fig.update_layout(
                     xaxis=dict(title="Date", rangeslider=dict(visible=True)),
                     yaxis=dict(title="Price (KRW)"),
-                    margin=dict(l=40, r=20, t=30, b=20),
-                    height=400,
-                    template='plotly_dark'
+                    margin=dict(l=0, r=0, t=30, b=0),
+                    height=400  # 동일한 높이 설정
                 )
                 st.plotly_chart(fig, use_container_width=True)
 
         with tab3:
             st.subheader("BTC Balance Over Time")
-            fig = px.line(df, x='timestamp', y='btc_balance', title="BTC Balance Over Time", markers=True, template='plotly_dark', line_shape='spline')
+            fig = px.line(df, x='timestamp', y='btc_balance', title="BTC Balance Over Time", markers=True)
             fig = add_buy_sell_markers(fig, df, 'timestamp', 'btc_balance')
-            fig.update_traces(line=dict(color='orange', width=3), marker=dict(size=6, symbol='circle', color='orange'))
             fig.update_layout(
-                margin=dict(l=40, r=20, t=50, b=20),
-                height=400,
-                yaxis_title="BTC Balance",
-                xaxis=dict(showgrid=False),
-                yaxis=dict(showgrid=True, gridcolor='gray'),
-                plot_bgcolor='rgba(0,0,0,0)',
-                paper_bgcolor='rgba(0,0,0,0)',
-                hovermode="x unified",
-                showlegend=False
+                margin=dict(l=0, r=0, t=30, b=0),
+                height=400,  # 동일한 높이 설정
+                yaxis_title="BTC Balance"
             )
             st.plotly_chart(fig, use_container_width=True)
 
         with tab4:
             st.subheader("KRW Balance Over Time")
-            fig = px.line(df, x='timestamp', y='krw_balance', title="KRW Balance Over Time", markers=True, template='plotly_dark', line_shape='spline')
+            fig = px.line(df, x='timestamp', y='krw_balance', title="KRW Balance Over Time", markers=True)
             fig = add_buy_sell_markers(fig, df, 'timestamp', 'krw_balance')
-            fig.update_traces(line=dict(color='purple', width=3), marker=dict(size=6, symbol='circle', color='purple'))
             fig.update_layout(
-                margin=dict(l=40, r=20, t=50, b=20),
-                height=400,
-                yaxis_title="KRW Balance",
-                xaxis=dict(showgrid=False),
-                yaxis=dict(showgrid=True, gridcolor='gray'),
-                plot_bgcolor='rgba(0,0,0,0)',
-                paper_bgcolor='rgba(0,0,0,0)',
-                hovermode="x unified",
-                showlegend=False
+                margin=dict(l=0, r=0, t=30, b=0),
+                height=400,  # 동일한 높이 설정
+                yaxis_title="KRW Balance"
             )
             st.plotly_chart(fig, use_container_width=True)
 
         with tab5:
             st.subheader("BTC Average Buy Price Over Time")
-            fig = px.line(df, x='timestamp', y='btc_avg_buy_price', title="BTC Average Buy Price Over Time", markers=True, template='plotly_dark', line_shape='spline')
+            fig = px.line(df, x='timestamp', y='btc_avg_buy_price', title="BTC Average Buy Price Over Time", markers=True)
             fig = add_buy_sell_markers(fig, df, 'timestamp', 'btc_avg_buy_price')
-            fig.update_traces(line=dict(color='cyan', width=3), marker=dict(size=6, symbol='circle', color='cyan'))
             fig.update_layout(
-                margin=dict(l=40, r=20, t=50, b=20),
-                height=400,
-                yaxis_title="Average Buy Price (KRW)",
-                xaxis=dict(showgrid=False),
-                yaxis=dict(showgrid=True, gridcolor='gray'),
-                plot_bgcolor='rgba(0,0,0,0)',
-                paper_bgcolor='rgba(0,0,0,0)',
-                hovermode="x unified",
-                showlegend=False
+                margin=dict(l=0, r=0, t=30, b=0),
+                height=400,  # 동일한 높이 설정
+                yaxis_title="Average Buy Price (KRW)"
             )
             st.plotly_chart(fig, use_container_width=True)
 
     # 하단: 거래내역 표
-        st.header("📋Trade History")
-        # Timestamp 포맷 변경
-        df['timestamp_display'] = df['timestamp'].dt.strftime('%Y-%m-%d %H:%M')
-        displayed_df = df.copy()
-        displayed_df['timestamp'] = displayed_df['timestamp_display']
+    st.header("📋Trade History")
+    # Timestamp 포맷 변경
+    df['timestamp_display'] = df['timestamp'].dt.strftime('%Y-%m-%d %H:%M')
+    displayed_df = df.copy()
+    displayed_df['timestamp'] = displayed_df['timestamp_display']
 
-        # 필요한 수정 적용
-        displayed_df = displayed_df.drop(columns=['id', 'timestamp_display'], errors='ignore')
-        displayed_df = displayed_df.rename(columns={
-            'reason': '이유', 'reflection':'관점'
-        })
+    # 필요한 수정 적용
+    displayed_df = displayed_df.drop(columns=['id', 'timestamp_display'], errors='ignore')
+    displayed_df = displayed_df.rename(columns={
+        'reason': '이유', 'reflection':'관점'
+    })
 
-        # KRW 및 BTC 관련 열 정리
-        for col in ['total_assets','krw_balance', 'btc_avg_buy_price', 'btc_krw_price']:
-            if col in displayed_df.columns:
-                displayed_df[col] = displayed_df[col].apply(lambda x: f"{int(x):,}" if pd.notnull(x) else x)
+    # KRW 및 BTC 관련 열 정리
+    for col in ['total_assets','krw_balance', 'btc_avg_buy_price', 'btc_krw_price']:
+        if col in displayed_df.columns:
+            displayed_df[col] = displayed_df[col].apply(lambda x: f"{int(x):,}" if pd.notnull(x) else x)
 
-        # 열 순서 변경
-        krw_btc_columns = ['krw_balance', 'btc_balance', 'btc_avg_buy_price', 'btc_krw_price']
-        non_krw_btc_columns = [col for col in displayed_df.columns if col not in krw_btc_columns]
-        final_columns = non_krw_btc_columns + krw_btc_columns
-        displayed_df = displayed_df[final_columns]
+    # 열 순서 변경
+    krw_btc_columns = ['krw_balance', 'btc_balance', 'btc_avg_buy_price', 'btc_krw_price']
+    non_krw_btc_columns = [col for col in displayed_df.columns if col not in krw_btc_columns]
+    final_columns = non_krw_btc_columns + krw_btc_columns
+    displayed_df = displayed_df[final_columns]
 
-        # 스타일 적용
-        styled_df = displayed_df.style.applymap(
-            lambda x: 'background-color: green; color: white;' if x == 'buy' else
-                      'background-color: red; color: white;' if x == 'sell' else '',
-            subset=['decision']
-        ).set_properties(**{
-            'text-align': 'center'
-        }).set_table_styles([
-            {
-                'selector': 'th',
-                'props': [
-                    ('text-align', 'center')
-                ]
-            },
-            {
-                'selector': 'td:not(.col-reason):not(.col-reflection)',
-                'props': [
-                    ('text-align', 'center')
-                ]
-            }
-        ])
+    # 스타일 적용
+    styled_df = displayed_df.style.applymap(
+        lambda x: 'background-color: green; color: white;' if x == 'buy' else
+                  'background-color: red; color: white;' if x == 'sell' else '',
+        subset=['decision']
+    ).set_properties(**{
+        'text-align': 'center'
+    }).set_table_styles([
+        {
+            'selector': 'th',
+            'props': [
+                ('text-align', 'center')
+            ]
+        },
+        {
+            'selector': 'td:not(.col-reason):not(.col-reflection)',
+            'props': [
+                ('text-align', 'center')
+            ]
+        }
+    ])
 
-        # 테이블 높이 설정
-        st.dataframe(styled_df, use_container_width=True, height=300)
+    # 테이블 높이 설정
+    st.dataframe(styled_df, use_container_width=True, height=300)
 
 if __name__ == "__main__":
     main()
