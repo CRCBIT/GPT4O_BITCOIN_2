@@ -23,11 +23,12 @@ st.markdown(
         padding-top: 1rem;  /* 기본값보다 작은 패딩으로 조정 */
     }
 
-    /* 제목 위의 여백 제거 및 밑줄 추가 */
+    /* 제목 위의 여백 제거 및 텍스트 아래에 밑줄 추가 */
     h1 {
         margin-top: 0;
-        border-bottom: 3px solid #4CAF50; /* 원하는 색상과 두께로 변경 가능 */
-        padding-bottom: 10px; /* 밑줄과 제목 사이의 간격 */
+        text-decoration: underline; /* 실제 텍스트 아래에 밑줄 추가 */
+        text-decoration-color: #4CAF50; /* 밑줄 색상 설정 */
+        text-decoration-thickness: 3px; /* 밑줄 두께 설정 */
     }
 
     /* 추가적인 여백 제거 (필요 시) */
