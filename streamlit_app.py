@@ -87,7 +87,6 @@ def main():
         st.metric("Total Assets (KRW)", f"{current_investment:,.0f} KRW")
         st.metric("Current BTC Price (KRW)", f"{current_btc_price:,.0f} KRW")
 
-        st.header("💲Total Assets")
         df['total_assets'] = df['krw_balance'] + (df['btc_balance'] * df['btc_krw_price'])
         total_assets_fig = px.line(
             df, x='timestamp', y='total_assets',
