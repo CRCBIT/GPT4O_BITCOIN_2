@@ -9,6 +9,30 @@ from streamlit_autorefresh import st_autorefresh
 # 항상 wide 모드 활성화, 제목 및 사이드바 설정
 st.set_page_config(layout="wide", page_title="Bitcoin Dashboard", page_icon="📈", initial_sidebar_state="collapsed")
 
+# 사용자 정의 CSS를 주입하여 여백 줄이기
+st.markdown(
+    """
+    <style>
+    /* 메인 컨테이너의 상단 패딩 줄이기 */
+    .block-container {
+        padding-top: 1rem;  /* 기본값보다 작은 패딩으로 조정 */
+    }
+
+    /* 제목 위의 여백 제거 */
+    h1 {
+        margin-top: 0;
+    }
+
+    /* 추가적인 여백 제거 (필요 시) */
+    .css-18e3th9 {  /* Streamlit의 내부 클래스 이름; 버전에 따라 다를 수 있음 */
+        padding-top: 1rem;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+
 def get_connection():
     return sqlite3.connect('bitcoin_trades.db')
 
