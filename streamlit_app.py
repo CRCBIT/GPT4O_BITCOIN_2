@@ -96,7 +96,7 @@ def main():
         )
         total_assets_fig.update_layout(
             margin=dict(l=0, r=0, t=30, b=0),
-            height=400,
+            height=200,
             xaxis_title=None,
             yaxis_title="Total Assets (KRW)"
         )
