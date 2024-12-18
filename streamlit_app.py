@@ -58,7 +58,7 @@ def add_buy_sell_markers(fig, df, x_col, y_col):
     return fig
 
 def main():
-    # 페이지 자동 리프레시 (10초마다 재실행)
+    # 페이지 자동 리프레시 (60초마다 재실행)
     st_autorefresh(interval=60000, limit=None, key="auto_refresh")
 
     # 데이터 로드
@@ -78,7 +78,8 @@ def main():
     st.title("Bitcoin Trading Dashboard")
 
     # 상단: 수익률, 총 자산 및 차트 정보
-    col1, col2, col3 = st.columns([0.8, 1, 3])
+    # 변경된 레이아웃: 두 개의 컬럼 (col1과 col3)
+    col1, col3 = st.columns([1, 2])
 
     with col1:
         st.header("⚡Performance Metrics")
@@ -86,7 +87,6 @@ def main():
         st.metric("Total Assets (KRW)", f"{current_investment:,.0f} KRW")
         st.metric("Current BTC Price (KRW)", f"{current_btc_price:,.0f} KRW")
 
-    with col2:
         st.header("💲Total Assets")
         df['total_assets'] = df['krw_balance'] + (df['btc_balance'] * df['btc_krw_price'])
         total_assets_fig = px.line(
@@ -175,7 +175,7 @@ def main():
             st.plotly_chart(fig, use_container_width=True)
 
     # 하단: 거래내역 표
-    st.header("📋lTrade History")
+    st.header("📋Trade History")
     # Timestamp 포맷 변경
     df['timestamp_display'] = df['timestamp'].dt.strftime('%Y-%m-%d %H:%M')
     displayed_df = df.copy()
