@@ -14,7 +14,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# 사용자 정의 CSS를 주입하여 여백 줄이기 및 제목 및 메트릭 스타일 변경
+# 사용자 정의 CSS를 주입하여 여백 줄이기
 st.markdown(
     """
     <style>
@@ -23,23 +23,14 @@ st.markdown(
         padding-top: 1rem;  /* 기본값보다 작은 패딩으로 조정 */
     }
 
-    /* 제목 위의 여백 제거 및 제목 스타일링 */
+    /* 제목 위의 여백 제거 */
     h1 {
         margin-top: 0;
-        font-size: 32px; /* 원하는 글자 크기로 조정 */
-        text-decoration: underline; /* 밑줄 추가 */
-        color: #2E86C1; /* 원하는 색상으로 변경 가능 */
     }
 
-    /* st.metric의 레이블과 값 스타일링 */
-    .css-1v3fvcr.edgvbvh3 {  /* Streamlit의 내부 클래스 이름; 버전에 따라 다를 수 있음 */
-        font-size: 18px !important;
-        font-weight: bold;
-    }
-
-    .css-1q1n2y2.egzxvld4 {  /* Streamlit의 내부 클래스 이름; 버전에 따라 다를 수 있음 */
-        font-size: 24px !important;
-        font-weight: bold;
+    /* 추가적인 여백 제거 (필요 시) */
+    .css-18e3th9 {  /* Streamlit의 내부 클래스 이름; 버전에 따라 다를 수 있음 */
+        padding-top: 1rem;
     }
     </style>
     """,
@@ -121,36 +112,10 @@ def main():
     col1, col3 = st.columns([1, 3])
 
     with col1:
-        # **방법 1:** 기존 st.metric 사용 + CSS 스타일링
         st.header("⚡Performance Metrics")
         st.metric("Current Profit Rate", f"{profit_rate:.2f}%")
         st.metric("Total Assets (KRW)", f"{current_investment:,.0f} KRW")
         st.metric("Current BTC Price (KRW)", f"{current_btc_price:,.0f} KRW")
-
-        # **방법 2:** 맞춤형 HTML을 사용하여 metrics 스타일링
-        # Uncomment below and comment out the above st.metric lines if you prefer this approach
-        """
-        st.markdown("""
-            <div style="display: flex; flex-direction: column; gap: 10px;">
-                <div style="display: flex; justify-content: space-between; font-size: 18px;">
-                    <span>Current Profit Rate</span>
-                    <span style="font-size: 24px; font-weight: bold;">{}</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; font-size: 18px;">
-                    <span>Total Assets (KRW)</span>
-                    <span style="font-size: 24px; font-weight: bold;">{:,} KRW</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; font-size: 18px;">
-                    <span>Current BTC Price (KRW)</span>
-                    <span style="font-size: 24px; font-weight: bold;">{:,} KRW</span>
-                </div>
-            </div>
-            """.format(
-                f"{profit_rate:.2f}%",
-                current_investment,
-                current_btc_price
-            ), unsafe_allow_html=True)
-        """
 
         st.header("💲Total Assets")
         df['total_assets'] = df['krw_balance'] + (df['btc_balance'] * df['btc_krw_price'])
@@ -312,53 +277,53 @@ def main():
             st.plotly_chart(fig, use_container_width=True)
 
     # 하단: 거래내역 표
-        st.header("📋Trade History")
-        # Timestamp 포맷 변경
-        df['timestamp_display'] = df['timestamp'].dt.strftime('%Y-%m-%d %H:%M')
-        displayed_df = df.copy()
-        displayed_df['timestamp'] = displayed_df['timestamp_display']
+    st.header("📋Trade History")
+    # Timestamp 포맷 변경
+    df['timestamp_display'] = df['timestamp'].dt.strftime('%Y-%m-%d %H:%M')
+    displayed_df = df.copy()
+    displayed_df['timestamp'] = displayed_df['timestamp_display']
 
-        # 필요한 수정 적용
-        displayed_df = displayed_df.drop(columns=['id', 'timestamp_display'], errors='ignore')
-        displayed_df = displayed_df.rename(columns={
-            'reason': '이유', 'reflection':'관점'
-        })
+    # 필요한 수정 적용
+    displayed_df = displayed_df.drop(columns=['id', 'timestamp_display'], errors='ignore')
+    displayed_df = displayed_df.rename(columns={
+        'reason': '이유', 'reflection':'관점'
+    })
 
-        # KRW 및 BTC 관련 열 정리
-        for col in ['total_assets','krw_balance', 'btc_avg_buy_price', 'btc_krw_price']:
-            if col in displayed_df.columns:
-                displayed_df[col] = displayed_df[col].apply(lambda x: f"{int(x):,}" if pd.notnull(x) else x)
+    # KRW 및 BTC 관련 열 정리
+    for col in ['total_assets','krw_balance', 'btc_avg_buy_price', 'btc_krw_price']:
+        if col in displayed_df.columns:
+            displayed_df[col] = displayed_df[col].apply(lambda x: f"{int(x):,}" if pd.notnull(x) else x)
 
-        # 열 순서 변경
-        krw_btc_columns = ['krw_balance', 'btc_balance', 'btc_avg_buy_price', 'btc_krw_price']
-        non_krw_btc_columns = [col for col in displayed_df.columns if col not in krw_btc_columns]
-        final_columns = non_krw_btc_columns + krw_btc_columns
-        displayed_df = displayed_df[final_columns]
+    # 열 순서 변경
+    krw_btc_columns = ['krw_balance', 'btc_balance', 'btc_avg_buy_price', 'btc_krw_price']
+    non_krw_btc_columns = [col for col in displayed_df.columns if col not in krw_btc_columns]
+    final_columns = non_krw_btc_columns + krw_btc_columns
+    displayed_df = displayed_df[final_columns]
 
-        # 스타일 적용
-        styled_df = displayed_df.style.applymap(
-            lambda x: 'background-color: green; color: white;' if x == 'buy' else
-                      'background-color: red; color: white;' if x == 'sell' else '',
-            subset=['decision']
-        ).set_properties(**{
-            'text-align': 'center'
-        }).set_table_styles([
-            {
-                'selector': 'th',
-                'props': [
-                    ('text-align', 'center')
-                ]
-            },
-            {
-                'selector': 'td:not(.col-reason):not(.col-reflection)',
-                'props': [
-                    ('text-align', 'center')
-                ]
-            }
-        ])
+    # 스타일 적용
+    styled_df = displayed_df.style.applymap(
+        lambda x: 'background-color: green; color: white;' if x == 'buy' else
+                  'background-color: red; color: white;' if x == 'sell' else '',
+        subset=['decision']
+    ).set_properties(**{
+        'text-align': 'center'
+    }).set_table_styles([
+        {
+            'selector': 'th',
+            'props': [
+                ('text-align', 'center')
+            ]
+        },
+        {
+            'selector': 'td:not(.col-reason):not(.col-reflection)',
+            'props': [
+                ('text-align', 'center')
+            ]
+        }
+    ])
 
-        # 테이블 높이 설정
-        st.dataframe(styled_df, use_container_width=True, height=300)
+    # 테이블 높이 설정
+    st.dataframe(styled_df, use_container_width=True, height=300)
 
-    if __name__ == "__main__":
-        main()
+if __name__ == "__main__":
+    main()
