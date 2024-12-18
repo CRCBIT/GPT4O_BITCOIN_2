@@ -14,7 +14,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# 사용자 정의 CSS를 주입하여 여백 줄이기
+# 사용자 정의 CSS를 주입하여 여백 줄이기 및 제목 아래에 밑줄 추가
 st.markdown(
     """
     <style>
@@ -23,9 +23,11 @@ st.markdown(
         padding-top: 1rem;  /* 기본값보다 작은 패딩으로 조정 */
     }
 
-    /* 제목 위의 여백 제거 */
+    /* 제목 위의 여백 제거 및 밑줄 추가 */
     h1 {
         margin-top: 0;
+        border-bottom: 3px solid #4CAF50; /* 원하는 색상과 두께로 변경 가능 */
+        padding-bottom: 10px; /* 밑줄과 제목 사이의 간격 */
     }
 
     /* 추가적인 여백 제거 (필요 시) */
@@ -113,7 +115,19 @@ def main():
 
     with col1:
         st.header("⚡Performance Metrics")
-        st.metric("Current Profit Rate", f"{profit_rate:.2f}%")
+        
+        # Conditional formatting for Current Profit Rate
+        if profit_rate > 0:
+            formatted_profit = f"<span style='color:red; font-weight:bold;'>+{profit_rate:.2f}%</span>"
+        elif profit_rate < 0:
+            formatted_profit = f"<span style='color:blue; font-weight:bold;'>{profit_rate:.2f}%</span>"
+        else:
+            formatted_profit = f"{profit_rate:.2f}%"
+        
+        # Display the formatted profit rate
+        st.markdown(f"**Current Profit Rate:** {formatted_profit}", unsafe_allow_html=True)
+        
+        # Keep the other metrics as they are
         st.metric("Total Assets (KRW)", f"{current_investment:,.0f} KRW")
         st.metric("Current BTC Price (KRW)", f"{current_btc_price:,.0f} KRW")
 
