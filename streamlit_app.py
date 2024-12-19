@@ -31,7 +31,7 @@ st.markdown(
         text-decoration: underline; /* 실제 텍스트 아래에 밑줄 추가 */
         text-decoration-color: currentColor; /* 밑줄 색상을 텍스트 색상과 동일하게 설정 */
         text-decoration-thickness: 2px; /* 밑줄 두께 설정 */
-        font-size: 26px !important; /* 글자 크기 약간 축소 */
+        font-size: 30px !important; /* 글자 크기 약간 축소 */
     }
 
     /* 모든 h3 요소에 일관된 스타일 적용 */
@@ -373,8 +373,8 @@ def main():
             
             fig.update_traces(
                 selector=dict(name='BTC Balance'),  # 메인 트레이스만 선택
-                line=dict(color='purple', width=2),  # 선 두께 축소
-                marker=dict(size=4, symbol='circle', color='purple')  # 마커 크기 축소
+                line=dict(color='black', width=2),  # 선 두께 축소
+                marker=dict(size=4, symbol='circle', color='black')  # 마커 크기 축소
             )
             fig.update_layout(
                 margin=dict(l=40, r=20, t=30, b=20),  # 상단 마진 약간 추가
@@ -407,8 +407,8 @@ def main():
             
             fig.update_traces(
                 selector=dict(name='KRW Balance'),  # 메인 트레이스만 선택
-                line=dict(color='orange', width=2),  # 선 색상 변경 및 두께 축소
-                marker=dict(size=4, symbol='circle', color='orange')  # 마커 크기 축소
+                line=dict(color='black', width=2),  # 선 색상 변경 및 두께 축소
+                marker=dict(size=4, symbol='circle', color='black')  # 마커 크기 축소
             )
             fig.update_layout(
                 margin=dict(l=40, r=20, t=30, b=20),  # 상단 마진 약간 추가
@@ -441,8 +441,8 @@ def main():
             
             fig.update_traces(
                 selector=dict(name='BTC Avg Buy Price'),  # 메인 트레이스만 선택
-                line=dict(color='cyan', width=2),  # 선 색상 변경 및 두께 축소
-                marker=dict(size=4, symbol='circle', color='cyan')  # 마커 크기 축소
+                line=dict(color='black', width=2),  # 선 색상 변경 및 두께 축소
+                marker=dict(size=4, symbol='circle', color='black')  # 마커 크기 축소
             )
             fig.update_layout(
                 margin=dict(l=40, r=20, t=30, b=20),  # 상단 마진 약간 추가
