@@ -272,7 +272,7 @@ def main():
 
     with col3:
         # Trade-Related Charts 제목 조절
-        st.markdown("<h3 style='font-size:24px; style='margin-bottom:-50px;'>📈Trade-Related Charts</h3>", unsafe_allow_html=True)
+        st.markdown("<h3 style='font-size:24px; style='margin-bottom:-100px;'>📈Trade-Related Charts</h3>", unsafe_allow_html=True)
         
         # 탭 생성
         tab1, tab2, tab3, tab4, tab5 = st.tabs(["BTC Price Chart", "1-Year BTC Price (Daily)", "BTC Balance", "KRW Balance", "Avg Buy Price"])
