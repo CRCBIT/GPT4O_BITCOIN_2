@@ -68,19 +68,13 @@ def calculate_current_investment(df):
     current_btc_price = pyupbit.get_current_price("KRW-BTC")
     return current_krw_balance + (current_btc_balance * current_btc_price)
 
-def add_buy_sell_markers(fig, df, x_col, y_col, theme='light'):
+def add_buy_sell_markers(fig, df, x_col, y_col, border_color='black'):
     """
     BUY와 SELL 마커를 Plotly 그래프에 추가합니다.
-    테마에 따라 마커의 테두리 색상을 동적으로 변경합니다.
+    테두리 색상을 매개변수로 받아 설정합니다.
     """
     buy_points = df[df['decision'] == 'buy']
     sell_points = df[df['decision'] == 'sell']
-
-    # 테마에 따른 테두리 색상 설정
-    if theme == 'dark':
-        border_color = 'white'
-    else:
-        border_color = 'black'
 
     if not buy_points.empty:
         fig.add_trace(go.Scatter(
@@ -118,17 +112,16 @@ def main():
     # 페이지 자동 리프레시 (60초마다 재실행)
     st_autorefresh(interval=60000, limit=None, key="auto_refresh")
 
-    # 현재 테마 감지
-    try:
-        current_theme = st.get_option("theme.base")  # 'light' 또는 'dark'
-    except:
-        current_theme = 'light'  # 기본값 설정
-
-    # Plotly 템플릿 설정 based on Streamlit theme
-    if current_theme == 'dark':
+    # 사용자에게 테마 선택을 요청
+    theme = st.sidebar.radio("테마 선택", ("light", "dark"))
+    
+    # Plotly 템플릿 설정 based on user-selected theme
+    if theme == 'dark':
         plotly_template = 'plotly_dark'
+        marker_border_color = 'white'
     else:
         plotly_template = 'plotly_white'
+        marker_border_color = 'black'
 
     # 데이터 로드
     df = load_data()
@@ -203,6 +196,7 @@ def main():
         formatted_btc_price = f"<span style='color:{btc_color}; font-weight:bold;'>{btc_symbol}{current_btc_price:,.0f} KRW</span>"
         st.markdown(f"**Current BTC Price (KRW):** {formatted_btc_price}", unsafe_allow_html=True)
 
+        # Total Assets 그래프 생성
         st.markdown("<h3 style='font-size:24px;'>💵Total Assets</h3>", unsafe_allow_html=True)
         
         # 총 자산 계산
@@ -215,7 +209,7 @@ def main():
             y='total_assets',
             title='Total Assets',
             markers=True,
-            template=plotly_template,  # 테마에 맞는 템플릿 적용
+            template=plotly_template,  # 사용자 선택에 따른 템플릿 적용
             line_shape='spline',     # 부드러운 라인
             hover_data={'total_assets': ':.0f'}  # 호버 데이터 포맷 지정
         )
@@ -225,6 +219,9 @@ def main():
             line=dict(color='teal', width=3),
             marker=dict(size=6, symbol='circle', color='teal')
         )
+
+        # BUY/SELL 마커 추가
+        total_assets_fig = add_buy_sell_markers(total_assets_fig, df, 'timestamp', 'total_assets', border_color=marker_border_color)
 
         # 레이아웃 조정
         total_assets_fig.update_layout(
@@ -276,7 +273,7 @@ def main():
                     name='BTC'
                 )])
                 # BUY/SELL 마커 추가
-                fig = add_buy_sell_markers(fig, df, 'timestamp', 'btc_krw_price', theme=current_theme)
+                fig = add_buy_sell_markers(fig, df, 'timestamp', 'btc_krw_price', border_color=marker_border_color)
                 fig.update_layout(
                     xaxis=dict(
                         title="Time",
@@ -287,7 +284,7 @@ def main():
                     margin=dict(l=40, r=20, t=30, b=20),
                     dragmode="pan",
                     height=400,
-                    template=plotly_template  # 테마에 맞는 템플릿 적용
+                    template=plotly_template  # 사용자 선택에 따른 템플릿 적용
                 )
                 st.plotly_chart(fig, use_container_width=True)
 
@@ -305,13 +302,13 @@ def main():
                     name='BTC Daily'
                 )])
                 # BUY/SELL 마커 추가
-                fig = add_buy_sell_markers(fig, df, 'timestamp', 'btc_krw_price', theme=current_theme)
+                fig = add_buy_sell_markers(fig, df, 'timestamp', 'btc_krw_price', border_color=marker_border_color)
                 fig.update_layout(
                     xaxis=dict(title="Date", rangeslider=dict(visible=True)),
                     yaxis=dict(title="Price (KRW)"),
                     margin=dict(l=40, r=20, t=30, b=20),
                     height=400,
-                    template=plotly_template  # 테마에 맞는 템플릿 적용
+                    template=plotly_template  # 사용자 선택에 따른 템플릿 적용
                 )
                 st.plotly_chart(fig, use_container_width=True)
 
