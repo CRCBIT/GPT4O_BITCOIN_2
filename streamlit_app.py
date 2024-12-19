@@ -212,7 +212,7 @@ def main():
         st.markdown(f"**Current BTC Price (KRW):** {formatted_btc_price}", unsafe_allow_html=True)
 
         # Total Assets 그래프 생성
-        st.markdown("<h3 class='total-assets-title' style='margin-bottom:-50px;'>💵Total Assets</h3>", unsafe_allow_html=True)
+        st.markdown("<h3 class='total-assets-title'>💵Total Assets</h3>", unsafe_allow_html=True)
         
         # 총 자산 계산
         df['total_assets'] = df['krw_balance'] + (df['btc_balance'] * df['btc_krw_price'])
@@ -248,6 +248,9 @@ def main():
             annotation_position="bottom right"
         )
 
+        # BUY/SELL 마커 추가
+        total_assets_fig = add_buy_sell_markers(total_assets_fig, df, 'timestamp', 'total_assets', border_color=marker_border_color)
+        
         # 레이아웃 조정
         total_assets_fig.update_layout(
             xaxis=dict(
@@ -268,11 +271,12 @@ def main():
             paper_bgcolor='rgba(0,0,0,0)'  # 투명 배경
         )
         
-        st.plotly_chart(total_assets_fig, use_container_width=True)
+        # Plotly 그래프 출력 시 모드바 숨기기
+        st.plotly_chart(total_assets_fig, use_container_width=True, config=config)
 
     with col3:
         # Trade-Related Charts 제목 조절
-        st.markdown("<h3 style='font-size:24px; style='margin-bottom:-100px;'>📈Trade-Related Charts</h3>", unsafe_allow_html=True)
+        st.markdown("<h3 style='font-size:24px; margin-bottom:-100px;'>📈Trade-Related Charts</h3>", unsafe_allow_html=True)
         
         # 탭 생성
         tab1, tab2, tab3, tab4, tab5 = st.tabs(["BTC Price Chart", "1-Year BTC Price (Daily)", "BTC Balance", "KRW Balance", "Avg Buy Price"])
