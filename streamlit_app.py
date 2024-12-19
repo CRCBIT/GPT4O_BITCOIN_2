@@ -39,10 +39,6 @@ st.markdown(
         padding-top: 1rem;
     }
 
-    /* Total Assets 제목과 그래프 사이 간격 줄이기 */
-    .total-assets-title {
-        font-size: 24px;
-        margin-bottom: -50px; /* 필요에 따라 0px 또는 -5px 등으로 조정 */
     }
     </style>
     """,
