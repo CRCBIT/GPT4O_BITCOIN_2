@@ -117,7 +117,7 @@ def main():
     with col1:
         st.header("⚡Performance Metrics")
         
-        # Conditional formatting for Current Profit Rate
+        # Current Profit Rate - 기존 코드 유지
         if profit_rate > 0:
             formatted_profit = f"<span style='color:red; font-weight:bold;'>+{profit_rate:.2f}%</span>"
         elif profit_rate < 0:
@@ -125,12 +125,36 @@ def main():
         else:
             formatted_profit = f"{profit_rate:.2f}%"
         
-        # Display the formatted profit rate
         st.markdown(f"**Current Profit Rate:** {formatted_profit}", unsafe_allow_html=True)
         
-        # Keep the other metrics as they are
-        st.metric("Total Assets (KRW)", f"{current_investment:,.0f} KRW")
-        st.metric("Current BTC Price (KRW)", f"{current_btc_price:,.0f} KRW")
+        # Total Assets (KRW) - 커스텀 스타일링 추가
+        if current_investment > initial_investment:
+            assets_color = "green"
+            assets_symbol = "+"
+        elif current_investment < initial_investment:
+            assets_color = "red"
+            assets_symbol = "-"
+        else:
+            assets_color = "black"
+            assets_symbol = ""
+        
+        formatted_assets = f"<span style='color:{assets_color}; font-weight:bold;'>{assets_symbol}{current_investment:,.0f} KRW</span>"
+        st.markdown(f"**Total Assets (KRW):** {formatted_assets}", unsafe_allow_html=True)
+        
+        # Current BTC Price (KRW) - 커스텀 스타일링 추가
+        previous_btc_price = df.iloc[-2]['btc_krw_price'] if len(df) > 1 else df.iloc[-1]['btc_krw_price']
+        if current_btc_price > previous_btc_price:
+            btc_color = "green"
+            btc_symbol = "↑"
+        elif current_btc_price < previous_btc_price:
+            btc_color = "red"
+            btc_symbol = "↓"
+        else:
+            btc_color = "black"
+            btc_symbol = ""
+        
+        formatted_btc_price = f"<span style='color:{btc_color}; font-weight:bold;'>{btc_symbol}{current_btc_price:,.0f} KRW</span>"
+        st.markdown(f"**Current BTC Price (KRW):** {formatted_btc_price}", unsafe_allow_html=True)
 
         df['total_assets'] = df['krw_balance'] + (df['btc_balance'] * df['btc_krw_price'])
         
