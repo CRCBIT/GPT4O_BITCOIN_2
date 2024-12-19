@@ -73,7 +73,7 @@ def add_buy_sell_markers(fig, df, x_col, y_col):
             x=buy_points[x_col],
             y=buy_points[y_col],
             mode='markers',
-            marker=dict(size=12, color='green', symbol='triangle-up'),
+            marker=dict(size=12, color='red', symbol='triangle-up'),
             name='Buy',
             hovertemplate="<b>Buy</b><br>Time: %{x}<br>Price: %{y:,} KRW"
         ))
@@ -83,7 +83,7 @@ def add_buy_sell_markers(fig, df, x_col, y_col):
             x=sell_points[x_col],
             y=sell_points[y_col],
             mode='markers',
-            marker=dict(size=12, color='red', symbol='triangle-down'),
+            marker=dict(size=12, color='blue', symbol='triangle-down'),
             name='Sell',
             hovertemplate="<b>Sell</b><br>Time: %{x}<br>Price: %{y:,} KRW"
         ))
@@ -129,10 +129,10 @@ def main():
         
         # Total Assets (KRW) - 커스텀 스타일링 추가
         if current_investment > initial_investment:
-            assets_color = "green"
+            assets_color = "red"
             assets_symbol = "+"
         elif current_investment < initial_investment:
-            assets_color = "red"
+            assets_color = "blue"
             assets_symbol = "-"
         else:
             assets_color = "black"
@@ -144,10 +144,10 @@ def main():
         # Current BTC Price (KRW) - 커스텀 스타일링 추가
         previous_btc_price = df.iloc[-2]['btc_krw_price'] if len(df) > 1 else df.iloc[-1]['btc_krw_price']
         if current_btc_price > previous_btc_price:
-            btc_color = "green"
+            btc_color = "red"
             btc_symbol = "↑"
         elif current_btc_price < previous_btc_price:
-            btc_color = "red"
+            btc_color = "blue"
             btc_symbol = "↓"
         else:
             btc_color = "black"
@@ -340,8 +340,8 @@ def main():
 
     # 스타일 적용
     styled_df = displayed_df.style.applymap(
-        lambda x: 'background-color: green; color: white;' if x == 'buy' else
-                  'background-color: red; color: white;' if x == 'sell' else '',
+        lambda x: 'background-color: red; color: white;' if x == 'buy' else
+                  'background-color: blue; color: white;' if x == 'sell' else '',
         subset=['decision']
     ).set_properties(**{
         'text-align': 'center'
