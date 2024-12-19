@@ -286,7 +286,6 @@ def main():
         tab1, tab2, tab3, tab4, tab5 = st.tabs(["BTC Price Chart", "1-Year BTC Price (Daily)", "BTC Balance", "KRW Balance", "Avg Buy Price"])
 
         with tab1:
-            st.subheader("BTC Price with Buy/Sell Points (5-Min Candles for 1 Week)")
             ohlc = pyupbit.get_ohlcv("KRW-BTC", interval="minute5", count=2016)  # 2016 = 5 min intervals in 1 week
             if ohlc is not None and not ohlc.empty:
                 ohlc = ohlc.reset_index()
@@ -319,12 +318,12 @@ def main():
                     dragmode="pan",
                     height=410,
                     template=plotly_template  # 사용자 선택에 따른 템플릿 적용
+                    showlegend=False
                 )
                 st.plotly_chart(fig, use_container_width=True, config=config)
 
 
         with tab2:
-            st.subheader("1-Year BTC Price (Daily)")
             ohlc_daily = pyupbit.get_ohlcv("KRW-BTC", interval="day", count=365)
             if ohlc_daily is not None and not ohlc_daily.empty:
                 ohlc_daily = ohlc_daily.reset_index()
@@ -352,12 +351,13 @@ def main():
                     margin=dict(l=40, r=20, t=30, b=20),
                     height=410,
                     template=plotly_template  # 사용자 선택에 따른 템플릿 적용
+                    showlegend=False
                 )
                 st.plotly_chart(fig, use_container_width=True, config=config)
 
 
         with tab3:
-            st.subheader("BTC Balance Over Time")
+            
             fig = px.line(df, x='timestamp', y='btc_balance', title="BTC Balance Over Time", markers=True, template=plotly_template, line_shape='spline')
             # BUY/SELL 마커는 Balance 차트에는 필요 없을 수 있으므로 생략
             fig.update_traces(line=dict(color='orange', width=3), marker=dict(size=6, symbol='circle', color='orange'))
@@ -375,7 +375,7 @@ def main():
             st.plotly_chart(fig, use_container_width=True, config=config)
 
         with tab4:
-            st.subheader("KRW Balance Over Time")
+            
             fig = px.line(df, x='timestamp', y='krw_balance', title="KRW Balance Over Time", markers=True, template=plotly_template, line_shape='spline')
             # BUY/SELL 마커는 Balance 차트에는 필요 없을 수 있으므로 생략
             fig.update_traces(line=dict(color='purple', width=3), marker=dict(size=6, symbol='circle', color='purple'))
@@ -393,7 +393,7 @@ def main():
             st.plotly_chart(fig, use_container_width=True, config=config)
 
         with tab5:
-            st.subheader("BTC Average Buy Price Over Time")
+            
             fig = px.line(df, x='timestamp', y='btc_avg_buy_price', title="BTC Average Buy Price Over Time", markers=True, template=plotly_template, line_shape='spline')
             # BUY/SELL 마커는 Avg Buy Price 차트에는 필요 없을 수 있으므로 생략
             fig.update_traces(line=dict(color='cyan', width=3), marker=dict(size=6, symbol='circle', color='cyan'))
