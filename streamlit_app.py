@@ -301,7 +301,7 @@ def main():
                     yaxis=dict(title="Price (KRW)"),
                     margin=dict(l=40, r=20, t=30, b=20),
                     dragmode="pan",
-                    height=411,
+                    height=410,
                     template=plotly_template  # 사용자 선택에 따른 템플릿 적용
                 )
                 st.plotly_chart(fig, use_container_width=True, config=config)
@@ -325,7 +325,7 @@ def main():
                     xaxis=dict(title="Date", rangeslider=dict(visible=True)),
                     yaxis=dict(title="Price (KRW)"),
                     margin=dict(l=40, r=20, t=30, b=20),
-                    height=411,
+                    height=410,
                     template=plotly_template  # 사용자 선택에 따른 템플릿 적용
                 )
                 st.plotly_chart(fig, use_container_width=True, config=config)
@@ -337,7 +337,7 @@ def main():
             fig.update_traces(line=dict(color='orange', width=3), marker=dict(size=6, symbol='circle', color='orange'))
             fig.update_layout(
                 margin=dict(l=40, r=20, t=50, b=20),
-                height=411,
+                height=410,
                 yaxis_title="BTC Balance",
                 xaxis=dict(showgrid=False),
                 yaxis=dict(showgrid=True, gridcolor='gray'),
@@ -355,7 +355,7 @@ def main():
             fig.update_traces(line=dict(color='purple', width=3), marker=dict(size=6, symbol='circle', color='purple'))
             fig.update_layout(
                 margin=dict(l=40, r=20, t=50, b=20),
-                height=411,
+                height=410,
                 yaxis_title="KRW Balance",
                 xaxis=dict(showgrid=False),
                 yaxis=dict(showgrid=True, gridcolor='gray'),
@@ -373,7 +373,7 @@ def main():
             fig.update_traces(line=dict(color='cyan', width=3), marker=dict(size=6, symbol='circle', color='cyan'))
             fig.update_layout(
                 margin=dict(l=40, r=20, t=50, b=20),
-                height=411,
+                height=410,
                 yaxis_title="Average Buy Price (KRW)",
                 xaxis=dict(showgrid=False),
                 yaxis=dict(showgrid=True, gridcolor='gray'),
