@@ -247,7 +247,7 @@ def main():
                 range=y_range  # 동적으로 계산된 y축 범위 적용
             ),
             margin=dict(l=20, r=20, t=50, b=50),
-            height=350,
+            height=400,
             hovermode="x unified",
             showlegend=False,
             plot_bgcolor='rgba(0,0,0,0)',  # 투명 배경
@@ -287,7 +287,7 @@ def main():
                     yaxis=dict(title="Price (KRW)"),
                     margin=dict(l=40, r=20, t=30, b=50),
                     dragmode="pan",
-                    height=400,
+                    height=450,
                     template=plotly_template  # 사용자 선택에 따른 템플릿 적용
                 )
                 st.plotly_chart(fig, use_container_width=True)
@@ -311,7 +311,7 @@ def main():
                     xaxis=dict(title="Date", rangeslider=dict(visible=True)),
                     yaxis=dict(title="Price (KRW)"),
                     margin=dict(l=40, r=20, t=30, b=50),
-                    height=400,
+                    height=450,
                     template=plotly_template  # 사용자 선택에 따른 템플릿 적용
                 )
                 st.plotly_chart(fig, use_container_width=True)
@@ -323,7 +323,7 @@ def main():
             fig.update_traces(line=dict(color='orange', width=3), marker=dict(size=6, symbol='circle', color='orange'))
             fig.update_layout(
                 margin=dict(l=40, r=20, t=50, b=50),
-                height=400,
+                height=450,
                 yaxis_title="BTC Balance",
                 xaxis=dict(showgrid=False),
                 yaxis=dict(showgrid=True, gridcolor='gray'),
@@ -341,7 +341,7 @@ def main():
             fig.update_traces(line=dict(color='purple', width=3), marker=dict(size=6, symbol='circle', color='purple'))
             fig.update_layout(
                 margin=dict(l=40, r=20, t=50, b=50),
-                height=400,
+                height=450,
                 yaxis_title="KRW Balance",
                 xaxis=dict(showgrid=False),
                 yaxis=dict(showgrid=True, gridcolor='gray'),
@@ -359,7 +359,7 @@ def main():
             fig.update_traces(line=dict(color='cyan', width=3), marker=dict(size=6, symbol='circle', color='cyan'))
             fig.update_layout(
                 margin=dict(l=40, r=20, t=50, b=50),
-                height=400,
+                height=450,
                 yaxis_title="Average Buy Price (KRW)",
                 xaxis=dict(showgrid=False),
                 yaxis=dict(showgrid=True, gridcolor='gray'),
