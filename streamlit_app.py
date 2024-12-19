@@ -214,14 +214,7 @@ def main():
             hover_data={'total_assets': ':.0f'}  # 호버 데이터 포맷 지정
         )
 
-        # 라인 색상과 마커 스타일 커스터마이징
-        total_assets_fig.update_traces(
-            line=dict(color='teal', width=3),
-            marker=dict(size=6, symbol='circle', color='teal')
-        )
-
-        # BUY/SELL 마커 추가
-        total_assets_fig = add_buy_sell_markers(total_assets_fig, df, 'timestamp', 'total_assets', border_color=marker_border_color)
+  
 
         # 레이아웃 조정
         total_assets_fig.update_layout(
