@@ -214,7 +214,7 @@ def main():
         
         # 라인 색상과 마커 스타일 커스터마이징
         total_assets_fig.update_traces(
-            line=dict(color=dark blue, width=3),
+            line=dict(color=darkblue, width=3),
             marker=dict(size=6, symbol='circle', color=total_assets_color))
 
   
