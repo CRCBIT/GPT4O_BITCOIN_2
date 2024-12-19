@@ -10,7 +10,7 @@ from streamlit_autorefresh import st_autorefresh
 # 항상 wide 모드 활성화, 제목 및 사이드바 설정
 st.set_page_config(
     layout="wide",
-    page_title="AI BTC DASHBOARD",
+    page_title="AI BTC",
     page_icon="📈",
     initial_sidebar_state="collapsed"
 )
@@ -141,7 +141,7 @@ def main():
     current_btc_price = pyupbit.get_current_price("KRW-BTC")
 
     # 레이아웃 구성
-    st.title("AI BTC Trading Dashboard")  # CSS에서 글자 크기 조절됨
+    st.title("AI BTC Dashboard")  # CSS에서 글자 크기 조절됨
 
     # 상단: 수익률, 총 자산 및 차트 정보
     # 변경된 레이아웃: 두 개의 컬럼 (col1과 col3)
