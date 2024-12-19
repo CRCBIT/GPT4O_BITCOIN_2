@@ -247,10 +247,7 @@ def main():
             annotation_text="Initial Investment",
             annotation_position="bottom right"
         )
-        
-        # BUY/SELL 마커 추가
-        total_assets_fig = add_buy_sell_markers(total_assets_fig, df, 'timestamp', 'total_assets', border_color=marker_border_color)
-        
+
         # 레이아웃 조정
         total_assets_fig.update_layout(
             xaxis=dict(
@@ -263,7 +260,7 @@ def main():
                 tickprefix="₩",
                 range=y_range  # 동적으로 계산된 y축 범위 적용
             ),
-            margin=dict(l=20, r=20, t=50, b=20),
+            margin=dict(l=20, r=20, t=50, b=50),
             height=400,
             hovermode="x unified",
             showlegend=False,
@@ -271,8 +268,7 @@ def main():
             paper_bgcolor='rgba(0,0,0,0)'  # 투명 배경
         )
         
-        # Plotly 그래프 출력 시 모드바 숨기기
-        st.plotly_chart(total_assets_fig, use_container_width=True, config=config)
+        st.plotly_chart(total_assets_fig, use_container_width=True)
 
     with col3:
         # Trade-Related Charts 제목 조절
