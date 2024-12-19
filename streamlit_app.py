@@ -118,6 +118,21 @@ def main():
     # 페이지 자동 리프레시 (60초마다 재실행)
     st_autorefresh(interval=60000, limit=None, key="auto_refresh")
 
+    # 현재 테마 감지
+    try:
+        current_theme = st.get_option("theme.base")  # 'light' 또는 'dark'
+    except:
+        current_theme = 'light'  # 기본값 설정
+
+    # 디버그: 현재 테마 출력
+    st.write(f"현재 테마: {current_theme}")
+
+    # Plotly 템플릿 설정 based on Streamlit theme
+    if current_theme == 'dark':
+        plotly_template = 'plotly_dark'
+    else:
+        plotly_template = 'plotly_white'
+
     # 데이터 로드
     df = load_data()
 
@@ -178,15 +193,6 @@ def main():
         else:
             previous_btc_price = df.iloc[-1]['btc_krw_price']  # 하루 전 데이터가 없으면 현재 가격 사용
         
-        # 현재 테마 감지
-        try:
-            current_theme = st.get_option("theme.base")  # 'light' 또는 'dark'
-        except:
-            current_theme = 'light'  # 기본값 설정
-        
-        # 마커를 추가할 때 테마 정보를 전달
-        # 하지만 여기서는 BTC 가격만 표시하므로 마커는 추가하지 않습니다.
-        # 대신, 테마에 따른 텍스트 색상을 조정합니다.
         if current_btc_price > previous_btc_price:
             btc_color = "red"
             btc_symbol = "↑"
@@ -199,8 +205,7 @@ def main():
 
         formatted_btc_price = f"<span style='color:{btc_color}; font-weight:bold;'>{btc_symbol}{current_btc_price:,.0f} KRW</span>"
         st.markdown(f"**Current BTC Price (KRW):** {formatted_btc_price}", unsafe_allow_html=True)
-        
-        
+
         st.markdown("<h3 style='font-size:24px;'>💵Total Assets</h3>", unsafe_allow_html=True)
         
         # 총 자산 계산
@@ -213,7 +218,7 @@ def main():
             y='total_assets',
             title='Total Assets',
             markers=True,
-            template='plotly_dark',  # 모던한 테마 적용
+            template=plotly_template,  # 테마에 맞는 템플릿 적용
             line_shape='spline',     # 부드러운 라인
             hover_data={'total_assets': ':.0f'}  # 호버 데이터 포맷 지정
         )
@@ -285,7 +290,7 @@ def main():
                     margin=dict(l=40, r=20, t=30, b=20),
                     dragmode="pan",
                     height=400,
-                    template='plotly_dark'  # 동일한 테마 적용
+                    template=plotly_template  # 테마에 맞는 템플릿 적용
                 )
                 st.plotly_chart(fig, use_container_width=True)
 
@@ -309,13 +314,13 @@ def main():
                     yaxis=dict(title="Price (KRW)"),
                     margin=dict(l=40, r=20, t=30, b=20),
                     height=400,
-                    template='plotly_dark'
+                    template=plotly_template  # 테마에 맞는 템플릿 적용
                 )
                 st.plotly_chart(fig, use_container_width=True)
 
         with tab3:
             st.subheader("BTC Balance Over Time")
-            fig = px.line(df, x='timestamp', y='btc_balance', title="BTC Balance Over Time", markers=True, template='plotly_dark', line_shape='spline')
+            fig = px.line(df, x='timestamp', y='btc_balance', title="BTC Balance Over Time", markers=True, template=plotly_template, line_shape='spline')
             # BUY/SELL 마커는 Balance 차트에는 필요 없을 수 있으므로 생략
             fig.update_traces(line=dict(color='orange', width=3), marker=dict(size=6, symbol='circle', color='orange'))
             fig.update_layout(
@@ -333,7 +338,7 @@ def main():
 
         with tab4:
             st.subheader("KRW Balance Over Time")
-            fig = px.line(df, x='timestamp', y='krw_balance', title="KRW Balance Over Time", markers=True, template='plotly_dark', line_shape='spline')
+            fig = px.line(df, x='timestamp', y='krw_balance', title="KRW Balance Over Time", markers=True, template=plotly_template, line_shape='spline')
             # BUY/SELL 마커는 Balance 차트에는 필요 없을 수 있으므로 생략
             fig.update_traces(line=dict(color='purple', width=3), marker=dict(size=6, symbol='circle', color='purple'))
             fig.update_layout(
@@ -351,7 +356,7 @@ def main():
 
         with tab5:
             st.subheader("BTC Average Buy Price Over Time")
-            fig = px.line(df, x='timestamp', y='btc_avg_buy_price', title="BTC Average Buy Price Over Time", markers=True, template='plotly_dark', line_shape='spline')
+            fig = px.line(df, x='timestamp', y='btc_avg_buy_price', title="BTC Average Buy Price Over Time", markers=True, template=plotly_template, line_shape='spline')
             # BUY/SELL 마커는 Avg Buy Price 차트에는 필요 없을 수 있으므로 생략
             fig.update_traces(line=dict(color='cyan', width=3), marker=dict(size=6, symbol='circle', color='cyan'))
             fig.update_layout(
