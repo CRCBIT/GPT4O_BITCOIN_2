@@ -27,7 +27,7 @@ st.markdown(
     h1 {
         margin-top: 0;
         text-decoration: underline; /* 실제 텍스트 아래에 밑줄 추가 */
-        text-decoration-color: #4CAF50; /* 밑줄 색상 설정 */
+        text-decoration-color: currentColor; /* 밑줄 색상을 텍스트 색상과 동일하게 설정 */
         text-decoration-thickness: 3px; /* 밑줄 두께 설정 */
     }
 
