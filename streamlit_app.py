@@ -27,7 +27,7 @@ st.markdown(
     /* 제목 위의 여백 제거 및 텍스트 아래에 밑줄 추가 */
     h1 {
         margin-top: 0;
-        margin-bottom: 5px; /* 제목과 섹션 사이 간격 조정 */
+        margin-bottom: -1px; /* 제목과 섹션 사이 간격 조정 */
         text-decoration: underline; /* 실제 텍스트 아래에 밑줄 추가 */
         text-decoration-color: currentColor; /* 밑줄 색상을 텍스트 색상과 동일하게 설정 */
         text-decoration-thickness: 3px; /* 밑줄 두께 설정 */
@@ -42,7 +42,7 @@ st.markdown(
     /* Total Assets 제목과 그래프 사이 간격 줄이기 */
     .total-assets-title {
         font-size: 24px;
-        margin-bottom: 0px; /* 필요에 따라 0px 또는 -5px 등으로 조정 */
+        margin-bottom: -50px; /* 필요에 따라 0px 또는 -5px 등으로 조정 */
     }
     </style>
     """,
