@@ -268,7 +268,7 @@ def main():
                 range=y_range  # 동적으로 계산된 y축 범위 적용
             ),
             margin=dict(l=20, r=20, t=0, b=50),
-            height=400,
+            height=350,
             hovermode="x unified",
             showlegend=False,
             plot_bgcolor='rgba(0,0,0,0)',  # 투명 배경
