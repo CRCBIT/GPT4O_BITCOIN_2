@@ -27,22 +27,23 @@ st.markdown(
     /* 제목 위의 여백 제거 및 텍스트 아래에 밑줄 추가 */
     h1 {
         margin-top: 0;
-        margin-bottom: -1px; /* 제목과 섹션 사이 간격 조정 */
+        margin-bottom: 0.5rem; /* 제목과 섹션 사이 간격 조정 */
         text-decoration: underline; /* 실제 텍스트 아래에 밑줄 추가 */
         text-decoration-color: currentColor; /* 밑줄 색상을 텍스트 색상과 동일하게 설정 */
         text-decoration-thickness: 3px; /* 밑줄 두께 설정 */
         font-size: 30px !important; /* 글자 크기 추가 및 !important로 우선순위 높임 */
     }
 
+    /* 모든 h3 요소에 일관된 스타일 적용 */
+    h3 {
+        margin-top: 0.5rem; /* 상단 여백 조정 */
+        margin-bottom: 0.5rem; /* 하단 여백 조정 */
+        font-size: 24px; /* 일관된 글자 크기 */
+    }
+
     /* 추가적인 여백 제거 (필요 시) */
     .css-18e3th9 {  /* Streamlit의 내부 클래스 이름; 버전에 따라 다를 수 있음 */
         padding-top: 1rem;
-    }
-
-    /* 최소화된 마진 및 패딩 */
-    h3 {
-        margin-top: -100rem;
-        margin-bottom: -100rem;
     }
 
     .stPlotlyChart {
@@ -166,7 +167,7 @@ def main():
 
     with col1:
         # Performance Metrics 제목 조절
-        st.markdown("<h3 style='font-size:24px;'>⚡Performance Metrics</h3>", unsafe_allow_html=True)
+        st.markdown("<h3>⚡ Performance Metrics</h3>", unsafe_allow_html=True)
         
         # Current Profit Rate - 조건부 색상 및 포맷팅
         if profit_rate > 0:
@@ -217,8 +218,8 @@ def main():
         formatted_btc_price = f"<span style='color:{btc_color}; font-weight:bold;'>{btc_symbol}{current_btc_price:,.0f} KRW</span>"
         st.markdown(f"**Current BTC Price (KRW):** {formatted_btc_price}", unsafe_allow_html=True)
 
-        # Total Assets 그래프 생성
-        st.markdown("<h3 class='total-assets-title'>💵Total Assets</h3>", unsafe_allow_html=True)
+        # Total Assets 제목과 그래프 사이의 여백을 제거하여 그래프가 딱 붙게 함
+        st.markdown("<h3>💵 Total Assets</h3>", unsafe_allow_html=True)
         
         # 총 자산 계산
         df['total_assets'] = df['krw_balance'] + (df['btc_balance'] * df['btc_krw_price'])
@@ -279,7 +280,7 @@ def main():
 
     with col3:
         # Trade-Related Charts 제목 조절
-        st.markdown("<h3 style='font-size:24px; margin-bottom:0.5rem;'>📈Trade-Related Charts</h3>", unsafe_allow_html=True)
+        st.markdown("<h3>📈 Trade-Related Charts</h3>", unsafe_allow_html=True)
         
         # 탭 생성
         tab1, tab2, tab3, tab4, tab5 = st.tabs(["BTC Price Chart", "1-Year BTC Price (Daily)", "BTC Balance", "KRW Balance", "Avg Buy Price"])
@@ -394,7 +395,7 @@ def main():
     # 하단: 거래내역 표
     with st.container():
         # Trade History 제목 조절
-        st.markdown("<h3 style='font-size:24px;'>📋Trade History</h3>", unsafe_allow_html=True)
+        st.markdown("<h3>📋 Trade History</h3>", unsafe_allow_html=True)
         
         # Timestamp 포맷 변경
         df['timestamp_display'] = df['timestamp'].dt.strftime('%Y-%m-%d %H:%M')
