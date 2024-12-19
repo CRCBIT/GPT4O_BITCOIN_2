@@ -296,7 +296,15 @@ def main():
                     high=ohlc['high'],
                     low=ohlc['low'],
                     close=ohlc['close'],
-                    name='BTC'
+                    name='BTC',
+                    increasing=dict(
+                        line=dict(color='#FF9999'),  # Light Red for increasing candles
+                        fillcolor='#FF9999'
+                    ),
+                    decreasing=dict(
+                        line=dict(color='#9999FF'),  # Light Blue for decreasing candles
+                        fillcolor='#9999FF'
+                    )
                 )])
                 # BUY/SELL 마커 추가
                 fig = add_buy_sell_markers(fig, df, 'timestamp', 'btc_krw_price', border_color=marker_border_color)
@@ -314,6 +322,7 @@ def main():
                 )
                 st.plotly_chart(fig, use_container_width=True, config=config)
 
+
         with tab2:
             st.subheader("1-Year BTC Price (Daily)")
             ohlc_daily = pyupbit.get_ohlcv("KRW-BTC", interval="day", count=365)
@@ -325,7 +334,15 @@ def main():
                     high=ohlc_daily['high'],
                     low=ohlc_daily['low'],
                     close=ohlc_daily['close'],
-                    name='BTC Daily'
+                    name='BTC Daily',
+                    increasing=dict(
+                        line=dict(color='#FF9999'),  # Light Red for increasing candles
+                        fillcolor='#FF9999'
+                    ),
+                    decreasing=dict(
+                        line=dict(color='#9999FF'),  # Light Blue for decreasing candles
+                        fillcolor='#9999FF'
+                    )
                 )])
                 # BUY/SELL 마커 추가
                 fig = add_buy_sell_markers(fig, df, 'timestamp', 'btc_krw_price', border_color=marker_border_color)
@@ -337,6 +354,7 @@ def main():
                     template=plotly_template  # 사용자 선택에 따른 템플릿 적용
                 )
                 st.plotly_chart(fig, use_container_width=True, config=config)
+
 
         with tab3:
             st.subheader("BTC Balance Over Time")
