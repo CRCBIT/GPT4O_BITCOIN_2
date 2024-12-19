@@ -234,9 +234,7 @@ def main():
             annotation_position="bottom right"
         )
         
-        # BUY/SELL 마커 추가
-        total_assets_fig = add_buy_sell_markers(total_assets_fig, df, 'timestamp', 'total_assets', border_color=marker_border_color)
-        
+
         # 레이아웃 조정
         total_assets_fig.update_layout(
             xaxis=dict(
