@@ -199,7 +199,10 @@ def main():
 
         formatted_btc_price = f"<span style='color:{btc_color}; font-weight:bold;'>{btc_symbol}{current_btc_price:,.0f} KRW</span>"
         st.markdown(f"**Current BTC Price (KRW):** {formatted_btc_price}", unsafe_allow_html=True)
-
+        
+        
+        st.markdown("<h3 style='font-size:24px;'>💵Total Assets</h3>", unsafe_allow_html=True)
+        
         # 총 자산 계산
         df['total_assets'] = df['krw_balance'] + (df['btc_balance'] * df['btc_krw_price'])
         
