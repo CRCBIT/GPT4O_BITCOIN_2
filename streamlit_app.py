@@ -125,7 +125,7 @@ def add_buy_sell_markers(fig, df, x_col, y_col, border_color='black'):
 
 def main():
     # 페이지 자동 리프레시 (60초마다 재실행)
-    st_autorefresh(interval=60000, limit=None, key="auto_refresh")
+    st_autorefresh(interval=80000, limit=None, key="auto_refresh")
 
     # 사용자에게 테마 선택을 요청
     theme = st.sidebar.radio("테마 선택", ("light", "dark"))
@@ -316,7 +316,7 @@ def main():
                     yaxis=dict(title="Price (KRW)"),
                     margin=dict(l=40, r=20, t=30, b=20),
                     dragmode="pan",
-                    height=600,
+                    height=800,
                     template=plotly_template,  # 사용자 선택에 따른 템플릿 적용
                     showlegend=False
                 )
@@ -349,7 +349,7 @@ def main():
                     xaxis=dict(title="Date", rangeslider=dict(visible=True)),
                     yaxis=dict(title="Price (KRW)"),
                     margin=dict(l=40, r=20, t=30, b=20),
-                    height=600,
+                    height=800,
                     template=plotly_template,  # 사용자 선택에 따른 템플릿 적용
                     showlegend=False
                 )
@@ -376,7 +376,7 @@ def main():
             )
             fig.update_layout(
                 margin=dict(l=40, r=20, t=50, b=20),
-                height=600,
+                height=800,
                 yaxis_title="BTC Balance",
                 xaxis=dict(showgrid=False),
                 yaxis=dict(showgrid=True, gridcolor='gray'),
@@ -406,7 +406,7 @@ def main():
             )
             fig.update_layout(
                 margin=dict(l=40, r=20, t=50, b=20),
-                height=600,
+                height=800,
                 yaxis_title="KRW Balance",
                 xaxis=dict(showgrid=False),
                 yaxis=dict(showgrid=True, gridcolor='gray'),
@@ -436,7 +436,7 @@ def main():
             )
             fig.update_layout(
                 margin=dict(l=40, r=20, t=50, b=20),
-                height=600,
+                height=800,
                 yaxis_title="Average Buy Price (KRW)",
                 xaxis=dict(showgrid=False),
                 yaxis=dict(showgrid=True, gridcolor='gray'),
