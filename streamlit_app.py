@@ -168,7 +168,7 @@ def main():
         st.markdown(f"**Current BTC Price (KRW):** {formatted_btc_price}", unsafe_allow_html=True)
 
         df['total_assets'] = df['krw_balance'] + (df['btc_balance'] * df['btc_krw_price'])
-        
+        st.markdown("<h3 style='font-size:24px;'>💰Total Assets</h3>", unsafe_allow_html=True)
         # 모던한 스타일 적용을 위한 그래프 수정
         total_assets_fig = px.line(
             df, 
