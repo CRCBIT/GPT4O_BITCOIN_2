@@ -322,7 +322,6 @@ def main():
                 )
                 st.plotly_chart(fig, use_container_width=True, config=config)
 
-
         with tab2:
             ohlc_daily = pyupbit.get_ohlcv("KRW-BTC", interval="day", count=365)
             if ohlc_daily is not None and not ohlc_daily.empty:
@@ -355,7 +354,6 @@ def main():
                 )
                 st.plotly_chart(fig, use_container_width=True, config=config)
 
-
         # 수정된 부분: tab3, tab4, tab5
         with tab3:
             fig = px.line(
@@ -364,11 +362,15 @@ def main():
                 y='btc_balance', 
                 title="BTC Balance Over Time", 
                 markers=True, 
-                template=plotly_template,
-                name='BTC Balance'  # 트레이스 이름 추가
+                template=plotly_template
+                # Removed 'name' parameter
             )
+            # Set the trace name
+            fig.update_traces(name='BTC Balance')
+
             # BUY/SELL 마커 추가
             fig = add_buy_sell_markers(fig, df, 'timestamp', 'btc_balance', border_color=marker_border_color)
+            
             fig.update_traces(
                 selector=dict(name='BTC Balance'),  # 메인 트레이스만 선택
                 line=dict(color='purple', width=2),  # 선 두께 축소
@@ -394,11 +396,15 @@ def main():
                 y='krw_balance', 
                 title="KRW Balance Over Time", 
                 markers=True, 
-                template=plotly_template,
-                name='KRW Balance'  # 트레이스 이름 추가
+                template=plotly_template
+                # Removed 'name' parameter
             )
+            # Set the trace name
+            fig.update_traces(name='KRW Balance')
+
             # BUY/SELL 마커 추가
             fig = add_buy_sell_markers(fig, df, 'timestamp', 'krw_balance', border_color=marker_border_color)
+            
             fig.update_traces(
                 selector=dict(name='KRW Balance'),  # 메인 트레이스만 선택
                 line=dict(color='orange', width=2),  # 선 색상 변경 및 두께 축소
@@ -424,11 +430,15 @@ def main():
                 y='btc_avg_buy_price', 
                 title="BTC Average Buy Price Over Time", 
                 markers=True, 
-                template=plotly_template,
-                name='BTC Avg Buy Price'  # 트레이스 이름 추가
+                template=plotly_template
+                # Removed 'name' parameter
             )
+            # Set the trace name
+            fig.update_traces(name='BTC Avg Buy Price')
+
             # BUY/SELL 마커 추가
             fig = add_buy_sell_markers(fig, df, 'timestamp', 'btc_avg_buy_price', border_color=marker_border_color)
+            
             fig.update_traces(
                 selector=dict(name='BTC Avg Buy Price'),  # 메인 트레이스만 선택
                 line=dict(color='cyan', width=2),  # 선 색상 변경 및 두께 축소
