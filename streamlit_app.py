@@ -24,21 +24,25 @@ st.markdown(
         padding-top: 1rem;  /* 기본값보다 작은 패딩으로 조정 */
     }
 
-    
     /* 제목 위의 여백 제거 및 텍스트 아래에 밑줄 추가 */
     h1 {
         margin-top: 0;
-        margin-bottom: =10px;
+        margin-bottom: 5px; /* 제목과 섹션 사이 간격 조정 */
         text-decoration: underline; /* 실제 텍스트 아래에 밑줄 추가 */
         text-decoration-color: currentColor; /* 밑줄 색상을 텍스트 색상과 동일하게 설정 */
         text-decoration-thickness: 3px; /* 밑줄 두께 설정 */
         font-size: 30px !important; /* 글자 크기 추가 및 !important로 우선순위 높임 */
     }
 
-
     /* 추가적인 여백 제거 (필요 시) */
     .css-18e3th9 {  /* Streamlit의 내부 클래스 이름; 버전에 따라 다를 수 있음 */
         padding-top: 1rem;
+    }
+
+    /* Total Assets 제목과 그래프 사이 간격 줄이기 */
+    .total-assets-title {
+        font-size: 24px;
+        margin-bottom: 0px; /* 필요에 따라 0px 또는 -5px 등으로 조정 */
     }
     </style>
     """,
@@ -147,6 +151,13 @@ def main():
     # 변경된 레이아웃: 두 개의 컬럼 (col1과 col3)
     col1, col3 = st.columns([1, 3])
 
+    # Plotly Configuration 설정
+    config = {
+        'displayModeBar': False  # 모드바 완전히 숨기기
+        # 또는 특정 버튼만 제거하려면 다음과 같이 설정
+        # 'modeBarButtonsToRemove': ['toImage', 'toggleSpikelines']
+    }
+
     with col1:
         # Performance Metrics 제목 조절
         st.markdown("<h3 style='font-size:24px;'>⚡Performance Metrics</h3>", unsafe_allow_html=True)
@@ -201,7 +212,7 @@ def main():
         st.markdown(f"**Current BTC Price (KRW):** {formatted_btc_price}", unsafe_allow_html=True)
 
         # Total Assets 그래프 생성
-        st.markdown("<h3 style='font-size:24px; margin-bottom: -50px;'>💵Total Assets</h3>", unsafe_allow_html=True)
+        st.markdown("<h3 class='total-assets-title'>💵Total Assets</h3>", unsafe_allow_html=True)
         
         # 총 자산 계산
         df['total_assets'] = df['krw_balance'] + (df['btc_balance'] * df['btc_krw_price'])
@@ -236,7 +247,10 @@ def main():
             annotation_text="Initial Investment",
             annotation_position="bottom right"
         )
-
+        
+        # BUY/SELL 마커 추가
+        total_assets_fig = add_buy_sell_markers(total_assets_fig, df, 'timestamp', 'total_assets', border_color=marker_border_color)
+        
         # 레이아웃 조정
         total_assets_fig.update_layout(
             xaxis=dict(
@@ -249,7 +263,7 @@ def main():
                 tickprefix="₩",
                 range=y_range  # 동적으로 계산된 y축 범위 적용
             ),
-            margin=dict(l=20, r=20, t=50, b=50),
+            margin=dict(l=20, r=20, t=50, b=20),
             height=400,
             hovermode="x unified",
             showlegend=False,
@@ -257,11 +271,12 @@ def main():
             paper_bgcolor='rgba(0,0,0,0)'  # 투명 배경
         )
         
-        st.plotly_chart(total_assets_fig, use_container_width=True)
+        # Plotly 그래프 출력 시 모드바 숨기기
+        st.plotly_chart(total_assets_fig, use_container_width=True, config=config)
 
     with col3:
         # Trade-Related Charts 제목 조절
-        st.markdown("<h3 style='font-size:24px; margin-bottom: -30px;'>📈Trade-Related Charts</h3>", unsafe_allow_html=True)
+        st.markdown("<h3 style='font-size:24px;'>📈Trade-Related Charts</h3>", unsafe_allow_html=True)
         
         # 탭 생성
         tab1, tab2, tab3, tab4, tab5 = st.tabs(["BTC Price Chart", "1-Year BTC Price (Daily)", "BTC Balance", "KRW Balance", "Avg Buy Price"])
@@ -288,12 +303,12 @@ def main():
                         range=[ohlc['index'].iloc[-288], ohlc['index'].iloc[-1]]  # Show last day only
                     ),
                     yaxis=dict(title="Price (KRW)"),
-                    margin=dict(l=40, r=20, t=30, b=50),
+                    margin=dict(l=40, r=20, t=30, b=20),
                     dragmode="pan",
                     height=440,
                     template=plotly_template  # 사용자 선택에 따른 템플릿 적용
                 )
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, use_container_width=True, config=config)
 
         with tab2:
             st.subheader("1-Year BTC Price (Daily)")
@@ -313,11 +328,11 @@ def main():
                 fig.update_layout(
                     xaxis=dict(title="Date", rangeslider=dict(visible=True)),
                     yaxis=dict(title="Price (KRW)"),
-                    margin=dict(l=40, r=20, t=30, b=50),
+                    margin=dict(l=40, r=20, t=30, b=20),
                     height=440,
                     template=plotly_template  # 사용자 선택에 따른 템플릿 적용
                 )
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, use_container_width=True, config=config)
 
         with tab3:
             st.subheader("BTC Balance Over Time")
@@ -325,7 +340,7 @@ def main():
             # BUY/SELL 마커는 Balance 차트에는 필요 없을 수 있으므로 생략
             fig.update_traces(line=dict(color='orange', width=3), marker=dict(size=6, symbol='circle', color='orange'))
             fig.update_layout(
-                margin=dict(l=40, r=20, t=50, b=50),
+                margin=dict(l=40, r=20, t=50, b=20),
                 height=440,
                 yaxis_title="BTC Balance",
                 xaxis=dict(showgrid=False),
@@ -335,7 +350,7 @@ def main():
                 hovermode="x unified",
                 showlegend=False
             )
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, use_container_width=True, config=config)
 
         with tab4:
             st.subheader("KRW Balance Over Time")
@@ -343,7 +358,7 @@ def main():
             # BUY/SELL 마커는 Balance 차트에는 필요 없을 수 있으므로 생략
             fig.update_traces(line=dict(color='purple', width=3), marker=dict(size=6, symbol='circle', color='purple'))
             fig.update_layout(
-                margin=dict(l=40, r=20, t=50, b=50),
+                margin=dict(l=40, r=20, t=50, b=20),
                 height=440,
                 yaxis_title="KRW Balance",
                 xaxis=dict(showgrid=False),
@@ -353,7 +368,7 @@ def main():
                 hovermode="x unified",
                 showlegend=False
             )
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, use_container_width=True, config=config)
 
         with tab5:
             st.subheader("BTC Average Buy Price Over Time")
@@ -361,7 +376,7 @@ def main():
             # BUY/SELL 마커는 Avg Buy Price 차트에는 필요 없을 수 있으므로 생략
             fig.update_traces(line=dict(color='cyan', width=3), marker=dict(size=6, symbol='circle', color='cyan'))
             fig.update_layout(
-                margin=dict(l=40, r=20, t=50, b=50),
+                margin=dict(l=40, r=20, t=50, b=20),
                 height=440,
                 yaxis_title="Average Buy Price (KRW)",
                 xaxis=dict(showgrid=False),
@@ -371,7 +386,7 @@ def main():
                 hovermode="x unified",
                 showlegend=False
             )
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, use_container_width=True, config=config)
 
     # 하단: 거래내역 표
     with st.container():
