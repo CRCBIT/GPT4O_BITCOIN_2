@@ -31,7 +31,7 @@ st.markdown(
         text-decoration: underline; /* 실제 텍스트 아래에 밑줄 추가 */
         text-decoration-color: currentColor; /* 밑줄 색상을 텍스트 색상과 동일하게 설정 */
         text-decoration-thickness: 2px; /* 밑줄 두께 설정 */
-        font-size: 26px !important; /* 글자 크기 약간 축소 */
+        font-size: 30px !important; /* 글자 크기 약간 축소 */
     }
 
     /* 모든 h3 요소에 일관된 스타일 적용 */
