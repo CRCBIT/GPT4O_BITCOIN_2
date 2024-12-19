@@ -115,7 +115,7 @@ def main():
     col1, col3 = st.columns([1, 3])
 
     with col1:
-        st.header("⚡Performance Metrics")
+        st.markdown("<h3 style='font-size:24px;'>⚡Performance Metrics</h3>", unsafe_allow_html=True)
         
         # Current Profit Rate - 기존 코드 유지
         if profit_rate > 0:
@@ -217,7 +217,7 @@ def main():
         st.plotly_chart(total_assets_fig, use_container_width=True)
 
     with col3:
-        st.header("📈Trade-Related Charts")
+        st.markdown("<h3 style='font-size:24px;'>📈Trade-Related Charts</h3>", unsafe_allow_html=True)
         tab1, tab2, tab3, tab4, tab5 = st.tabs(["BTC Price Chart", "1-Year BTC Price (Daily)", "BTC Balance", "KRW Balance", "Avg Buy Price"])
 
         with tab1:
