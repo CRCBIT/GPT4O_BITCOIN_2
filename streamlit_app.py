@@ -64,11 +64,17 @@ def calculate_current_investment(df):
     current_btc_price = pyupbit.get_current_price("KRW-BTC")
     return current_krw_balance + (current_btc_balance * current_btc_price)
 
-def add_buy_sell_markers(fig, df, x_col, y_col):
-    """Add buy and sell markers to a Plotly figure."""
+def add_buy_sell_markers(fig, df, x_col, y_col, theme='light'):
+    """Add buy and sell markers to a Plotly figure with dynamic border colors based on theme."""
     buy_points = df[df['decision'] == 'buy']
     sell_points = df[df['decision'] == 'sell']
-
+    
+    # 테마에 따른 테두리 색상 설정
+    if theme == 'dark':
+        border_color = 'white'
+    else:
+        border_color = 'black'
+    
     if not buy_points.empty:
         fig.add_trace(go.Scatter(
             x=buy_points[x_col],
@@ -78,7 +84,7 @@ def add_buy_sell_markers(fig, df, x_col, y_col):
                 size=12,
                 color='red',
                 symbol='triangle-up',
-                line=dict(width=2, color='black')  # 테두리 추가
+                line=dict(width=2, color=border_color)  # 테두리 색상 동적 변경
             ),
             name='Buy',
             hovertemplate="<b>Buy</b><br>Time: %{x}<br>Price: %{y:,} KRW"
@@ -93,7 +99,7 @@ def add_buy_sell_markers(fig, df, x_col, y_col):
                 size=12,
                 color='blue',
                 symbol='triangle-down',
-                line=dict(width=2, color='black')  # 테두리 추가
+                line=dict(width=2, color=border_color)  # 테두리 색상 동적 변경
             ),
             name='Sell',
             hovertemplate="<b>Sell</b><br>Time: %{x}<br>Price: %{y:,} KRW"
@@ -101,6 +107,12 @@ def add_buy_sell_markers(fig, df, x_col, y_col):
 
     return fig
 
+
+def get_current_theme():
+    if 'theme' in st.session_state:
+        return st.session_state.theme
+    return 'light'  # 기본값 설정
+    
 def main():
     # 페이지 자동 리프레시 (60초마다 재실행)
     st_autorefresh(interval=60000, limit=None, key="auto_refresh")
