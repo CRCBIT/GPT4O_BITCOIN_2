@@ -208,7 +208,7 @@ def main():
         st.markdown(f"**Current BTC Price (KRW):** {formatted_btc_price}", unsafe_allow_html=True)
 
         # Total Assets 그래프 생성
-        st.markdown("<h3 class='total-assets-title,  h3 style= margin-bottom: -100px'>💵Total Assets</h3>", unsafe_allow_html=True)
+        st.markdown("<h3 class='total-assets-title,  h3 style= margin-bottom: -500px'>💵Total Assets</h3>", unsafe_allow_html=True)
         
         # 총 자산 계산
         df['total_assets'] = df['krw_balance'] + (df['btc_balance'] * df['btc_krw_price'])
@@ -476,11 +476,6 @@ st.markdown(
         padding-top: 1rem;
     }
 
-    /* Total Assets 제목과 그래프 사이 간격 줄이기 */
-    .total-assets-title {
-        font-size: 24px;
-        margin-bottom: -100px; /* 필요에 따라 0px 또는 -5px 등으로 조정 */
-    }
     </style>
     """,
     unsafe_allow_html=True
