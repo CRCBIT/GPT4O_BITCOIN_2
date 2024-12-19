@@ -317,7 +317,7 @@ def main():
                     margin=dict(l=40, r=20, t=30, b=20),
                     dragmode="pan",
                     height=410,
-                    template=plotly_template  # 사용자 선택에 따른 템플릿 적용
+                    template=plotly_template,  # 사용자 선택에 따른 템플릿 적용
                     showlegend=False
                 )
                 st.plotly_chart(fig, use_container_width=True, config=config)
@@ -350,7 +350,7 @@ def main():
                     yaxis=dict(title="Price (KRW)"),
                     margin=dict(l=40, r=20, t=30, b=20),
                     height=410,
-                    template=plotly_template  # 사용자 선택에 따른 템플릿 적용
+                    template=plotly_template,  # 사용자 선택에 따른 템플릿 적용
                     showlegend=False
                 )
                 st.plotly_chart(fig, use_container_width=True, config=config)
