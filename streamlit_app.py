@@ -203,6 +203,12 @@ def main():
         # 총 자산 계산
         df['total_assets'] = df['krw_balance'] + (df['btc_balance'] * df['btc_krw_price'])
         
+        # y축 범위 계산 (패딩 포함)
+        y_min = df['total_assets'].min()
+        y_max = df['total_assets'].max()
+        padding = (y_max - y_min) * 0.05  # 5% 패딩
+        y_range = [y_min - padding, y_max + padding]
+
         # Total Assets 영역 그래프 생성
         total_assets_fig = px.area(
             df, 
@@ -228,6 +234,8 @@ def main():
             annotation_position="bottom right"
         )
         
+        # BUY/SELL 마커 추가
+        total_assets_fig = add_buy_sell_markers(total_assets_fig, df, 'timestamp', 'total_assets', border_color=marker_border_color)
         
         # 레이아웃 조정
         total_assets_fig.update_layout(
@@ -236,7 +244,11 @@ def main():
                 rangeslider=dict(visible=True),
                 type="date"
             ),
-            yaxis=dict(title="Total Assets (KRW)", tickprefix="₩"),
+            yaxis=dict(
+                title="Total Assets (KRW)", 
+                tickprefix="₩",
+                range=y_range  # 동적으로 계산된 y축 범위 적용
+            ),
             margin=dict(l=20, r=20, t=50, b=20),
             height=350,
             hovermode="x unified",
