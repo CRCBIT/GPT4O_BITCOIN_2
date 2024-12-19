@@ -380,10 +380,9 @@ def main():
             
             fig = px.line(df, x='timestamp', y='krw_balance', title="KRW Balance Over Time", markers=True, template=plotly_template)
             # BUY/SELL 마커 추가
-            fig = add_buy_sell_markers(fig, df, 'timestamp', 'krw_balance', border_color=marker_border_color)
-            
+                       
             fig.update_traces(line=dict(color='purple', width=3), marker=dict(size=6, symbol='circle', color='purple'))
-            fig = add_buy_sell_markers(fig, df, 'timestamp', 'btc_balance', border_color=marker_border_color)
+            fig = add_buy_sell_markers(fig, df, 'timestamp', 'krw_balance', border_color=marker_border_color)
 
             fig.update_layout(
                 margin=dict(l=40, r=20, t=50, b=20),
@@ -404,7 +403,7 @@ def main():
             # BUY/SELL 마커 추가
             
             fig.update_traces(line=dict(color='cyan', width=3), marker=dict(size=6, symbol='circle', color='purple'))
-            fig = add_buy_sell_markers(fig, df, 'timestamp', 'btc_balance', border_color=marker_border_color)
+            fig = add_buy_sell_markers(fig, df, 'timestamp', 'btc_avg_buy_price', border_color=marker_border_color)
             fig.update_layout(
                 margin=dict(l=40, r=20, t=50, b=20),
                 height=410,
