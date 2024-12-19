@@ -42,7 +42,7 @@ st.markdown(
     /* 최소화된 마진 및 패딩 */
     h3 {
         margin-top: 0.5rem;
-        margin-bottom: -1rem;
+        margin-bottom: -100rem;
     }
 
     .stPlotlyChart {
