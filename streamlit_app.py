@@ -314,7 +314,7 @@ def main():
                         range=[ohlc['index'].iloc[-288], ohlc['index'].iloc[-1]]  # Show last day only
                     ),
                     yaxis=dict(title="Price (KRW)"),
-                    margin=dict(l=40, r=20, t=30, b=0),
+                    margin=dict(l=40, r=20, t=0, b=0),
                     dragmode="pan",
                     height=1000,
                     template=plotly_template,  # 사용자 선택에 따른 템플릿 적용
@@ -348,7 +348,7 @@ def main():
                 fig.update_layout(
                     xaxis=dict(title="Date", rangeslider=dict(visible=True)),
                     yaxis=dict(title="Price (KRW)"),
-                    margin=dict(l=40, r=20, t=30, b=0),
+                    margin=dict(l=40, r=20, t=0, b=0),
                     height=1000,
                     template=plotly_template,  # 사용자 선택에 따른 템플릿 적용
                     showlegend=False
@@ -375,7 +375,7 @@ def main():
                 marker=dict(size=6, symbol='circle', color='purple')  # 마커 색상 수정
             )
             fig.update_layout(
-                margin=dict(l=40, r=20, t=50, b=0),
+                margin=dict(l=40, r=20, t=0, b=0),
                 height=1000,
                 yaxis_title="BTC Balance",
                 xaxis=dict(showgrid=False),
@@ -405,7 +405,7 @@ def main():
                 marker=dict(size=6, symbol='circle', color='purple')  # 마커 색상 수정
             )
             fig.update_layout(
-                margin=dict(l=40, r=20, t=50, b=0),
+                margin=dict(l=40, r=20, t=0, b=0),
                 height=1000,
                 yaxis_title="KRW Balance",
                 xaxis=dict(showgrid=False),
@@ -435,7 +435,7 @@ def main():
                 marker=dict(size=6, symbol='circle', color='purple')  # 마커 색상 수정
             )
             fig.update_layout(
-                margin=dict(l=40, r=20, t=50, b=0),
+                margin=dict(l=40, r=20, t=0, b=0),
                 height=1000,
                 yaxis_title="Average Buy Price (KRW)",
                 xaxis=dict(showgrid=False),
