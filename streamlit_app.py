@@ -141,8 +141,18 @@ def main():
         formatted_assets = f"<span style='color:{assets_color}; font-weight:bold;'>{assets_symbol}{current_investment:,.0f} KRW</span>"
         st.markdown(f"**Total Assets (KRW):** {formatted_assets}", unsafe_allow_html=True)
         
-        # Current BTC Price (KRW) - 커스텀 스타일링 추가
-        previous_btc_price = df.iloc[-2]['btc_krw_price'] if len(df) > 1 else df.iloc[-1]['btc_krw_price']
+        # Current BTC Price (KRW) - 하루 전 데이터로 커스텀 스타일링 추가
+        latest_time = df.iloc[-1]['timestamp']
+        one_day_ago_time = latest_time - pd.Timedelta(days=1)
+        
+        # 하루 전 시간에 가장 가까운 데이터를 찾기
+        previous_data = df[df['timestamp'] <= one_day_ago_time]
+        
+        if not previous_data.empty:
+            previous_btc_price = previous_data.iloc[-1]['btc_krw_price']
+        else:
+            previous_btc_price = df.iloc[-1]['btc_krw_price']  # 하루 전 데이터가 없으면 현재 가격 사용
+        
         if current_btc_price > previous_btc_price:
             btc_color = "red"
             btc_symbol = "↑"
@@ -152,6 +162,7 @@ def main():
         else:
             btc_color = "black"
             btc_symbol = ""
+
         
         formatted_btc_price = f"<span style='color:{btc_color}; font-weight:bold;'>{btc_symbol}{current_btc_price:,.0f} KRW</span>"
         st.markdown(f"**Current BTC Price (KRW):** {formatted_btc_price}", unsafe_allow_html=True)
