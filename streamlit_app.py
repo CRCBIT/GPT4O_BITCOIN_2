@@ -212,7 +212,7 @@ def main():
         st.markdown(f"**Current BTC Price (KRW):** {formatted_btc_price}", unsafe_allow_html=True)
 
         # Total Assets 그래프 생성
-        st.markdown("<h3 class='total-assets-title'>💵Total Assets</h3>", unsafe_allow_html=True)
+        st.markdown("<h3 class='total-assets-title', margin-bottom=-50px>💵Total Assets</h3>", unsafe_allow_html=True)
         
         # 총 자산 계산
         df['total_assets'] = df['krw_balance'] + (df['btc_balance'] * df['btc_krw_price'])
