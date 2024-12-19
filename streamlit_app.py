@@ -124,9 +124,6 @@ def main():
     except:
         current_theme = 'light'  # 기본값 설정
 
-    # 디버그: 현재 테마 출력
-    st.write(f"현재 테마: {current_theme}")
-
     # Plotly 템플릿 설정 based on Streamlit theme
     if current_theme == 'dark':
         plotly_template = 'plotly_dark'
