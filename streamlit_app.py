@@ -373,8 +373,8 @@ def main():
             
             fig.update_traces(
                 selector=dict(name='BTC Balance'),  # 메인 트레이스만 선택
-                line=dict(color='purple', width=2),  # 선 두께 축소
-                marker=dict(size=4, symbol='circle', color='purple')  # 마커 크기 축소
+                line=dict(color='black', width=2),  # 선 두께 축소
+                marker=dict(size=4, symbol='circle', color='black')  # 마커 크기 축소
             )
             fig.update_layout(
                 margin=dict(l=40, r=20, t=30, b=20),  # 상단 마진 약간 추가
@@ -407,8 +407,8 @@ def main():
             
             fig.update_traces(
                 selector=dict(name='KRW Balance'),  # 메인 트레이스만 선택
-                line=dict(color='orange', width=2),  # 선 색상 변경 및 두께 축소
-                marker=dict(size=4, symbol='circle', color='orange')  # 마커 크기 축소
+                line=dict(color='black', width=2),  # 선 색상 변경 및 두께 축소
+                marker=dict(size=4, symbol='circle', color='black')  # 마커 크기 축소
             )
             fig.update_layout(
                 margin=dict(l=40, r=20, t=30, b=20),  # 상단 마진 약간 추가
@@ -441,8 +441,8 @@ def main():
             
             fig.update_traces(
                 selector=dict(name='BTC Avg Buy Price'),  # 메인 트레이스만 선택
-                line=dict(color='cyan', width=2),  # 선 색상 변경 및 두께 축소
-                marker=dict(size=4, symbol='circle', color='cyan')  # 마커 크기 축소
+                line=dict(color='black', width=2),  # 선 색상 변경 및 두께 축소
+                marker=dict(size=4, symbol='circle', color='black')  # 마커 크기 축소
             )
             fig.update_layout(
                 margin=dict(l=40, r=20, t=30, b=20),  # 상단 마진 약간 추가
