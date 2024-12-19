@@ -246,7 +246,7 @@ def main():
                 tickprefix="₩",
                 range=y_range  # 동적으로 계산된 y축 범위 적용
             ),
-            margin=dict(l=20, r=20, t=50, b=20),
+            margin=dict(l=20, r=20, t=50, b=30),
             height=350,
             hovermode="x unified",
             showlegend=False,
@@ -285,7 +285,7 @@ def main():
                         range=[ohlc['index'].iloc[-288], ohlc['index'].iloc[-1]]  # Show last day only
                     ),
                     yaxis=dict(title="Price (KRW)"),
-                    margin=dict(l=40, r=20, t=30, b=20),
+                    margin=dict(l=40, r=20, t=30, b=30),
                     dragmode="pan",
                     height=400,
                     template=plotly_template  # 사용자 선택에 따른 템플릿 적용
@@ -310,7 +310,7 @@ def main():
                 fig.update_layout(
                     xaxis=dict(title="Date", rangeslider=dict(visible=True)),
                     yaxis=dict(title="Price (KRW)"),
-                    margin=dict(l=40, r=20, t=30, b=20),
+                    margin=dict(l=40, r=20, t=30, b=30),
                     height=400,
                     template=plotly_template  # 사용자 선택에 따른 템플릿 적용
                 )
@@ -322,7 +322,7 @@ def main():
             # BUY/SELL 마커는 Balance 차트에는 필요 없을 수 있으므로 생략
             fig.update_traces(line=dict(color='orange', width=3), marker=dict(size=6, symbol='circle', color='orange'))
             fig.update_layout(
-                margin=dict(l=40, r=20, t=50, b=20),
+                margin=dict(l=40, r=20, t=50, b=30),
                 height=400,
                 yaxis_title="BTC Balance",
                 xaxis=dict(showgrid=False),
@@ -340,7 +340,7 @@ def main():
             # BUY/SELL 마커는 Balance 차트에는 필요 없을 수 있으므로 생략
             fig.update_traces(line=dict(color='purple', width=3), marker=dict(size=6, symbol='circle', color='purple'))
             fig.update_layout(
-                margin=dict(l=40, r=20, t=50, b=20),
+                margin=dict(l=40, r=20, t=50, b=30),
                 height=400,
                 yaxis_title="KRW Balance",
                 xaxis=dict(showgrid=False),
@@ -358,7 +358,7 @@ def main():
             # BUY/SELL 마커는 Avg Buy Price 차트에는 필요 없을 수 있으므로 생략
             fig.update_traces(line=dict(color='cyan', width=3), marker=dict(size=6, symbol='circle', color='cyan'))
             fig.update_layout(
-                margin=dict(l=40, r=20, t=50, b=20),
+                margin=dict(l=40, r=20, t=50, b=30),
                 height=400,
                 yaxis_title="Average Buy Price (KRW)",
                 xaxis=dict(showgrid=False),
