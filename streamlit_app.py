@@ -10,7 +10,7 @@ from streamlit_autorefresh import st_autorefresh
 # 항상 wide 모드 활성화, 제목 및 사이드바 설정
 st.set_page_config(
     layout="wide",
-    page_title="AI BTC Trading Dashboard",
+    page_title="AI BTC DASHBOARD",
     page_icon="📈",
     initial_sidebar_state="collapsed"
 )
