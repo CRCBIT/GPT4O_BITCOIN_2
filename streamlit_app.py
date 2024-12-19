@@ -9,7 +9,7 @@ from streamlit_autorefresh import st_autorefresh
 # 항상 wide 모드 활성화, 제목 및 사이드바 설정
 st.set_page_config(
     layout="wide",
-    page_title="Bitcoin Dashboard",
+    page_title="AI Bitcoin Dashboard",
     page_icon="📈",
     initial_sidebar_state="collapsed"
 )
@@ -29,7 +29,7 @@ st.markdown(
         text-decoration: underline; /* 실제 텍스트 아래에 밑줄 추가 */
         text-decoration-color: currentColor; /* 밑줄 색상을 텍스트 색상과 동일하게 설정 */
         text-decoration-thickness: 3px; /* 밑줄 두께 설정 */
-        font-size: 36px; /* 글자 크기 조절*/
+        font-size: 30px; /* 글자 크기 조절*/
     }
 
     /* 추가적인 여백 제거 (필요 시) */
@@ -109,7 +109,7 @@ def main():
     current_btc_price = pyupbit.get_current_price("KRW-BTC")
 
     # 레이아웃 구성
-    st.title("Bitcoin Trading Dashboard")
+    st.title("AI Bitcoin Trading Dashboard")
 
     # 상단: 수익률, 총 자산 및 차트 정보
     # 변경된 레이아웃: 두 개의 컬럼 (col1과 col3)
