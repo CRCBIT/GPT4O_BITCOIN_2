@@ -363,7 +363,7 @@ def main():
             
             # BUY/SELL 마커 추가
             fig = add_buy_sell_markers(fig, df, 'timestamp', 'btc_balance', border_color=marker_border_color)
-            fig.update_traces(line=dict(color='pueple', width=3), marker=dict(size=6, symbol='circle', color='black'))
+            fig.update_traces(line=dict(color='purple', width=3), marker=dict(size=6, symbol='circle', color='black'))
             fig.update_layout(
                 margin=dict(l=40, r=20, t=50, b=20),
                 height=410,
