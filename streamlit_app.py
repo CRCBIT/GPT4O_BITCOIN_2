@@ -190,7 +190,7 @@ def main():
         # 레이아웃 조정
         total_assets_fig.update_layout(
             margin=dict(l=20, r=20, t=50, b=20),
-            height=200,  # 사용자 요청에 따라 높이 조정
+            height=400,  # 사용자 요청에 따라 높이 조정
             xaxis_title=None,
             yaxis_title="Total Assets (KRW)",
             xaxis=dict(
