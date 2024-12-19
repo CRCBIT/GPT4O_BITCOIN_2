@@ -207,12 +207,15 @@ def main():
             df, 
             x='timestamp', 
             y='total_assets',
-            title='Total Assets',
             markers=True,
             template=plotly_template,  # 사용자 선택에 따른 템플릿 적용
-            line_shape='spline',     # 부드러운 라인
             hover_data={'total_assets': ':.0f'}  # 호버 데이터 포맷 지정
         )
+        
+        # 라인 색상과 마커 스타일 커스터마이징
+        total_assets_fig.update_traces(
+            line=dict(color=dark blue, width=3),
+            marker=dict(size=6, symbol='circle', color=total_assets_color)
 
   
 
