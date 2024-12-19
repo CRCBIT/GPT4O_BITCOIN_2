@@ -356,14 +356,24 @@ def main():
                 st.plotly_chart(fig, use_container_width=True, config=config)
 
 
+        # 수정된 부분: tab3, tab4, tab5
         with tab3:
-            
-            fig = px.line(df, x='timestamp', y='btc_balance', title="BTC Balance Over Time", markers=True, template=plotly_template)
-            # BUY/SELL 마커는 Balance 차트에는 필요 없을 수 있으므로 생략
-            
+            fig = px.line(
+                df, 
+                x='timestamp', 
+                y='btc_balance', 
+                title="BTC Balance Over Time", 
+                markers=True, 
+                template=plotly_template,
+                name='BTC Balance'  # 트레이스 이름 추가
+            )
             # BUY/SELL 마커 추가
             fig = add_buy_sell_markers(fig, df, 'timestamp', 'btc_balance', border_color=marker_border_color)
-            fig.update_traces(line=dict(color='purple', width=3), marker=dict(size=6, symbol='circle', color='black'))
+            fig.update_traces(
+                selector=dict(name='BTC Balance'),  # 메인 트레이스만 선택
+                line=dict(color='purple', width=3),  # 선 색상 수정
+                marker=dict(size=6, symbol='circle', color='purple')  # 마커 색상 수정
+            )
             fig.update_layout(
                 margin=dict(l=40, r=20, t=50, b=20),
                 height=410,
@@ -378,13 +388,22 @@ def main():
             st.plotly_chart(fig, use_container_width=True, config=config)
 
         with tab4:
-            
-            fig = px.line(df, x='timestamp', y='krw_balance', title="KRW Balance Over Time", markers=True, template=plotly_template)
+            fig = px.line(
+                df, 
+                x='timestamp', 
+                y='krw_balance', 
+                title="KRW Balance Over Time", 
+                markers=True, 
+                template=plotly_template,
+                name='KRW Balance'  # 트레이스 이름 추가
+            )
             # BUY/SELL 마커 추가
-                       
-            
             fig = add_buy_sell_markers(fig, df, 'timestamp', 'krw_balance', border_color=marker_border_color)
-            fig.update_traces(line=dict(color='purple', width=3), marker=dict(size=6, symbol='circle', color='black'))
+            fig.update_traces(
+                selector=dict(name='KRW Balance'),  # 메인 트레이스만 선택
+                line=dict(color='purple', width=3),  # 선 색상 수정
+                marker=dict(size=6, symbol='circle', color='purple')  # 마커 색상 수정
+            )
             fig.update_layout(
                 margin=dict(l=40, r=20, t=50, b=20),
                 height=410,
@@ -399,13 +418,22 @@ def main():
             st.plotly_chart(fig, use_container_width=True, config=config)
 
         with tab5:
-            
-            fig = px.line(df, x='timestamp', y='btc_avg_buy_price', title="BTC Average Buy Price Over Time", markers=True, template=plotly_template)
+            fig = px.line(
+                df, 
+                x='timestamp', 
+                y='btc_avg_buy_price', 
+                title="BTC Average Buy Price Over Time", 
+                markers=True, 
+                template=plotly_template,
+                name='BTC Avg Buy Price'  # 트레이스 이름 추가
+            )
             # BUY/SELL 마커 추가
-            
-            
             fig = add_buy_sell_markers(fig, df, 'timestamp', 'btc_avg_buy_price', border_color=marker_border_color)
-            fig.update_traces(line=dict(color='purple', width=3), marker=dict(size=6, symbol='circle', color='black'))
+            fig.update_traces(
+                selector=dict(name='BTC Avg Buy Price'),  # 메인 트레이스만 선택
+                line=dict(color='purple', width=3),  # 선 색상 수정
+                marker=dict(size=6, symbol='circle', color='purple')  # 마커 색상 수정
+            )
             fig.update_layout(
                 margin=dict(l=40, r=20, t=50, b=20),
                 height=410,
