@@ -24,14 +24,16 @@ st.markdown(
         padding-top: 1rem;  /* 기본값보다 작은 패딩으로 조정 */
     }
 
+    
     /* 제목 위의 여백 제거 및 텍스트 아래에 밑줄 추가 */
     h1 {
         margin-top: 0;
         text-decoration: underline; /* 실제 텍스트 아래에 밑줄 추가 */
         text-decoration-color: currentColor; /* 밑줄 색상을 텍스트 색상과 동일하게 설정 */
         text-decoration-thickness: 3px; /* 밑줄 두께 설정 */
-        font-size: 30px; /* 글자 크기 추가 */
+        font-size: 30px !important; /* 글자 크기 추가 및 !important로 우선순위 높임 */
     }
+
 
     /* 추가적인 여백 제거 (필요 시) */
     .css-18e3th9 {  /* Streamlit의 내부 클래스 이름; 버전에 따라 다를 수 있음 */
