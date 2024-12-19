@@ -30,15 +30,15 @@ st.markdown(
         margin-bottom: 0.5rem; /* 제목과 섹션 사이 간격 조정 */
         text-decoration: underline; /* 실제 텍스트 아래에 밑줄 추가 */
         text-decoration-color: currentColor; /* 밑줄 색상을 텍스트 색상과 동일하게 설정 */
-        text-decoration-thickness: 3px; /* 밑줄 두께 설정 */
-        font-size: 30px !important; /* 글자 크기 추가 및 !important로 우선순위 높임 */
+        text-decoration-thickness: 2px; /* 밑줄 두께 설정 */
+        font-size: 26px !important; /* 글자 크기 약간 축소 */
     }
 
     /* 모든 h3 요소에 일관된 스타일 적용 */
     h3 {
         margin-top: 0.5rem; /* 상단 여백 조정 */
         margin-bottom: 0.5rem; /* 하단 여백 조정 */
-        font-size: 24px; /* 일관된 글자 크기 */
+        font-size: 20px; /* 일관된 글자 크기 약간 축소 */
     }
 
     /* 추가적인 여백 제거 (필요 시) */
@@ -97,10 +97,10 @@ def add_buy_sell_markers(fig, df, x_col, y_col, border_color='black'):
             y=buy_points[y_col],
             mode='markers',
             marker=dict(
-                size=12,
+                size=10,  # 마커 크기 약간 축소
                 color='red',
                 symbol='triangle-up',
-                line=dict(width=2, color=border_color)  # 테두리 추가
+                line=dict(width=1.5, color=border_color)  # 테두리 두께 조정
             ),
             name='Buy',
             hovertemplate="<b>Buy</b><br>Time: %{x}<br>Price: %{y:,} KRW"
@@ -112,10 +112,10 @@ def add_buy_sell_markers(fig, df, x_col, y_col, border_color='black'):
             y=sell_points[y_col],
             mode='markers',
             marker=dict(
-                size=12,
+                size=10,  # 마커 크기 약간 축소
                 color='blue',
                 symbol='triangle-down',
-                line=dict(width=2, color=border_color)  # 테두리 추가
+                line=dict(width=1.5, color=border_color)  # 테두리 두께 조정
             ),
             name='Sell',
             hovertemplate="<b>Sell</b><br>Time: %{x}<br>Price: %{y:,} KRW"
@@ -124,7 +124,7 @@ def add_buy_sell_markers(fig, df, x_col, y_col, border_color='black'):
     return fig
 
 def main():
-    # 페이지 자동 리프레시 (60초마다 재실행)
+    # 페이지 자동 리프레시 (80초마다 재실행)
     st_autorefresh(interval=80000, limit=None, key="auto_refresh")
 
     # 사용자에게 테마 선택을 요청
@@ -241,9 +241,9 @@ def main():
         
         # 색상과 마커 스타일 커스터마이징
         total_assets_fig.update_traces(
-            line=dict(color='green', width=3),
+            line=dict(color='green', width=2),  # 선 두께 축소
             fillcolor='rgba(0, 128, 0, 0.3)',  # 반투명 녹색으로 채움
-            marker=dict(size=6, symbol='circle', color='green')
+            marker=dict(size=4, symbol='circle', color='green')  # 마커 크기 축소
         )
         
         # 초기 투자 기준선 추가
@@ -268,7 +268,7 @@ def main():
                 range=y_range  # 동적으로 계산된 y축 범위 적용
             ),
             margin=dict(l=20, r=20, t=0, b=50),
-            height=360,
+            height=300,  # 차트 높이 축소
             hovermode="x unified",
             showlegend=False,
             plot_bgcolor='rgba(0,0,0,0)',  # 투명 배경
@@ -314,9 +314,9 @@ def main():
                         range=[ohlc['index'].iloc[-288], ohlc['index'].iloc[-1]]  # Show last day only
                     ),
                     yaxis=dict(title="Price (KRW)"),
-                    margin=dict(l=40, r=20, t=30, b=0),
+                    margin=dict(l=40, r=20, t=0, b=0),
                     dragmode="pan",
-                    height=1000,
+                    height=600,  # 차트 높이 축소
                     template=plotly_template,  # 사용자 선택에 따른 템플릿 적용
                     showlegend=False
                 )
@@ -348,8 +348,8 @@ def main():
                 fig.update_layout(
                     xaxis=dict(title="Date", rangeslider=dict(visible=True)),
                     yaxis=dict(title="Price (KRW)"),
-                    margin=dict(l=40, r=20, t=30, b=0),
-                    height=1000,
+                    margin=dict(l=40, r=20, t=0, b=0),
+                    height=600,  # 차트 높이 축소
                     template=plotly_template,  # 사용자 선택에 따른 템플릿 적용
                     showlegend=False
                 )
@@ -371,12 +371,12 @@ def main():
             fig = add_buy_sell_markers(fig, df, 'timestamp', 'btc_balance', border_color=marker_border_color)
             fig.update_traces(
                 selector=dict(name='BTC Balance'),  # 메인 트레이스만 선택
-                line=dict(color='purple', width=3),  # 선 색상 수정
-                marker=dict(size=6, symbol='circle', color='purple')  # 마커 색상 수정
+                line=dict(color='purple', width=2),  # 선 두께 축소
+                marker=dict(size=4, symbol='circle', color='purple')  # 마커 크기 축소
             )
             fig.update_layout(
-                margin=dict(l=40, r=20, t=50, b=0),
-                height=1000,
+                margin=dict(l=40, r=20, t=30, b=20),  # 상단 마진 약간 추가
+                height=600,  # 차트 높이 축소
                 yaxis_title="BTC Balance",
                 xaxis=dict(showgrid=False),
                 yaxis=dict(showgrid=True, gridcolor='gray'),
@@ -401,12 +401,12 @@ def main():
             fig = add_buy_sell_markers(fig, df, 'timestamp', 'krw_balance', border_color=marker_border_color)
             fig.update_traces(
                 selector=dict(name='KRW Balance'),  # 메인 트레이스만 선택
-                line=dict(color='purple', width=3),  # 선 색상 수정
-                marker=dict(size=6, symbol='circle', color='purple')  # 마커 색상 수정
+                line=dict(color='orange', width=2),  # 선 색상 변경 및 두께 축소
+                marker=dict(size=4, symbol='circle', color='orange')  # 마커 크기 축소
             )
             fig.update_layout(
-                margin=dict(l=40, r=20, t=50, b=0),
-                height=1000,
+                margin=dict(l=40, r=20, t=30, b=20),  # 상단 마진 약간 추가
+                height=600,  # 차트 높이 축소
                 yaxis_title="KRW Balance",
                 xaxis=dict(showgrid=False),
                 yaxis=dict(showgrid=True, gridcolor='gray'),
@@ -431,12 +431,12 @@ def main():
             fig = add_buy_sell_markers(fig, df, 'timestamp', 'btc_avg_buy_price', border_color=marker_border_color)
             fig.update_traces(
                 selector=dict(name='BTC Avg Buy Price'),  # 메인 트레이스만 선택
-                line=dict(color='purple', width=3),  # 선 색상 수정
-                marker=dict(size=6, symbol='circle', color='purple')  # 마커 색상 수정
+                line=dict(color='cyan', width=2),  # 선 색상 변경 및 두께 축소
+                marker=dict(size=4, symbol='circle', color='cyan')  # 마커 크기 축소
             )
             fig.update_layout(
-                margin=dict(l=40, r=20, t=50, b=0),
-                height=1000,
+                margin=dict(l=40, r=20, t=30, b=20),  # 상단 마진 약간 추가
+                height=600,  # 차트 높이 축소
                 yaxis_title="Average Buy Price (KRW)",
                 xaxis=dict(showgrid=False),
                 yaxis=dict(showgrid=True, gridcolor='gray'),
