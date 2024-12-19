@@ -74,7 +74,12 @@ def add_buy_sell_markers(fig, df, x_col, y_col):
             x=buy_points[x_col],
             y=buy_points[y_col],
             mode='markers',
-            marker=dict(size=12, color='red', symbol='triangle-up'),
+            marker=dict(
+                size=12,
+                color='red',
+                symbol='triangle-up',
+                line=dict(width=2, color='black')  # 테두리 추가
+            ),
             name='Buy',
             hovertemplate="<b>Buy</b><br>Time: %{x}<br>Price: %{y:,} KRW"
         ))
@@ -84,7 +89,12 @@ def add_buy_sell_markers(fig, df, x_col, y_col):
             x=sell_points[x_col],
             y=sell_points[y_col],
             mode='markers',
-            marker=dict(size=12, color='blue', symbol='triangle-down'),
+            marker=dict(
+                size=12,
+                color='blue',
+                symbol='triangle-down',
+                line=dict(width=2, color='black')  # 테두리 추가
+            ),
             name='Sell',
             hovertemplate="<b>Sell</b><br>Time: %{x}<br>Price: %{y:,} KRW"
         ))
