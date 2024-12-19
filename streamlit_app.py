@@ -360,9 +360,10 @@ def main():
             
             fig = px.line(df, x='timestamp', y='btc_balance', title="BTC Balance Over Time", markers=True, template=plotly_template)
             # BUY/SELL 마커는 Balance 차트에는 필요 없을 수 있으므로 생략
-            fig.update_traces(line=dict(color='pueple', width=3), marker=dict(size=6, symbol='circle', color='black'))
+            
             # BUY/SELL 마커 추가
             fig = add_buy_sell_markers(fig, df, 'timestamp', 'btc_balance', border_color=marker_border_color)
+            fig.update_traces(line=dict(color='pueple', width=3), marker=dict(size=6, symbol='circle', color='black'))
             fig.update_layout(
                 margin=dict(l=40, r=20, t=50, b=20),
                 height=410,
@@ -381,9 +382,9 @@ def main():
             fig = px.line(df, x='timestamp', y='krw_balance', title="KRW Balance Over Time", markers=True, template=plotly_template)
             # BUY/SELL 마커 추가
                        
-            fig.update_traces(line=dict(color='purple', width=3), marker=dict(size=6, symbol='circle', color='black'))
+            
             fig = add_buy_sell_markers(fig, df, 'timestamp', 'krw_balance', border_color=marker_border_color)
-
+            fig.update_traces(line=dict(color='purple', width=3), marker=dict(size=6, symbol='circle', color='black'))
             fig.update_layout(
                 margin=dict(l=40, r=20, t=50, b=20),
                 height=410,
@@ -402,8 +403,9 @@ def main():
             fig = px.line(df, x='timestamp', y='btc_avg_buy_price', title="BTC Average Buy Price Over Time", markers=True, template=plotly_template)
             # BUY/SELL 마커 추가
             
-            fig.update_traces(line=dict(color='purple', width=3), marker=dict(size=6, symbol='circle', color='black'))
+            
             fig = add_buy_sell_markers(fig, df, 'timestamp', 'btc_avg_buy_price', border_color=marker_border_color)
+            fig.update_traces(line=dict(color='purple', width=3), marker=dict(size=6, symbol='circle', color='black'))
             fig.update_layout(
                 margin=dict(l=40, r=20, t=50, b=20),
                 height=410,
