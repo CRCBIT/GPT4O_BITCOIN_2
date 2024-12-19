@@ -28,7 +28,7 @@ st.markdown(
     /* 제목 위의 여백 제거 및 텍스트 아래에 밑줄 추가 */
     h1 {
         margin-top: 0;
-        margin-bottom: 0px;
+        margin-bottom: =10px;
         text-decoration: underline; /* 실제 텍스트 아래에 밑줄 추가 */
         text-decoration-color: currentColor; /* 밑줄 색상을 텍스트 색상과 동일하게 설정 */
         text-decoration-thickness: 3px; /* 밑줄 두께 설정 */
