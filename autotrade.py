@@ -415,7 +415,7 @@ Your percentage should reflect the strength of your conviction in the decision b
                         "role": "user",
                         "content": f"""Current investment status: {json.dumps(filtered_balances)}
 Orderbook: {json.dumps(orderbook)}
-Daily OHLCV with indicators (recent 60 days): {df_daily_recent.to_json()}
+Daily OHLCV with indicators (recent 120 days): {df_daily_recent.to_json()}
 Hourly OHLCV with indicators (recent 48 hours): {df_hourly_recent.to_json()}
 Recent news headlines: {json.dumps(news_headlines)}
 Fear and Greed Index: {json.dumps(fear_greed_index)}
