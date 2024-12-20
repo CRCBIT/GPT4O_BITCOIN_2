@@ -58,8 +58,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-
-
 def get_connection():
     """SQLite 데이터베이스에 연결합니다."""
     return sqlite3.connect('bitcoin_trades.db')
@@ -155,6 +153,10 @@ def main():
     profit_rate = ((current_investment - initial_investment) / initial_investment) * 100
     current_btc_price = pyupbit.get_current_price("KRW-BTC")
 
+    # 추가: 누적 투자 금액 및 누적 수익률 계산
+    df['cumulative_investment'] = df['krw_balance'] + (df['btc_balance'] * df['btc_krw_price']) + deposit_withdrawal
+    df['profit_rate_over_time'] = ((df['cumulative_investment'] - initial_investment) / initial_investment) * 100
+
     # 레이아웃 구성
     st.title("AI BTC Dashboard")  # CSS에서 글자 크기 조절됨
 
@@ -222,53 +224,63 @@ def main():
         formatted_btc_price = f"<span style='color:{btc_color}; font-weight:bold;'>{btc_symbol}{current_btc_price:,.0f} KRW</span>"
         st.markdown(f"**Current BTC Price (KRW):** {formatted_btc_price}", unsafe_allow_html=True)
 
-        # Total Assets 제목과 그래프 사이의 여백을 제거하여 그래프가 딱 붙게 함
-        st.markdown("<h3>💵 Total Assets</h3>", unsafe_allow_html=True)
-        
-        # 총 자산 계산
-        df['total_assets'] = df['krw_balance'] + (df['btc_balance'] * df['btc_krw_price'])
+        # <--- 변경된 부분 시작: Total Assets 그래프를 Profit Rate 그래프로 대체 --->
+        st.markdown("<h3>📈 Profit Rate</h3>", unsafe_allow_html=True)
         
         # y축 범위 계산 (패딩 포함)
-        y_min = df['total_assets'].min()
-        y_max = df['total_assets'].max()
+        y_min = df['profit_rate_over_time'].min()
+        y_max = df['profit_rate_over_time'].max()
         padding = (y_max - y_min) * 0.05  # 5% 패딩
         y_range = [y_min - padding, y_max + padding]
 
-        # Total Assets 영역 그래프 생성
-        total_assets_fig = px.area(
-            df, 
-            x='timestamp', 
-            y='total_assets',
-            template=plotly_template,  # 사용자 선택에 따른 템플릿 적용
-            hover_data={'total_assets': ':.0f'}  # 호버 데이터 포맷 지정
-        )
-        
-        # 색상과 마커 스타일 커스터마이징
-        total_assets_fig.update_traces(
-            line=dict(color='green', width=2),  # 선 두께 축소
-            fillcolor='rgba(0, 128, 0, 0.3)',  # 반투명 녹색으로 채움
-            marker=dict(size=4, symbol='circle', color='green')  # 마커 크기 축소
-        )
-        
-        # 초기 투자 기준선 추가
-        total_assets_fig.add_hline(
-            y=initial_investment,
+        # Profit Rate 영역 그래프 생성
+        profit_rate_fig = go.Figure()
+
+        # 양수 영역
+        positive = df[df['profit_rate_over_time'] >= 0]
+        if not positive.empty:
+            profit_rate_fig.add_trace(go.Scatter(
+                x=positive['timestamp'],
+                y=positive['profit_rate_over_time'],
+                mode='lines',
+                line=dict(color='red', width=2),
+                fill='tozeroy',
+                fillcolor='rgba(255, 0, 0, 0.3)',  # 반투명 빨간색
+                name='Profit Rate Positive'
+            ))
+
+        # 음수 영역
+        negative = df[df['profit_rate_over_time'] < 0]
+        if not negative.empty:
+            profit_rate_fig.add_trace(go.Scatter(
+                x=negative['timestamp'],
+                y=negative['profit_rate_over_time'],
+                mode='lines',
+                line=dict(color='blue', width=2),
+                fill='tozeroy',
+                fillcolor='rgba(0, 0, 255, 0.3)',  # 반투명 파란색
+                name='Profit Rate Negative'
+            ))
+
+        # 초기 투자 기준선 추가 (0%)
+        profit_rate_fig.add_hline(
+            y=0,
             line_dash="dash",
             line_color="gray",
-            annotation_text="Initial Investment",
+            annotation_text="0%",
             annotation_position="bottom right"
         )
 
         # 레이아웃 조정
-        total_assets_fig.update_layout(
+        profit_rate_fig.update_layout(
             xaxis=dict(
                 title="Time",
                 rangeslider=dict(visible=True),
                 type="date"
             ),
             yaxis=dict(
-                title="Total Assets (KRW)", 
-                tickprefix="₩",
+                title="Profit Rate (%)",
+                tickformat=".2f",
                 range=y_range  # 동적으로 계산된 y축 범위 적용
             ),
             margin=dict(l=20, r=20, t=0, b=50),
@@ -278,9 +290,14 @@ def main():
             plot_bgcolor='rgba(0,0,0,0)',  # 투명 배경
             paper_bgcolor='rgba(0,0,0,0)'  # 투명 배경
         )
-        
+
+        # BUY/SELL 마커 추가 (Profit Rate와 관련이 없으므로 생략 가능)
+        # 필요 시 아래 코드를 추가하여 마커를 표시할 수 있습니다.
+        # profit_rate_fig = add_buy_sell_markers(profit_rate_fig, df, 'timestamp', 'profit_rate_over_time', border_color=marker_border_color)
+
         # Plotly 그래프 출력 시 모드바 숨기기
-        st.plotly_chart(total_assets_fig, use_container_width=True, config=config)
+        st.plotly_chart(profit_rate_fig, use_container_width=True, config=config)
+        # <--- 변경된 부분 끝 ---
 
     with col3:
         # Trade-Related Charts 제목 조절
