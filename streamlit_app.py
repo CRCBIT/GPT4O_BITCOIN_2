@@ -226,7 +226,7 @@ def main():
         st.markdown("<h3>💵 Total Assets</h3>", unsafe_allow_html=True)
         
         # 총 자산 계산
-        df['total_assets'] = df['krw_balance'] + (df['btc_balance'] * df['btc_krw_price'])
+        df['total_assets'] = df['krw_balance'] + (df['btc_balance'] * df['btc_krw_price']) + deposit_withdrawal
         
         # y축 범위 계산 (패딩 포함)
         y_min = df['total_assets'].min()
