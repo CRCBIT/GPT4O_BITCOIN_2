@@ -146,18 +146,18 @@ def main():
         st.warning('No trade data available.')
         return
 
-    # 계산
-    initial_investment = calculate_initial_investment(df)
-    current_investment = calculate_current_investment(df)
-    profit_rate = ((current_investment - initial_investment) / initial_investment) * 100
-    current_btc_price = pyupbit.get_current_price("KRW-BTC")
-
     # 총 자산 계산
     df['total_assets'] = df['krw_balance'] + (df['btc_balance'] * df['btc_krw_price'])
 
     # 비율 계산
     df['btc_percentage'] = (df['btc_balance'] * df['btc_krw_price']) / df['total_assets'] * 100
     df['krw_percentage'] = (df['krw_balance']) / df['total_assets'] * 100
+
+    # 계산
+    initial_investment = calculate_initial_investment(df)
+    current_investment = calculate_current_investment(df)
+    profit_rate = ((current_investment - initial_investment) / initial_investment) * 100
+    current_btc_price = pyupbit.get_current_price("KRW-BTC")
 
     # 레이아웃 구성
     st.title("AI BTC Dashboard")  # CSS에서 글자 크기 조절됨
@@ -285,7 +285,7 @@ def main():
         # Trade-Related Charts 제목 조절
         st.markdown("<h3>📈 Trade-Related Charts</h3>", unsafe_allow_html=True)
         
-        # 탭 생성
+        # 탭 생성: 기존 tab1, tab2 유지하고 tab3은 Asset Percentage로 설정
         tab1, tab2, tab3 = st.tabs(["BTC Price Chart", "1-Year BTC Price (Daily)", "Asset Percentage"])
 
         with tab1:
@@ -358,49 +358,41 @@ def main():
                 st.plotly_chart(fig, use_container_width=True, config=config)
 
         with tab3:
-            st.markdown("### 💹 Asset Percentage Over Time")
+            st.markdown("### 💹 Asset Percentage Over Time", unsafe_allow_html=True)
 
-            # BTC Percentage 막대그래프
-            fig_btc_pct = px.bar(
+            if df.empty:
+                st.warning("No data available to display the asset percentage chart.")
+                return
+
+            # 스택드 막대그래프 생성
+            fig_asset_pct = px.bar(
                 df,
                 x='timestamp',
-                y='btc_percentage',
-                title="BTC Balance Percentage Over Time",
-                labels={'btc_percentage': 'BTC Balance (%)'},
-                template=plotly_template
+                y=['btc_percentage', 'krw_percentage'],
+                title="Asset Percentage Over Time",
+                labels={'value': 'Percentage (%)', 'timestamp': 'Time', 'variable': 'Asset Type'},
+                template=plotly_template,
+                hover_data={'btc_percentage': ':.2f', 'krw_percentage': ':.2f'}
             )
-            fig_btc_pct.update_layout(
+
+            fig_asset_pct.update_layout(
+                barmode='stack',  # 스택드 모드
                 xaxis_title='Time',
                 yaxis_title='Percentage (%)',
                 margin=dict(l=40, r=20, t=50, b=50),
-                height=300,
+                height=600,
                 plot_bgcolor='rgba(0,0,0,0)',
                 paper_bgcolor='rgba(0,0,0,0)',
                 hovermode='x unified',
-                showlegend=False
+                showlegend=True
             )
-            st.plotly_chart(fig_btc_pct, use_container_width=True, config=config)
 
-            # KRW Percentage 막대그래프
-            fig_krw_pct = px.bar(
-                df,
-                x='timestamp',
-                y='krw_percentage',
-                title="KRW Balance Percentage Over Time",
-                labels={'krw_percentage': 'KRW Balance (%)'},
-                template=plotly_template
+            # 색상 설정
+            fig_asset_pct.update_traces(
+                marker=dict(line=dict(width=0.5, color='white'))
             )
-            fig_krw_pct.update_layout(
-                xaxis_title='Time',
-                yaxis_title='Percentage (%)',
-                margin=dict(l=40, r=20, t=50, b=50),
-                height=300,
-                plot_bgcolor='rgba(0,0,0,0)',
-                paper_bgcolor='rgba(0,0,0,0)',
-                hovermode='x unified',
-                showlegend=False
-            )
-            st.plotly_chart(fig_krw_pct, use_container_width=True, config=config)
+
+            st.plotly_chart(fig_asset_pct, use_container_width=True, config=config)
 
     # 하단: 거래내역 표
     with st.container():
