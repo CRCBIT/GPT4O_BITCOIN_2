@@ -88,8 +88,10 @@ def calculate_net_investment(transactions_df):
 
 def calculate_current_investment(trades_df):
     """현재 투자 금액을 계산합니다."""
-    current_krw_balance = trades_df.iloc[-1]['krw_balance'] if not trades_df.empty else 0
-    current_btc_balance = trades_df.iloc[-1]['btc_balance'] if not trades_df.empty else 0
+    if trades_df.empty:
+        return 0
+    current_krw_balance = trades_df.iloc[-1]['krw_balance']
+    current_btc_balance = trades_df.iloc[-1]['btc_balance']
     current_btc_price = pyupbit.get_current_price("KRW-BTC")
     return current_krw_balance + (current_btc_balance * current_btc_price)
 
@@ -283,7 +285,7 @@ def main():
                 annotation_text="Net Investment",
                 annotation_position="bottom right"
             )
-        
+
             # 레이아웃 조정
             total_assets_fig.update_layout(
                 xaxis=dict(
