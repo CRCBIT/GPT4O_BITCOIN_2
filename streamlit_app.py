@@ -366,8 +366,6 @@ def main():
 
         # tab3: BTC/KRW Balance Ratio Pie Chart
         with tab3:
-            
-            
             # 현재 BTC 잔액을 KRW 단위로 환산
             current_btc_balance = df.iloc[-1]['btc_balance']
             btc_balance_krw = current_btc_balance * current_btc_price
@@ -385,9 +383,9 @@ def main():
                 hole=0.4  # 도넛 형태로 표시 (선택 사항)
             )
             
-            # 색상 커스터마이징
+            # 색상 커스터마이징: Light Blue for BTC, Light Green for KRW
             fig_pie.update_traces(
-                marker=dict(colors=['orange', 'blue']),
+                marker=dict(colors=['#ADD8E6', '#90EE90']),  # Light Blue and Light Green
                 textinfo='percent+label'
             )
             
@@ -405,8 +403,6 @@ def main():
 
         # tab4: BTC/KRW Balance Ratio (100% Stacked Bar)
         with tab4:
-            
-            
             # Resample data to hourly intervals, taking the last available data point in each hour
             df_hourly = df.set_index('timestamp').resample('H').last().reset_index()
             
@@ -432,7 +428,7 @@ def main():
                 'krw_percentage': 'KRW Balance'
             })
 
-            # 100% 누적 막대 그래프 생성
+            # 100% 누적 막대 그래프 생성 with specified colors
             fig_ratio = px.bar(
                 df_melted,
                 x='timestamp',
@@ -441,7 +437,11 @@ def main():
                 title="Hourly BTC/KRW Balance Ratio (100% Stacked)",
                 template=plotly_template,
                 hover_data={'Percentage': ':.2f'},
-                labels={'Percentage': 'Percentage (%)', 'timestamp': 'Time'}
+                labels={'Percentage': 'Percentage (%)', 'timestamp': 'Time'},
+                color_discrete_map={
+                    'BTC Balance (KRW)': '#ADD8E6',  # Light Blue
+                    'KRW Balance': '#90EE90'        # Light Green
+                }
             )
 
             # 누적 막대 모드 설정
