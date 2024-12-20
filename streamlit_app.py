@@ -417,6 +417,18 @@ def main():
             # 잠재적인 0으로 나누는 경우 처리
             df_hourly[['btc_percentage', 'krw_percentage']] = df_hourly[['btc_percentage', 'krw_percentage']].replace([float('inf'), -float('inf')], 0)
             df_hourly[['btc_percentage', 'krw_percentage']] = df_hourly[['btc_percentage', 'krw_percentage']].fillna(0)
+            
+            # 시간대별 BTC 가격 데이터 보완
+            # 모든 시간대를 포함하도록 인덱스를 재설정하고, 결측값을 보간
+            full_time_range = pd.date_range(start=df_hourly['timestamp'].min(), end=df_hourly['timestamp'].max(), freq='H')
+            df_hourly = df_hourly.set_index('timestamp').reindex(full_time_range).rename_axis('timestamp').reset_index()
+            df_hourly['btc_balance_krw'] = df_hourly['btc_balance_krw'].fillna(method='ffill')
+            df_hourly['krw_balance'] = df_hourly['krw_balance'].fillna(method='ffill')
+            df_hourly['btc_percentage'] = df_hourly['btc_percentage'].fillna(0)
+            df_hourly['krw_percentage'] = df_hourly['krw_percentage'].fillna(0)
+            df_hourly['btc_krw_price'] = df_hourly['btc_krw_price'].fillna(method='ffill')
+            df_hourly['btc_balance'] = df_hourly['btc_balance'].fillna(method='ffill')
+            df_hourly['krw_balance'] = df_hourly['krw_balance'].fillna(method='ffill')
 
             # Plotly Express를 위한 데이터 변환 (Melt)
             df_melted = df_hourly.melt(id_vars=['timestamp'], value_vars=['btc_percentage', 'krw_percentage'],
@@ -513,10 +525,6 @@ def main():
                     borderwidth=1
                 )
             )
-
-            # Add BTC/SELL markers if needed (optional)
-            # Uncomment the following lines if you want markers on this chart as well
-            # fig_ratio = add_buy_sell_markers(fig_ratio, df, 'timestamp', 'btc_krw_price', border_color=marker_border_color)
 
             # 그래프 표시
             st.plotly_chart(fig_ratio, use_container_width=True, config=config)
