@@ -7,6 +7,8 @@ from plotly.subplots import make_subplots
 import pyupbit
 from streamlit_autorefresh import st_autorefresh
 
+deposit_withdrawal = 400000
+
 # 항상 wide 모드 활성화, 제목 및 사이드바 설정
 st.set_page_config(
     layout="wide",
@@ -55,8 +57,8 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-# Load the initial investment from the .env file
-INITIAL_INVESTMENT = float(os.getenv("INITIAL_INVESTMENT", 0))
+
+
 
 def get_connection():
     """SQLite 데이터베이스에 연결합니다."""
@@ -71,35 +73,12 @@ def load_data():
     df['timestamp'] = pd.to_datetime(df['timestamp'])
     return df
 
-def load_data_trades():
-    """트레이드 데이터를 데이터베이스에서 로드하고 타임스탬프를 datetime 형식으로 변환합니다."""
-    conn = get_connection()
-    query = "SELECT * FROM transactions ORDER BY timestamp ASC"  # 시간 순서대로 정렬
-    df2 = pd.read_sql_query(query, conn)
-    conn.close()
-    df2['timestamp'] = pd.to_datetime(df2['timestamp'])
-    return df2
-
-def calculate_initial_investment(conn):
-    """
-    총 입금액에서 총 출금액을 뺀 순 투자금을 계산합니다.
-    """
-    c = conn.cursor()
-    c.execute("SELECT type, amount FROM transactions")
-    transactions = c.fetchall()
-    
-    total_deposit = sum([row[1] for row in transactions if row[0].lower() == 'deposit'])
-    total_withdrawal = sum([row[1] for row in transactions if row[0].lower() == 'withdrawal'])
-    net_investment = total_deposit - total_withdrawal + INITIAL_INVESTMENT
-    return net_investment
-
-def calculate_initial_investment(df, df2):
+def calculate_initial_investment(df):
     """초기 투자 금액을 계산합니다."""
     initial_krw_balance = df.iloc[0]['krw_balance']
     initial_btc_balance = df.iloc[0]['btc_balance']
     initial_btc_price = df.iloc[0]['btc_krw_price']
-    total_deposit = sum
-    return initial_krw_balance + (initial_btc_balance * initial_btc_price) + 400000
+    return initial_krw_balance + (initial_btc_balance * initial_btc_price) + deposit_withdrawal
 
 def calculate_current_investment(df):
     """현재 투자 금액을 계산합니다."""
@@ -165,7 +144,6 @@ def main():
 
     # 데이터 로드
     df = load_data()
-    df2 = load_data_trades()
 
     if df.empty:
         st.warning('No trade data available.')
