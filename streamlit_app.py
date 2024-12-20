@@ -223,14 +223,14 @@ def main():
         st.markdown(f"**Current BTC Price (KRW):** {formatted_btc_price}", unsafe_allow_html=True)
 
         # Total Assets 제목과 그래프 사이의 여백을 제거하여 그래프가 딱 붙게 함
-        st.markdown("<h3>💵 Total Assets</h3>", unsafe_allow_html=True)
+        st.markdown("<h3>💵 Profit Rate</h3>", unsafe_allow_html=True)
         
         # 총 자산 계산
-        df['total_assets'] = df['krw_balance'] + (df['btc_balance'] * df['btc_krw_price'])
+        df['Profit Rate'] = profit_rate
         
         # y축 범위 계산 (패딩 포함)
-        y_min = df['total_assets'].min()
-        y_max = df['total_assets'].max()
+        y_min = df['profit_rate'].min()
+        y_max = df['ptofit_rate'].max()
         padding = (y_max - y_min) * 0.05  # 5% 패딩
         y_range = [y_min - padding, y_max + padding]
 
@@ -238,7 +238,7 @@ def main():
         total_assets_fig = px.area(
             df, 
             x='timestamp', 
-            y='total_assets',
+            y='profit_rate',
             template=plotly_template,  # 사용자 선택에 따른 템플릿 적용
             hover_data={'total_assets': ':.0f'}  # 호버 데이터 포맷 지정
         )
@@ -250,14 +250,7 @@ def main():
             marker=dict(size=4, symbol='circle', color='green')  # 마커 크기 축소
         )
         
-        # 초기 투자 기준선 추가
-        total_assets_fig.add_hline(
-            y=initial_investment,
-            line_dash="dash",
-            line_color="gray",
-            annotation_text="Initial Investment",
-            annotation_position="bottom right"
-        )
+
 
         # 레이아웃 조정
         total_assets_fig.update_layout(
