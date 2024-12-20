@@ -85,7 +85,7 @@ def calculate_current_investment(df):
     current_krw_balance = df.iloc[-1]['krw_balance']
     current_btc_balance = df.iloc[-1]['btc_balance']
     current_btc_price = pyupbit.get_current_price("KRW-BTC")
-    return current_krw_balance + (current_btc_balance * current_btc_price)
+    return current_krw_balance + (current_btc_balance * current_btc_price) + deposit_withdrawal
 
 def add_buy_sell_markers(fig, df, x_col, y_col, border_color='black'):
     """
