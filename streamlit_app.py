@@ -467,53 +467,65 @@ def main():
             # Resample data to hourly intervals, taking the last available data point in each hour
             df_hourly = df.set_index('timestamp').resample('H').last().reset_index()
             
-            # Calculate the ratio
-            df_hourly['balance_ratio'] = df_hourly['btc_balance'] / df_hourly['krw_balance']
-            
-            # Handle potential division by zero or NaN values
-            df_hourly['balance_ratio'] = df_hourly['balance_ratio'].replace([float('inf'), -float('inf')], None)
-            df_hourly['balance_ratio'] = df_hourly['balance_ratio'].fillna(0)
+            # Prepare data for 100% stacked bar chart
+            # Option 1: Normalize btc_balance and krw_balance to sum to 100% per hour
+            df_hourly['btc_percentage'] = (df_hourly['btc_balance'] / (df_hourly['btc_balance'] + df_hourly['krw_balance'])) * 100
+            df_hourly['krw_percentage'] = (df_hourly['krw_balance'] / (df_hourly['btc_balance'] + df_hourly['krw_balance'])) * 100
 
-            # Create the bar chart
+            # Handle potential division by zero
+            df_hourly[['btc_percentage', 'krw_percentage']] = df_hourly[['btc_percentage', 'krw_percentage']].replace([float('inf'), -float('inf')], 0)
+            df_hourly[['btc_percentage', 'krw_percentage']] = df_hourly[['btc_percentage', 'krw_percentage']].fillna(0)
+
+            # Melt the dataframe for Plotly Express
+            df_melted = df_hourly.melt(id_vars=['timestamp'], value_vars=['btc_percentage', 'krw_percentage'],
+                                       var_name='Balance Type', value_name='Percentage')
+
+            # Rename for better readability
+            df_melted['Balance Type'] = df_melted['Balance Type'].replace({
+                'btc_percentage': 'BTC Balance',
+                'krw_percentage': 'KRW Balance'
+            })
+
+            # Create the 100% stacked bar chart
             fig_ratio = px.bar(
-                df_hourly,
+                df_melted,
                 x='timestamp',
-                y='balance_ratio',
-                title="Hourly BTC Balance to KRW Balance Ratio",
+                y='Percentage',
+                color='Balance Type',
+                title="Hourly BTC/KRW Balance Ratio (100% Stacked)",
                 template=plotly_template,
-                hover_data={'balance_ratio': ':.4f'}
-            )
-
-            # Customize the bar colors based on ratio value
-            fig_ratio.update_traces(
-                marker_color='orange',
-                marker_line_color=marker_border_color,
-                marker_line_width=1.5,
-                opacity=0.7
+                hover_data={'Percentage': ':.2f'},
+                labels={'Percentage': 'Percentage (%)', 'timestamp': 'Time'}
             )
 
             # Update layout for better visualization
             fig_ratio.update_layout(
-                xaxis_title="Time",
-                yaxis_title="BTC/KRW Balance Ratio",
+                barmode='stack',
                 xaxis=dict(
-                    type='date',
+                    title="Time",
                     tickformat="%Y-%m-%d %H:%M",
-                    tickangle=45
+                    tickangle=45,
+                    type='date'
                 ),
                 yaxis=dict(
-                    title="Ratio",
-                    tickformat=".4f"
+                    title="Percentage (%)",
+                    range=[0, 100]
                 ),
                 margin=dict(l=40, r=20, t=50, b=100),
                 height=600,
                 hovermode="x unified",
-                showlegend=False,
+                showlegend=True,
                 plot_bgcolor='rgba(0,0,0,0)',  # 투명 배경
                 paper_bgcolor='rgba(0,0,0,0)'  # 투명 배경
             )
 
-            # Display the bar chart
+            # Customize colors for clarity
+            fig_ratio.update_traces(
+                marker_line_color=marker_border_color,
+                marker_line_width=1.5
+            )
+
+            # Display the 100% stacked bar chart
             st.plotly_chart(fig_ratio, use_container_width=True, config=config)
 
     # 하단: 거래내역 표
