@@ -6,6 +6,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import pyupbit
 from streamlit_autorefresh import st_autorefresh
+import re
 
 # 항상 wide 모드 활성화, 제목 및 사이드바 설정
 st.set_page_config(
@@ -69,19 +70,34 @@ def load_data():
     df['timestamp'] = pd.to_datetime(df['timestamp'])
     return df
 
-def calculate_initial_investment(df):
-    """초기 투자 금액을 계산합니다."""
-    initial_krw_balance = df.iloc[0]['krw_balance']
-    initial_btc_balance = df.iloc[0]['btc_balance']
-    initial_btc_price = df.iloc[0]['btc_krw_price']
-    return initial_krw_balance + (initial_btc_balance * initial_btc_price)
+def load_transactions():
+    """입출금 데이터를 데이터베이스에서 로드합니다."""
+    conn = get_connection()
+    query = "SELECT * FROM transactions ORDER BY timestamp ASC"  # 시간 순서대로 정렬
+    df = pd.read_sql_query(query, conn)
+    conn.close()
+    df['timestamp'] = pd.to_datetime(df['timestamp'])
+    return df
 
-def calculate_current_investment(df):
+def calculate_net_investment(transactions_df):
+    """순투자금을 계산합니다. (총 입금 - 총 출금)"""
+    deposits = transactions_df[transactions_df['type'] == 'deposit']['amount'].sum()
+    withdrawals = transactions_df[transactions_df['type'] == 'withdraw']['amount'].sum()
+    net_investment = deposits - withdrawals
+    return net_investment
+
+def calculate_current_investment(trades_df):
     """현재 투자 금액을 계산합니다."""
-    current_krw_balance = df.iloc[-1]['krw_balance']
-    current_btc_balance = df.iloc[-1]['btc_balance']
+    current_krw_balance = trades_df.iloc[-1]['krw_balance'] if not trades_df.empty else 0
+    current_btc_balance = trades_df.iloc[-1]['btc_balance'] if not trades_df.empty else 0
     current_btc_price = pyupbit.get_current_price("KRW-BTC")
     return current_krw_balance + (current_btc_balance * current_btc_price)
+
+def calculate_profit_rate(current_investment, net_investment):
+    """수익률을 계산합니다."""
+    if net_investment == 0:
+        return 0
+    return ((current_investment - net_investment) / net_investment) * 100
 
 def add_buy_sell_markers(fig, df, x_col, y_col, border_color='black'):
     """
@@ -139,16 +155,26 @@ def main():
         marker_border_color = 'black'
 
     # 데이터 로드
-    df = load_data()
+    df_trades = load_data()
+    df_transactions = load_transactions()
 
-    if df.empty:
-        st.warning('No trade data available.')
+    if df_trades.empty and df_transactions.empty:
+        st.warning('No trade or transaction data available.')
         return
 
     # 계산
-    initial_investment = calculate_initial_investment(df)
-    current_investment = calculate_current_investment(df)
-    profit_rate = ((current_investment - initial_investment) / initial_investment) * 100
+    if not df_transactions.empty:
+        net_investment = calculate_net_investment(df_transactions)
+    else:
+        net_investment = 0
+
+    if not df_trades.empty:
+        current_investment = calculate_current_investment(df_trades)
+    else:
+        # 거래 데이터가 없을 경우, 순투자금만 고려
+        current_investment = net_investment
+
+    profit_rate = calculate_profit_rate(current_investment, net_investment)
     current_btc_price = pyupbit.get_current_price("KRW-BTC")
 
     # 레이아웃 구성
@@ -161,8 +187,6 @@ def main():
     # Plotly Configuration 설정
     config = {
         'displayModeBar': False  # 모드바 완전히 숨기기
-        # 또는 특정 버튼만 제거하려면 다음과 같이 설정
-        # 'modeBarButtonsToRemove': ['toImage', 'toggleSpikelines']
     }
 
     with col1:
@@ -180,10 +204,10 @@ def main():
         st.markdown(f"**Current Profit Rate:** {formatted_profit}", unsafe_allow_html=True)
         
         # Total Assets (KRW) - 조건부 색상 및 포맷팅
-        if current_investment > initial_investment:
+        if current_investment > net_investment:
             assets_color = "red"
             assets_symbol = "+"
-        elif current_investment < initial_investment:
+        elif current_investment < net_investment:
             assets_color = "blue"
             assets_symbol = "-"
         else:
@@ -194,16 +218,16 @@ def main():
         st.markdown(f"**Total Assets (KRW):** {formatted_assets}", unsafe_allow_html=True)
         
         # Current BTC Price (KRW) - 하루 전 데이터로 조건부 색상 및 화살표 추가
-        latest_time = df.iloc[-1]['timestamp']
+        latest_time = df_trades.iloc[-1]['timestamp'] if not df_trades.empty else datetime.now()
         one_day_ago_time = latest_time - pd.Timedelta(days=1)
         
         # 하루 전 시간에 가장 가까운 데이터를 찾기
-        previous_data = df[df['timestamp'] <= one_day_ago_time]
+        previous_data = df_trades[df_trades['timestamp'] <= one_day_ago_time] if not df_trades.empty else pd.DataFrame()
         
         if not previous_data.empty:
             previous_btc_price = previous_data.iloc[-1]['btc_krw_price']
         else:
-            previous_btc_price = df.iloc[-1]['btc_krw_price']  # 하루 전 데이터가 없으면 현재 가격 사용
+            previous_btc_price = current_btc_price  # 하루 전 데이터가 없으면 현재 가격 사용
         
         if current_btc_price > previous_btc_price:
             btc_color = "red"
@@ -222,61 +246,68 @@ def main():
         st.markdown("<h3>💵 Total Assets</h3>", unsafe_allow_html=True)
         
         # 총 자산 계산
-        df['total_assets'] = df['krw_balance'] + (df['btc_balance'] * df['btc_krw_price'])
+        total_assets = current_investment
         
         # y축 범위 계산 (패딩 포함)
-        y_min = df['total_assets'].min()
-        y_max = df['total_assets'].max()
-        padding = (y_max - y_min) * 0.05  # 5% 패딩
-        y_range = [y_min - padding, y_max + padding]
+        y_min = total_assets
+        y_max = total_assets
+        if not df_trades.empty:
+            y_min = df_trades['krw_balance'].min() + (df_trades['btc_balance'] * df_trades['btc_krw_price']).min()
+            y_max = df_trades['krw_balance'].max() + (df_trades['btc_balance'] * df_trades['btc_krw_price']).max()
+        padding = (y_max - y_min) * 0.05 if y_max != y_min else y_max * 0.05
+        y_range = [y_min - padding, y_max + padding] if padding > 0 else [y_min, y_max]
 
         # Total Assets 영역 그래프 생성
-        total_assets_fig = px.area(
-            df, 
-            x='timestamp', 
-            y='total_assets',
-            template=plotly_template,  # 사용자 선택에 따른 템플릿 적용
-            hover_data={'total_assets': ':.0f'}  # 호버 데이터 포맷 지정
-        )
+        if not df_trades.empty:
+            df_trades['total_assets'] = df_trades['krw_balance'] + (df_trades['btc_balance'] * df_trades['btc_krw_price'])
+            total_assets_fig = px.area(
+                df_trades, 
+                x='timestamp', 
+                y='total_assets',
+                template=plotly_template,  # 사용자 선택에 따른 템플릿 적용
+                hover_data={'total_assets': ':.0f'}  # 호버 데이터 포맷 지정
+            )
+            
+            # 색상과 마커 스타일 커스터마이징
+            total_assets_fig.update_traces(
+                line=dict(color='green', width=2),  # 선 두께 축소
+                fillcolor='rgba(0, 128, 0, 0.3)',  # 반투명 녹색으로 채움
+                marker=dict(size=4, symbol='circle', color='green')  # 마커 크기 축소
+            )
+            
+            # 초기 투자 기준선 추가
+            total_assets_fig.add_hline(
+                y=net_investment,
+                line_dash="dash",
+                line_color="gray",
+                annotation_text="Net Investment",
+                annotation_position="bottom right"
+            )
         
-        # 색상과 마커 스타일 커스터마이징
-        total_assets_fig.update_traces(
-            line=dict(color='green', width=2),  # 선 두께 축소
-            fillcolor='rgba(0, 128, 0, 0.3)',  # 반투명 녹색으로 채움
-            marker=dict(size=4, symbol='circle', color='green')  # 마커 크기 축소
-        )
-        
-        # 초기 투자 기준선 추가
-        total_assets_fig.add_hline(
-            y=initial_investment,
-            line_dash="dash",
-            line_color="gray",
-            annotation_text="Initial Investment",
-            annotation_position="bottom right"
-        )
-
-        # 레이아웃 조정
-        total_assets_fig.update_layout(
-            xaxis=dict(
-                title="Time",
-                rangeslider=dict(visible=True),
-                type="date"
-            ),
-            yaxis=dict(
-                title="Total Assets (KRW)", 
-                tickprefix="₩",
-                range=y_range  # 동적으로 계산된 y축 범위 적용
-            ),
-            margin=dict(l=20, r=20, t=0, b=50),
-            height=300,  # 차트 높이 축소
-            hovermode="x unified",
-            showlegend=False,
-            plot_bgcolor='rgba(0,0,0,0)',  # 투명 배경
-            paper_bgcolor='rgba(0,0,0,0)'  # 투명 배경
-        )
-        
-        # Plotly 그래프 출력 시 모드바 숨기기
-        st.plotly_chart(total_assets_fig, use_container_width=True, config=config)
+            # 레이아웃 조정
+            total_assets_fig.update_layout(
+                xaxis=dict(
+                    title="Time",
+                    rangeslider=dict(visible=True),
+                    type="date"
+                ),
+                yaxis=dict(
+                    title="Total Assets (KRW)", 
+                    tickprefix="₩",
+                    range=y_range  # 동적으로 계산된 y축 범위 적용
+                ),
+                margin=dict(l=20, r=20, t=0, b=50),
+                height=300,  # 차트 높이 축소
+                hovermode="x unified",
+                showlegend=False,
+                plot_bgcolor='rgba(0,0,0,0)',  # 투명 배경
+                paper_bgcolor='rgba(0,0,0,0)'  # 투명 배경
+            )
+            
+            # Plotly 그래프 출력 시 모드바 숨기기
+            st.plotly_chart(total_assets_fig, use_container_width=True, config=config)
+        else:
+            st.info("No trade data to display Total Assets chart.")
 
     with col3:
         # Trade-Related Charts 제목 조절
@@ -306,7 +337,7 @@ def main():
                     )
                 )])
                 # BUY/SELL 마커 추가
-                fig = add_buy_sell_markers(fig, df, 'timestamp', 'btc_krw_price', border_color=marker_border_color)
+                fig = add_buy_sell_markers(fig, df_trades, 'timestamp', 'btc_krw_price', border_color=marker_border_color)
                 fig.update_layout(
                     xaxis=dict(
                         title="Time",
@@ -343,7 +374,7 @@ def main():
                     )
                 )])
                 # BUY/SELL 마커 추가
-                fig = add_buy_sell_markers(fig, df, 'timestamp', 'btc_krw_price', border_color=marker_border_color)
+                fig = add_buy_sell_markers(fig, df_trades, 'timestamp', 'btc_krw_price', border_color=marker_border_color)
                 fig.update_layout(
                     xaxis=dict(title="Date", rangeslider=dict(visible=True)),
                     yaxis=dict(title="Price (KRW)"),
@@ -356,158 +387,213 @@ def main():
 
         # 수정된 부분: tab3, tab4, tab5
         with tab3:
-            fig = px.line(
-                df, 
-                x='timestamp', 
-                y='btc_balance', 
-                title="BTC Balance Over Time", 
-                markers=True, 
-                template=plotly_template
-                # Removed 'name' parameter
-            )
-            # Set the trace name
-            fig.update_traces(name='BTC Balance')
+            if not df_trades.empty:
+                fig = px.line(
+                    df_trades, 
+                    x='timestamp', 
+                    y='btc_balance', 
+                    title="BTC Balance Over Time", 
+                    markers=True, 
+                    template=plotly_template
+                )
+                # Set the trace name
+                fig.update_traces(name='BTC Balance')
 
-            # BUY/SELL 마커 추가
-            fig = add_buy_sell_markers(fig, df, 'timestamp', 'btc_balance', border_color=marker_border_color)
-            
-            fig.update_traces(
-                selector=dict(name='BTC Balance'),  # 메인 트레이스만 선택
-                line=dict(color='black', width=2),  # 선 두께 축소
-                marker=dict(size=4, symbol='circle', color='black')  # 마커 크기 축소
-            )
-            fig.update_layout(
-                margin=dict(l=40, r=20, t=30, b=20),  # 상단 마진 약간 추가
-                height=600,  # 차트 높이 축소
-                yaxis_title="BTC Balance",
-                xaxis=dict(showgrid=False),
-                yaxis=dict(showgrid=True, gridcolor='gray'),
-                plot_bgcolor='rgba(0,0,0,0)',
-                paper_bgcolor='rgba(0,0,0,0)',
-                hovermode="x unified",
-                showlegend=False
-            )
-            st.plotly_chart(fig, use_container_width=True, config=config)
+                # BUY/SELL 마커 추가
+                fig = add_buy_sell_markers(fig, df_trades, 'timestamp', 'btc_balance', border_color=marker_border_color)
+                
+                fig.update_traces(
+                    selector=dict(name='BTC Balance'),  # 메인 트레이스만 선택
+                    line=dict(color='black', width=2),  # 선 두께 축소
+                    marker=dict(size=4, symbol='circle', color='black')  # 마커 크기 축소
+                )
+                fig.update_layout(
+                    margin=dict(l=40, r=20, t=30, b=20),  # 상단 마진 약간 추가
+                    height=600,  # 차트 높이 축소
+                    yaxis_title="BTC Balance",
+                    xaxis=dict(showgrid=False),
+                    yaxis=dict(showgrid=True, gridcolor='gray'),
+                    plot_bgcolor='rgba(0,0,0,0)',
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    hovermode="x unified",
+                    showlegend=False
+                )
+                st.plotly_chart(fig, use_container_width=True, config=config)
+            else:
+                st.info("No BTC balance data available.")
 
         with tab4:
-            fig = px.line(
-                df, 
-                x='timestamp', 
-                y='krw_balance', 
-                title="KRW Balance Over Time", 
-                markers=True, 
-                template=plotly_template
-                # Removed 'name' parameter
-            )
-            # Set the trace name
-            fig.update_traces(name='KRW Balance')
+            if not df_trades.empty:
+                fig = px.line(
+                    df_trades, 
+                    x='timestamp', 
+                    y='krw_balance', 
+                    title="KRW Balance Over Time", 
+                    markers=True, 
+                    template=plotly_template
+                )
+                # Set the trace name
+                fig.update_traces(name='KRW Balance')
 
-            # BUY/SELL 마커 추가
-            fig = add_buy_sell_markers(fig, df, 'timestamp', 'krw_balance', border_color=marker_border_color)
-            
-            fig.update_traces(
-                selector=dict(name='KRW Balance'),  # 메인 트레이스만 선택
-                line=dict(color='black', width=2),  # 선 색상 변경 및 두께 축소
-                marker=dict(size=4, symbol='circle', color='black')  # 마커 크기 축소
-            )
-            fig.update_layout(
-                margin=dict(l=40, r=20, t=30, b=20),  # 상단 마진 약간 추가
-                height=600,  # 차트 높이 축소
-                yaxis_title="KRW Balance",
-                xaxis=dict(showgrid=False),
-                yaxis=dict(showgrid=True, gridcolor='gray'),
-                plot_bgcolor='rgba(0,0,0,0)',
-                paper_bgcolor='rgba(0,0,0,0)',
-                hovermode="x unified",
-                showlegend=False
-            )
-            st.plotly_chart(fig, use_container_width=True, config=config)
+                # BUY/SELL 마커 추가
+                fig = add_buy_sell_markers(fig, df_trades, 'timestamp', 'krw_balance', border_color=marker_border_color)
+                
+                fig.update_traces(
+                    selector=dict(name='KRW Balance'),  # 메인 트레이스만 선택
+                    line=dict(color='black', width=2),  # 선 색상 변경 및 두께 축소
+                    marker=dict(size=4, symbol='circle', color='black')  # 마커 크기 축소
+                )
+                fig.update_layout(
+                    margin=dict(l=40, r=20, t=30, b=20),  # 상단 마진 약간 추가
+                    height=600,  # 차트 높이 축소
+                    yaxis_title="KRW Balance",
+                    xaxis=dict(showgrid=False),
+                    yaxis=dict(showgrid=True, gridcolor='gray'),
+                    plot_bgcolor='rgba(0,0,0,0)',
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    hovermode="x unified",
+                    showlegend=False
+                )
+                st.plotly_chart(fig, use_container_width=True, config=config)
+            else:
+                st.info("No KRW balance data available.")
 
         with tab5:
-            fig = px.line(
-                df, 
-                x='timestamp', 
-                y='btc_avg_buy_price', 
-                title="BTC Average Buy Price Over Time", 
-                markers=True, 
-                template=plotly_template
-                # Removed 'name' parameter
-            )
-            # Set the trace name
-            fig.update_traces(name='BTC Avg Buy Price')
+            if not df_trades.empty:
+                fig = px.line(
+                    df_trades, 
+                    x='timestamp', 
+                    y='btc_avg_buy_price', 
+                    title="BTC Average Buy Price Over Time", 
+                    markers=True, 
+                    template=plotly_template
+                )
+                # Set the trace name
+                fig.update_traces(name='BTC Avg Buy Price')
 
-            # BUY/SELL 마커 추가
-            fig = add_buy_sell_markers(fig, df, 'timestamp', 'btc_avg_buy_price', border_color=marker_border_color)
-            
-            fig.update_traces(
-                selector=dict(name='BTC Avg Buy Price'),  # 메인 트레이스만 선택
-                line=dict(color='black', width=2),  # 선 색상 변경 및 두께 축소
-                marker=dict(size=4, symbol='circle', color='black')  # 마커 크기 축소
-            )
-            fig.update_layout(
-                margin=dict(l=40, r=20, t=30, b=20),  # 상단 마진 약간 추가
-                height=600,  # 차트 높이 축소
-                yaxis_title="Average Buy Price (KRW)",
-                xaxis=dict(showgrid=False),
-                yaxis=dict(showgrid=True, gridcolor='gray'),
-                plot_bgcolor='rgba(0,0,0,0)',
-                paper_bgcolor='rgba(0,0,0,0)',
-                hovermode="x unified",
-                showlegend=False
-            )
-            st.plotly_chart(fig, use_container_width=True, config=config)
+                # BUY/SELL 마커 추가
+                fig = add_buy_sell_markers(fig, df_trades, 'timestamp', 'btc_avg_buy_price', border_color=marker_border_color)
+                
+                fig.update_traces(
+                    selector=dict(name='BTC Avg Buy Price'),  # 메인 트레이스만 선택
+                    line=dict(color='black', width=2),  # 선 색상 변경 및 두께 축소
+                    marker=dict(size=4, symbol='circle', color='black')  # 마커 크기 축소
+                )
+                fig.update_layout(
+                    margin=dict(l=40, r=20, t=30, b=20),  # 상단 마진 약간 추가
+                    height=600,  # 차트 높이 축소
+                    yaxis_title="Average Buy Price (KRW)",
+                    xaxis=dict(showgrid=False),
+                    yaxis=dict(showgrid=True, gridcolor='gray'),
+                    plot_bgcolor='rgba(0,0,0,0)',
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    hovermode="x unified",
+                    showlegend=False
+                )
+                st.plotly_chart(fig, use_container_width=True, config=config)
+            else:
+                st.info("No BTC average buy price data available.")
 
     # 하단: 거래내역 표
     with st.container():
         # Trade History 제목 조절
         st.markdown("<h3>📋 Trade History</h3>", unsafe_allow_html=True)
         
-        # Timestamp 포맷 변경
-        df['timestamp_display'] = df['timestamp'].dt.strftime('%Y-%m-%d %H:%M')
-        displayed_df = df.copy()
-        displayed_df['timestamp'] = displayed_df['timestamp_display']
+        if not df_trades.empty:
+            # Timestamp 포맷 변경
+            df_trades['timestamp_display'] = df_trades['timestamp'].dt.strftime('%Y-%m-%d %H:%M')
+            displayed_df_trades = df_trades.copy()
+            displayed_df_trades['timestamp'] = displayed_df_trades['timestamp_display']
 
-        # 필요한 수정 적용
-        displayed_df = displayed_df.drop(columns=['id', 'timestamp_display'], errors='ignore')
-        displayed_df = displayed_df.rename(columns={
-            'reason': '이유', 'reflection':'관점'
-        })
+            # 필요한 수정 적용
+            displayed_df_trades = displayed_df_trades.drop(columns=['id', 'timestamp_display'], errors='ignore')
+            displayed_df_trades = displayed_df_trades.rename(columns={
+                'reason': '이유', 'reflection':'관점'
+            })
 
-        # KRW 및 BTC 관련 열 정리
-        for col in ['total_assets','krw_balance', 'btc_avg_buy_price', 'btc_krw_price']:
-            if col in displayed_df.columns:
-                displayed_df[col] = displayed_df[col].apply(lambda x: f"{int(x):,}" if pd.notnull(x) else x)
+            # KRW 및 BTC 관련 열 정리
+            for col in ['krw_balance', 'btc_balance', 'btc_avg_buy_price', 'btc_krw_price']:
+                if col in displayed_df_trades.columns:
+                    displayed_df_trades[col] = displayed_df_trades[col].apply(lambda x: f"{int(x):,}" if pd.notnull(x) else x)
 
-        # 열 순서 변경
-        krw_btc_columns = ['krw_balance', 'btc_balance', 'btc_avg_buy_price', 'btc_krw_price']
-        non_krw_btc_columns = [col for col in displayed_df.columns if col not in krw_btc_columns]
-        final_columns = non_krw_btc_columns + krw_btc_columns
-        displayed_df = displayed_df[final_columns]
+            # 열 순서 변경
+            krw_btc_columns = ['krw_balance', 'btc_balance', 'btc_avg_buy_price', 'btc_krw_price']
+            non_krw_btc_columns = [col for col in displayed_df_trades.columns if col not in krw_btc_columns]
+            final_columns = non_krw_btc_columns + krw_btc_columns
+            displayed_df_trades = displayed_df_trades[final_columns]
 
-        # 스타일 적용
-        styled_df = displayed_df.style.applymap(
-            lambda x: 'background-color: red; color: white;' if x == 'buy' else
-                      'background-color: blue; color: white;' if x == 'sell' else '',
-            subset=['decision']
-        ).set_properties(**{
-            'text-align': 'center'
-        }).set_table_styles([
-            {
-                'selector': 'th',
-                'props': [
-                    ('text-align', 'center')
-                ]
-            },
-            {
-                'selector': 'td:not(.col-reason):not(.col-reflection)',
-                'props': [
-                    ('text-align', 'center')
-                ]
-            }
-        ])
+            # 스타일 적용
+            styled_df_trades = displayed_df_trades.style.applymap(
+                lambda x: 'background-color: red; color: white;' if x == 'buy' else
+                          'background-color: blue; color: white;' if x == 'sell' else '',
+                subset=['decision']
+            ).set_properties(**{
+                'text-align': 'center'
+            }).set_table_styles([
+                {
+                    'selector': 'th',
+                    'props': [
+                        ('text-align', 'center')
+                    ]
+                },
+                {
+                    'selector': 'td:not(.col-reason):not(.col-reflection)',
+                    'props': [
+                        ('text-align', 'center')
+                    ]
+                }
+            ])
 
-        # 테이블 높이 설정
-        st.dataframe(styled_df, use_container_width=True, height=300)
+            # 테이블 높이 설정
+            st.dataframe(styled_df_trades, use_container_width=True, height=300)
+        else:
+            st.info("No trade history available.")
 
-if __name__ == "__main__":
-    main()
+        # 별도의 입출금 내역 섹션
+        if not df_transactions.empty:
+            st.markdown("<h3>💰 Deposits & Withdrawals</h3>", unsafe_allow_html=True)
+            
+            # Timestamp 포맷 변경
+            df_transactions['timestamp_display'] = df_transactions['timestamp'].dt.strftime('%Y-%m-%d %H:%M')
+            displayed_df_transactions = df_transactions.copy()
+            displayed_df_transactions['timestamp'] = displayed_df_transactions['timestamp_display']
+
+            # 필요한 수정 적용
+            displayed_df_transactions = displayed_df_transactions.drop(columns=['id', 'timestamp_display'], errors='ignore')
+            displayed_df_transactions = displayed_df_transactions.rename(columns={
+                'reason': '이유'
+            })
+
+            # 금액 포맷팅
+            displayed_df_transactions['amount'] = displayed_df_transactions['amount'].apply(lambda x: f"{int(x):,}" if pd.notnull(x) else x)
+
+            # 열 순서 변경
+            final_columns_transactions = ['timestamp', 'type', 'amount', 'currency', 'reason']
+            displayed_df_transactions = displayed_df_transactions[final_columns_transactions]
+
+            # 스타일 적용
+            styled_df_transactions = displayed_df_transactions.style.applymap(
+                lambda x: 'background-color: green; color: white;' if x == 'deposit' else
+                          'background-color: orange; color: white;' if x == 'withdraw' else '',
+                subset=['type']
+            ).set_properties(**{
+                'text-align': 'center'
+            }).set_table_styles([
+                {
+                    'selector': 'th',
+                    'props': [
+                        ('text-align', 'center')
+                    ]
+                },
+                {
+                    'selector': 'td:not(.col-reason)',
+                    'props': [
+                        ('text-align', 'center')
+                    ]
+                }
+            ])
+
+            # 테이블 높이 설정
+            st.dataframe(styled_df_transactions, use_container_width=True, height=300)
+        else:
+            st.info("No deposit or withdrawal history available.")
