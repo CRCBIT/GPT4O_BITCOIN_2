@@ -172,8 +172,6 @@ def main():
     # Plotly Configuration 설정
     config = {
         'displayModeBar': False  # 모드바 완전히 숨기기
-        # 또는 특정 버튼만 제거하려면 다음과 같이 설정
-        # 'modeBarButtonsToRemove': ['toImage', 'toggleSpikelines']
     }
 
     with col1:
@@ -519,6 +517,20 @@ def main():
 
         # 테이블 높이 설정
         st.dataframe(styled_df, use_container_width=True, height=300)
+
+    # 사이드바에 거래 내역 관리 인터페이스 추가
+    with st.sidebar:
+        st.header("Manage Transactions")
+        transaction_type = st.selectbox("Transaction Type", ["deposit", "withdrawal"])
+        amount = st.number_input("Amount (KRW)", min_value=0.0, step=1000.0)
+        reason = st.text_input("Reason")
+        if st.button("Add Transaction"):
+            if amount > 0:
+                with sqlite3.connect('bitcoin_trades.db') as conn:
+                    log_transaction(conn, transaction_type=transaction_type, amount=amount, currency='KRW', reason=reason)
+                st.success(f"{transaction_type.capitalize()} of {amount:,.0f} KRW added successfully.")
+            else:
+                st.error("Amount must be greater than 0.")
 
 if __name__ == "__main__":
     main()
