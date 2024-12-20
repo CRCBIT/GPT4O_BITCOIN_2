@@ -155,7 +155,7 @@ def main():
 
     # 추가: 누적 투자 금액 및 누적 수익률 계산
     df['cumulative_investment'] = df['krw_balance'] + (df['btc_balance'] * df['btc_krw_price']) + deposit_withdrawal
-    df['profit_rate_over_time'] = ((df['cumulative_investment'] - initial_investment) / initial_investment) * 100
+    df['profit_rate_over_time'] = ((current_investment - initial_investment) / initial_investment) * 100
 
     # 레이아웃 구성
     st.title("AI BTC Dashboard")  # CSS에서 글자 크기 조절됨
