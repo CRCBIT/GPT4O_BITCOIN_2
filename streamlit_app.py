@@ -225,8 +225,8 @@ def main():
         # Total Assets 제목과 그래프 사이의 여백을 제거하여 그래프가 딱 붙게 함
         st.markdown("<h3>💵 Profit Rate</h3>", unsafe_allow_html=True)
         
-        # 총 자산 계산
-        df['Profit Rate'] = profit_rate
+        # 총 수익률 계산
+        df['profit_rate'] = profit_rate
         
         # y축 범위 계산 (패딩 포함)
         y_min = df['profit_rate'].min()
