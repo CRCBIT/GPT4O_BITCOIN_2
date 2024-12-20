@@ -325,7 +325,7 @@ def main():
                     yaxis=dict(title="Price (KRW)"),
                     margin=dict(l=40, r=20, t=0, b=0),
                     dragmode="pan",
-                    height=400,  # 차트 높이 조정
+                    height=450,  # 차트 높이 조정
                     template=plotly_template,  # 사용자 선택에 따른 템플릿 적용
                     showlegend=False
                 )
@@ -358,7 +358,7 @@ def main():
                     xaxis=dict(title="Date", rangeslider=dict(visible=True)),
                     yaxis=dict(title="Price (KRW)"),
                     margin=dict(l=40, r=20, t=0, b=0),
-                    height=400,  # 차트 높이 조정
+                    height=450,  # 차트 높이 조정
                     template=plotly_template,  # 사용자 선택에 따른 템플릿 적용
                     showlegend=False
                 )
@@ -366,7 +366,7 @@ def main():
 
         # tab3: BTC/KRW Balance Ratio Pie Chart
         with tab3:
-            st.markdown("<h3>📊 BTC/KRW Balance Ratio (Current)</h3>", unsafe_allow_html=True)
+            
             
             # 현재 BTC 잔액을 KRW 단위로 환산
             current_btc_balance = df.iloc[-1]['btc_balance']
@@ -394,7 +394,7 @@ def main():
             # 레이아웃 조정
             fig_pie.update_layout(
                 margin=dict(l=20, r=20, t=50, b=20),
-                height=400,  # 그래프 높이 조정
+                height=450,  # 그래프 높이 조정
                 showlegend=True,
                 plot_bgcolor='rgba(0,0,0,0)',  # 투명 배경
                 paper_bgcolor='rgba(0,0,0,0)'  # 투명 배경
@@ -405,7 +405,7 @@ def main():
 
         # tab4: BTC/KRW Balance Ratio (100% Stacked Bar)
         with tab4:
-            st.markdown("<h3>📊 BTC/KRW Balance Ratio (Hourly)</h3>", unsafe_allow_html=True)
+            
             
             # Resample data to hourly intervals, taking the last available data point in each hour
             df_hourly = df.set_index('timestamp').resample('H').last().reset_index()
@@ -458,7 +458,7 @@ def main():
                     range=[0, 100]
                 ),
                 margin=dict(l=40, r=20, t=50, b=100),
-                height=400,  # 그래프 높이 조정
+                height=450,  # 그래프 높이 조정
                 hovermode="x unified",
                 showlegend=True,
                 plot_bgcolor='rgba(0,0,0,0)',  # 투명 배경
@@ -498,7 +498,7 @@ def main():
             )
             fig.update_layout(
                 margin=dict(l=40, r=20, t=30, b=20),  # 상단 마진 약간 추가
-                height=400,  # 차트 높이 조정
+                height=450,  # 차트 높이 조정
                 yaxis_title="Average Buy Price (KRW)",
                 xaxis=dict(showgrid=False),
                 yaxis=dict(showgrid=True, gridcolor='gray'),
