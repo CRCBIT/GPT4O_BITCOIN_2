@@ -286,8 +286,8 @@ def main():
         # Trade-Related Charts 제목 조절
         st.markdown("<h3>📈 Trade-Related Charts</h3>", unsafe_allow_html=True)
         
-        # 탭 생성
-        tab1, tab2, tab3, tab4, tab5 = st.tabs(["BTC Price Chart", "1-Year BTC Price (Daily)", "BTC Balance", "KRW Balance", "Avg Buy Price"])
+        # 탭 생성 (기존 5개 탭에 tab6 추가)
+        tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["BTC Price Chart", "1-Year BTC Price (Daily)", "BTC Balance", "KRW Balance", "Avg Buy Price", "BTC/KRW Balance Ratio"])
 
         with tab1:
             ohlc = pyupbit.get_ohlcv("KRW-BTC", interval="minute5", count=2016)  # 2016 = 5 min intervals in 1 week
@@ -460,6 +460,61 @@ def main():
                 showlegend=False
             )
             st.plotly_chart(fig, use_container_width=True, config=config)
+
+        with tab6:
+            st.markdown("<h3>📊 BTC/KRW Balance Ratio (Hourly)</h3>", unsafe_allow_html=True)
+            
+            # Resample data to hourly intervals, taking the last available data point in each hour
+            df_hourly = df.set_index('timestamp').resample('H').last().reset_index()
+            
+            # Calculate the ratio
+            df_hourly['balance_ratio'] = df_hourly['btc_balance'] / df_hourly['krw_balance']
+            
+            # Handle potential division by zero or NaN values
+            df_hourly['balance_ratio'] = df_hourly['balance_ratio'].replace([float('inf'), -float('inf')], None)
+            df_hourly['balance_ratio'] = df_hourly['balance_ratio'].fillna(0)
+
+            # Create the bar chart
+            fig_ratio = px.bar(
+                df_hourly,
+                x='timestamp',
+                y='balance_ratio',
+                title="Hourly BTC Balance to KRW Balance Ratio",
+                template=plotly_template,
+                hover_data={'balance_ratio': ':.4f'}
+            )
+
+            # Customize the bar colors based on ratio value
+            fig_ratio.update_traces(
+                marker_color='orange',
+                marker_line_color=marker_border_color,
+                marker_line_width=1.5,
+                opacity=0.7
+            )
+
+            # Update layout for better visualization
+            fig_ratio.update_layout(
+                xaxis_title="Time",
+                yaxis_title="BTC/KRW Balance Ratio",
+                xaxis=dict(
+                    type='date',
+                    tickformat="%Y-%m-%d %H:%M",
+                    tickangle=45
+                ),
+                yaxis=dict(
+                    title="Ratio",
+                    tickformat=".4f"
+                ),
+                margin=dict(l=40, r=20, t=50, b=100),
+                height=600,
+                hovermode="x unified",
+                showlegend=False,
+                plot_bgcolor='rgba(0,0,0,0)',  # 투명 배경
+                paper_bgcolor='rgba(0,0,0,0)'  # 투명 배경
+            )
+
+            # Display the bar chart
+            st.plotly_chart(fig_ratio, use_container_width=True, config=config)
 
     # 하단: 거래내역 표
     with st.container():
