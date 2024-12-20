@@ -58,8 +58,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-
-
 def get_connection():
     """SQLite 데이터베이스에 연결합니다."""
     return sqlite3.connect('bitcoin_trades.db')
@@ -272,7 +270,7 @@ def main():
                 range=y_range  # 동적으로 계산된 y축 범위 적용
             ),
             margin=dict(l=20, r=20, t=0, b=50),
-            height=300,  # 차트 높이 축소
+            height=350,  # 차트 높이 축소
             hovermode="x unified",
             showlegend=False,
             plot_bgcolor='rgba(0,0,0,0)',  # 투명 배경
@@ -286,9 +284,16 @@ def main():
         # Trade-Related Charts 제목 조절
         st.markdown("<h3>📈 Trade-Related Charts</h3>", unsafe_allow_html=True)
         
-        # 탭 생성
-        tab1, tab2, tab3, tab4, tab5 = st.tabs(["BTC Price Chart", "1-Year BTC Price (Daily)", "BTC Balance", "KRW Balance", "Avg Buy Price"])
+        # 탭 생성 (tab3, tab4를 새로 정의)
+        tab1, tab2, tab3, tab4, tab5 = st.tabs([
+            "BTC Price Chart",
+            "1-Year BTC Price (Daily)",
+            "BTC/KRW Balance Ratio Pie Chart",
+            "BTC/KRW Balance Ratio",
+            "Avg Buy Price"
+        ])
 
+        # tab1: BTC Price Chart
         with tab1:
             ohlc = pyupbit.get_ohlcv("KRW-BTC", interval="minute5", count=2016)  # 2016 = 5 min intervals in 1 week
             if ohlc is not None and not ohlc.empty:
@@ -320,12 +325,13 @@ def main():
                     yaxis=dict(title="Price (KRW)"),
                     margin=dict(l=40, r=20, t=0, b=0),
                     dragmode="pan",
-                    height=600,  # 차트 높이 축소
+                    height=450,  # 차트 높이 조정
                     template=plotly_template,  # 사용자 선택에 따른 템플릿 적용
                     showlegend=False
                 )
                 st.plotly_chart(fig, use_container_width=True, config=config)
 
+        # tab2: 1-Year BTC Price (Daily)
         with tab2:
             ohlc_daily = pyupbit.get_ohlcv("KRW-BTC", interval="day", count=365)
             if ohlc_daily is not None and not ohlc_daily.empty:
@@ -352,81 +358,178 @@ def main():
                     xaxis=dict(title="Date", rangeslider=dict(visible=True)),
                     yaxis=dict(title="Price (KRW)"),
                     margin=dict(l=40, r=20, t=0, b=0),
-                    height=600,  # 차트 높이 축소
+                    height=450,  # 차트 높이 조정
                     template=plotly_template,  # 사용자 선택에 따른 템플릿 적용
                     showlegend=False
                 )
                 st.plotly_chart(fig, use_container_width=True, config=config)
 
-        # 수정된 부분: tab3, tab4, tab5
+        # tab3: BTC/KRW Balance Ratio Pie Chart
         with tab3:
-            fig = px.line(
-                df, 
-                x='timestamp', 
-                y='btc_balance', 
-                title="BTC Balance Over Time", 
-                markers=True, 
-                template=plotly_template
-                # Removed 'name' parameter
-            )
-            # Set the trace name
-            fig.update_traces(name='BTC Balance')
-
-            # BUY/SELL 마커 추가
-            fig = add_buy_sell_markers(fig, df, 'timestamp', 'btc_balance', border_color=marker_border_color)
+            # 현재 BTC 잔액을 KRW 단위로 환산
+            current_btc_balance = df.iloc[-1]['btc_balance']
+            btc_balance_krw = current_btc_balance * current_btc_price
+            current_krw_balance = df.iloc[-1]['krw_balance']
             
-            fig.update_traces(
-                selector=dict(name='BTC Balance'),  # 메인 트레이스만 선택
-                line=dict(color='black', width=2),  # 선 두께 축소
-                marker=dict(size=4, symbol='circle', color='black')  # 마커 크기 축소
+            labels = ['BTC Balance (KRW)', 'KRW Balance']
+            values = [btc_balance_krw, current_krw_balance]
+            
+            # 원형 그래프 생성
+            fig_pie = px.pie(
+                names=labels,
+                values=values,
+                title="Current BTC/KRW Balance Ratio",
+                template=plotly_template,
+                hole=0.4  # 도넛 형태로 표시 (선택 사항)
             )
-            fig.update_layout(
-                margin=dict(l=40, r=20, t=30, b=20),  # 상단 마진 약간 추가
-                height=600,  # 차트 높이 축소
-                yaxis_title="BTC Balance",
-                xaxis=dict(showgrid=False),
-                yaxis=dict(showgrid=True, gridcolor='gray'),
-                plot_bgcolor='rgba(0,0,0,0)',
-                paper_bgcolor='rgba(0,0,0,0)',
-                hovermode="x unified",
-                showlegend=False
+            
+            # 색상 커스터마이징: Light Blue for BTC, Light Green for KRW
+            fig_pie.update_traces(
+                marker=dict(colors=['#ADD8E6', '#90EE90']),  # Light Blue and Light Green
+                textinfo='percent+label'
             )
-            st.plotly_chart(fig, use_container_width=True, config=config)
+            
+            # 레이아웃 조정
+            fig_pie.update_layout(
+                margin=dict(l=20, r=20, t=50, b=20),
+                height=450,  # 그래프 높이 조정
+                showlegend=True,
+                plot_bgcolor='rgba(0,0,0,0)',  # 투명 배경
+                paper_bgcolor='rgba(0,0,0,0)'  # 투명 배경
+            )
+            
+            # 그래프 표시
+            st.plotly_chart(fig_pie, use_container_width=True, config=config)
 
+        # tab4: BTC/KRW Balance Ratio (100% Stacked Bar) with BTC Price Line
         with tab4:
-            fig = px.line(
-                df, 
-                x='timestamp', 
-                y='krw_balance', 
-                title="KRW Balance Over Time", 
-                markers=True, 
-                template=plotly_template
-                # Removed 'name' parameter
-            )
-            # Set the trace name
-            fig.update_traces(name='KRW Balance')
-
-            # BUY/SELL 마커 추가
-            fig = add_buy_sell_markers(fig, df, 'timestamp', 'krw_balance', border_color=marker_border_color)
+            # Resample data to hourly intervals, taking the last available data point in each hour
+            df_hourly = df.set_index('timestamp').resample('H').last().reset_index()
             
-            fig.update_traces(
-                selector=dict(name='KRW Balance'),  # 메인 트레이스만 선택
-                line=dict(color='black', width=2),  # 선 색상 변경 및 두께 축소
-                marker=dict(size=4, symbol='circle', color='black')  # 마커 크기 축소
-            )
-            fig.update_layout(
-                margin=dict(l=40, r=20, t=30, b=20),  # 상단 마진 약간 추가
-                height=600,  # 차트 높이 축소
-                yaxis_title="KRW Balance",
-                xaxis=dict(showgrid=False),
-                yaxis=dict(showgrid=True, gridcolor='gray'),
-                plot_bgcolor='rgba(0,0,0,0)',
-                paper_bgcolor='rgba(0,0,0,0)',
-                hovermode="x unified",
-                showlegend=False
-            )
-            st.plotly_chart(fig, use_container_width=True, config=config)
+            # BTC 잔액을 KRW 단위로 환산
+            df_hourly['btc_balance_krw'] = df_hourly['btc_balance'] * df_hourly['btc_krw_price']
+            
+            # 100% 누적 막대 그래프를 위한 비율 계산
+            total_balance_krw = df_hourly['btc_balance_krw'] + df_hourly['krw_balance']
+            df_hourly['btc_percentage'] = (df_hourly['btc_balance_krw'] / total_balance_krw) * 100
+            df_hourly['krw_percentage'] = (df_hourly['krw_balance'] / total_balance_krw) * 100
 
+            # 잠재적인 0으로 나누는 경우 처리
+            df_hourly[['btc_percentage', 'krw_percentage']] = df_hourly[['btc_percentage', 'krw_percentage']].replace([float('inf'), -float('inf')], 0)
+            df_hourly[['btc_percentage', 'krw_percentage']] = df_hourly[['btc_percentage', 'krw_percentage']].fillna(0)
+            
+            # 시간대별 BTC 가격 데이터 보완
+            # 모든 시간대를 포함하도록 인덱스를 재설정하고, 결측값을 보간
+            full_time_range = pd.date_range(start=df_hourly['timestamp'].min(), end=df_hourly['timestamp'].max(), freq='H')
+            df_hourly = df_hourly.set_index('timestamp').reindex(full_time_range).rename_axis('timestamp').reset_index()
+            df_hourly['btc_balance_krw'] = df_hourly['btc_balance_krw'].fillna(method='ffill')
+            df_hourly['krw_balance'] = df_hourly['krw_balance'].fillna(method='ffill')
+            df_hourly['btc_percentage'] = df_hourly['btc_percentage'].fillna(0)
+            df_hourly['krw_percentage'] = df_hourly['krw_percentage'].fillna(0)
+            df_hourly['btc_krw_price'] = df_hourly['btc_krw_price'].fillna(method='ffill')
+            df_hourly['btc_balance'] = df_hourly['btc_balance'].fillna(method='ffill')
+            df_hourly['krw_balance'] = df_hourly['krw_balance'].fillna(method='ffill')
+
+            # Plotly Express를 위한 데이터 변환 (Melt)
+            df_melted = df_hourly.melt(id_vars=['timestamp'], value_vars=['btc_percentage', 'krw_percentage'],
+                                       var_name='Balance Type', value_name='Percentage')
+
+            # 가독성을 위한 이름 변경
+            df_melted['Balance Type'] = df_melted['Balance Type'].replace({
+                'btc_percentage': 'BTC Balance (KRW)',
+                'krw_percentage': 'KRW Balance'
+            })
+
+            # Create subplots with secondary y-axis
+            fig_ratio = make_subplots(specs=[[{"secondary_y": True}]])
+
+            # Add BTC Balance (KRW) as a bar trace
+            fig_ratio.add_trace(
+                go.Bar(
+                    x=df_melted[df_melted['Balance Type'] == 'BTC Balance (KRW)']['timestamp'],
+                    y=df_melted[df_melted['Balance Type'] == 'BTC Balance (KRW)']['Percentage'],
+                    name='BTC Balance (KRW)',
+                    marker_color='#ADD8E6',  # Light Blue
+                ),
+                secondary_y=False,
+            )
+
+            # Add KRW Balance as a bar trace
+            fig_ratio.add_trace(
+                go.Bar(
+                    x=df_melted[df_melted['Balance Type'] == 'KRW Balance']['timestamp'],
+                    y=df_melted[df_melted['Balance Type'] == 'KRW Balance']['Percentage'],
+                    name='KRW Balance',
+                    marker_color='#90EE90',  # Light Green
+                ),
+                secondary_y=False,
+            )
+
+            # Add BTC Price as a line trace on secondary y-axis
+            fig_ratio.add_trace(
+                go.Scatter(
+                    x=df_hourly['timestamp'],
+                    y=df_hourly['btc_krw_price'],
+                    name='BTC Price (KRW)',
+                    mode='lines',
+                    line=dict(color='purple', width=2),
+                    yaxis='y2'
+                ),
+                secondary_y=True,
+            )
+
+            # Update layout for 100% stacked bars and secondary y-axis
+            fig_ratio.update_layout(
+                barmode='stack',
+                title_text="Hourly BTC/KRW Balance Ratio (100% Stacked) with BTC Price",
+                template=plotly_template,
+                height=450,  # 그래프 높이 조정
+                margin=dict(l=40, r=20, t=50, b=100),
+                plot_bgcolor='rgba(0,0,0,0)',  # 투명 배경
+                paper_bgcolor='rgba(0,0,0,0)',  # 투명 배경
+                hovermode="x unified",
+                showlegend=True
+            )
+
+            # Configure x-axis
+            fig_ratio.update_xaxes(
+                title="Time",
+                tickformat="%Y-%m-%d %H:%M",
+                tickangle=45,
+                type='date',
+                range=[df_hourly['timestamp'].min(), df_hourly['timestamp'].max()]
+            )
+
+            # Configure primary y-axis (Percentage)
+            fig_ratio.update_yaxes(
+                title="Percentage (%)",
+                range=[0, 100],
+                secondary_y=False
+            )
+
+            # Configure secondary y-axis (BTC Price)
+            fig_ratio.update_yaxes(
+                title="BTC Price (KRW)",
+                secondary_y=True,
+                showgrid=False,
+                tickprefix="₩"
+            )
+
+            # Adjust legend to avoid overlap
+            fig_ratio.update_layout(
+                legend=dict(
+                    x=0.01,
+                    y=0.99,
+                    bgcolor='rgba(255,255,255,0.5)',
+                    bordercolor='rgba(0,0,0,0)',
+                    borderwidth=1
+                )
+            )
+
+            # 그래프 표시
+            st.plotly_chart(fig_ratio, use_container_width=True, config=config)
+
+        # tab5: Avg Buy Price
         with tab5:
             fig = px.line(
                 df, 
@@ -450,7 +553,7 @@ def main():
             )
             fig.update_layout(
                 margin=dict(l=40, r=20, t=30, b=20),  # 상단 마진 약간 추가
-                height=600,  # 차트 높이 축소
+                height=450,  # 차트 높이 조정
                 yaxis_title="Average Buy Price (KRW)",
                 xaxis=dict(showgrid=False),
                 yaxis=dict(showgrid=True, gridcolor='gray'),
