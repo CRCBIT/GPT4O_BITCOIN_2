@@ -42,24 +42,9 @@ if not access or not secret:
     raise ValueError("Missing API keys. Please check your .env file.")
 upbit = pyupbit.Upbit(access, secret)
 
-# 텔레그램 봇 설정
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+# Load the initial investment from the .env file
+INITIAL_INVESTMENT = float(os.getenv("INITIAL_INVESTMENT", 0))
 
-if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
-    logger.error("Telegram bot configuration is missing. Check your .env file.")
-    raise ValueError("Telegram bot configuration is missing.")
-
-bot = Bot(token=TELEGRAM_BOT_TOKEN)
-
-# 텔레그램 메시지 전송 함수
-def send_telegram_message(message):
-    async def _send_message():
-        try:
-            await bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=message)
-            logger.info(f"Message sent successfully: {message}")
-        except Exception as e:
-            logger.error(f"Failed to send Telegram message: {e}")
 
 # SQLite 데이터베이스 초기화 함수 - 거래 내역을 저장할 테이블을 생성
 def init_db():
@@ -106,6 +91,19 @@ def log_transaction(conn, transaction_type, amount, currency, reason=''):
               (timestamp, transaction_type, amount, currency, reason))
     conn.commit()
 
+# 순 투자금 계산 함수 추가
+def calculate_net_investment(conn):
+    """
+    총 입금액에서 총 출금액을 뺀 순 투자금을 계산합니다.
+    """
+    c = conn.cursor()
+    c.execute("SELECT type, amount FROM transactions")
+    transactions = c.fetchall()
+    
+    total_deposit = sum([row[1] for row in transactions if row[0].lower() == 'deposit'])
+    total_withdrawal = sum([row[1] for row in transactions if row[0].lower() == 'withdrawal'])
+    net_investment = total_deposit - total_withdrawal + INITIAL_INVESTMENT
+    return net_investment
 
 # 최근 투자 기록 조회
 def get_recent_trades(conn, days=7):
@@ -123,19 +121,25 @@ def get_recent_transactions(conn, days=7):
     columns = [column[0] for column in c.description]
     return pd.DataFrame.from_records(data=c.fetchall(), columns=columns)
 
-# 최근 투자 기록을 기반으로 퍼포먼스 계산 (초기 잔고 대비 최종 잔고)
-def calculate_performance(trades_df):
+# 퍼포먼스 계산 함수 수정
+def calculate_performance(conn, trades_df):
+    """
+    초기 투자금(순 투자금) 대비 현재 잔고를 기반으로 퍼포먼스를 계산합니다.
+    """
     if trades_df.empty:
         return 0  # 기록이 없을 경우 0%로 설정
-    # 초기 잔고 계산 (KRW + BTC * 현재 가격)
-    initial_balance = trades_df.iloc[-1]['krw_balance'] + trades_df.iloc[-1]['btc_balance'] * trades_df.iloc[-1]['btc_krw_price']
+    
+    net_investment = calculate_net_investment(conn)
+    if net_investment == 0:
+        return 0  # 순 투자금이 0일 경우 0%로 설정
+    
     # 최종 잔고 계산
-    final_balance = trades_df.iloc[0]['krw_balance'] + trades_df.iloc[0]['btc_balance'] * trades_df.iloc[0]['btc_krw_price']
-    return (final_balance - initial_balance) / initial_balance * 100
+    final_balance = trades_df.iloc[-1]['krw_balance'] + trades_df.iloc[-1]['btc_balance'] * trades_df.iloc[-1]['btc_krw_price']
+    return (final_balance - net_investment) / net_investment * 100
 
 # AI 모델을 사용하여 최근 투자 기록과 시장 데이터를 기반으로 분석 및 반성을 생성하는 함수
-def generate_reflection(trades_df, current_market_data):
-    performance = calculate_performance(trades_df)  # 투자 퍼포먼스 계산
+def generate_reflection(conn, trades_df, current_market_data):
+    performance = calculate_performance(conn, trades_df)  # 수정된 퍼포먼스 계산
 
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     if not client.api_key:
@@ -291,10 +295,7 @@ def log_news_to_console(news):
     else:
         logger.info("\n".join([f"- {item['title']} ({item['date']})" for item in news]))
 
-
-
-
-### 메인 AI 트레이딩 로직
+### 메인 AI 트레이딩 로직 수정
 def ai_trading():
     global upbit
     ### 데이터 가져오기
@@ -315,7 +316,7 @@ def ai_trading():
     df_hourly = add_indicators(df_hourly)
 
     # 최근 데이터만 사용하도록 설정 (메모리 절약)
-    df_daily_recent = df_daily.tail(120)
+    df_daily_recent = df_daily.tail(90)
     df_hourly_recent = df_hourly.tail(48)
 
     # 4. 공포 탐욕 지수 가져오기
@@ -354,7 +355,7 @@ def ai_trading():
             }
 
             # 반성 및 개선 내용 생성
-            reflection = generate_reflection(recent_trades, current_market_data)
+            reflection = generate_reflection(conn, recent_trades, current_market_data)
 
             # AI 모델에 반성 내용 제공
             # Few-shot prompting으로 JSON 예시 추가
@@ -415,7 +416,7 @@ Your percentage should reflect the strength of your conviction in the decision b
                         "role": "user",
                         "content": f"""Current investment status: {json.dumps(filtered_balances)}
 Orderbook: {json.dumps(orderbook)}
-Daily OHLCV with indicators (recent 120 days): {df_daily_recent.to_json()}
+Daily OHLCV with indicators (recent 90 days): {df_daily_recent.to_json()}
 Hourly OHLCV with indicators (recent 48 hours): {df_hourly_recent.to_json()}
 Recent news headlines: {json.dumps(news_headlines)}
 Fear and Greed Index: {json.dumps(fear_greed_index)}
@@ -466,7 +467,7 @@ Transactions: {recent_transactions.to_json()}
 
             order_executed = False
 
-            if decision == "buy":
+            if decision.lower() == "buy":
                 my_krw = upbit.get_balance("KRW")
                 if my_krw is None:
                     logger.error("Failed to retrieve KRW balance.")
@@ -479,14 +480,14 @@ Transactions: {recent_transactions.to_json()}
                         if order:
                             logger.info(f"Buy order executed successfully: {order}")
                             order_executed = True
-                            send_telegram_message(f"\u2705 비트코인 구매 완료\n구매 금액: {buy_amount:.2f} KRW\n잔액: {my_krw - buy_amount:.2f} KRW\n이유: {reason}")
+                            
                         else:
                             logger.error("Buy order failed.")
                     except Exception as e:
                         logger.error(f"Error executing buy order: {e}")
                 else:
                     logger.warning("Buy Order Failed: Insufficient KRW (less than 5000 KRW)")
-            elif decision == "sell":
+            elif decision.lower() == "sell":
                 my_btc = upbit.get_balance("KRW-BTC")
                 if my_btc is None:
                     logger.error("Failed to retrieve BTC balance.")
@@ -500,16 +501,16 @@ Transactions: {recent_transactions.to_json()}
                         if order:
                             logger.info(f"Sell Order Executed: {percentage}% of held BTC")
                             order_executed = True
-                            send_telegram_message(f"\u2705 비트코인 판매 완료\n판매 수량: {sell_amount:.4f} BTC\n판매 금액: {sell_amount * current_price:.2f} KRW\n이유: {reason}")
+                            
                         else:
                             logger.error("Sell order failed.")
                     except Exception as e:
                         logger.error(f"Error executing sell order: {e}")
                 else:
                     logger.warning("Sell Order Failed: Insufficient BTC (less than 5000 KRW worth)")
-            elif decision == "hold":
+            elif decision.lower() == "hold":
                 logger.info("Decision is to hold. No action taken.")
-                send_telegram_message(f"\u2705 비트코인 홀드 결정\n현재 상태 유지\n이유: {reason}")
+                
             else:
                 logger.error("Invalid decision received from AI.")
                 return
@@ -522,7 +523,7 @@ Transactions: {recent_transactions.to_json()}
             btc_avg_buy_price = next((float(balance['avg_buy_price']) for balance in balances if balance['currency'] == 'BTC'), 0)
             current_btc_price = pyupbit.get_current_price("KRW-BTC")
 
-            # 거래 기록을 DB에 저장하기
+            # 거래 기록을 DB에 저장하기 (순 투자금 반영)
             log_trade(conn, decision, percentage if order_executed else 0, reason,
                       btc_balance, krw_balance, btc_avg_buy_price, current_btc_price, reflection)
     except sqlite3.Error as e:
@@ -581,9 +582,3 @@ if __name__ == "__main__":
     while True:
         schedule.run_pending()
         time.sleep(1)
-                                        
-
-
-
-
-
