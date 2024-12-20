@@ -153,6 +153,14 @@ def main():
     df['btc_percentage'] = (df['btc_balance'] * df['btc_krw_price']) / df['total_assets'] * 100
     df['krw_percentage'] = (df['krw_balance']) / df['total_assets'] * 100
 
+    # 비율 합계 검증 (디버깅용)
+    df['percentage_sum'] = df['btc_percentage'] + df['krw_percentage']
+    df['percentage_valid'] = df['percentage_sum'].between(99.9, 100.1)
+
+    # 검증 결과 출력 (디버깅용)
+    st.write("Percentage Sum Validation (First 5 Rows):")
+    st.write(df[['timestamp', 'btc_percentage', 'krw_percentage', 'percentage_sum', 'percentage_valid']].head())
+
     # 계산
     initial_investment = calculate_initial_investment(df)
     current_investment = calculate_current_investment(df)
@@ -364,17 +372,31 @@ def main():
                 st.warning("No data available to display the asset percentage chart.")
                 return
 
+            # 데이터 롱 포맷으로 변환
+            df_long = df.melt(id_vars=['timestamp'], value_vars=['btc_percentage', 'krw_percentage'],
+                              var_name='Asset Type', value_name='Percentage')
+
+            # Asset Type 이름 변경 (가독성 향상)
+            df_long['Asset Type'] = df_long['Asset Type'].map({
+                'btc_percentage': 'BTC',
+                'krw_percentage': 'KRW'
+            })
+
+            # 데이터 유효성 검증
+            valid_df_long = df_long.dropna(subset=['Percentage'])
+
             # 스택드 막대그래프 생성
             fig_asset_pct = px.bar(
-                df,
+                valid_df_long,
                 x='timestamp',
-                y=['btc_percentage', 'krw_percentage'],
+                y='Percentage',
+                color='Asset Type',
                 title="Asset Percentage Over Time",
-                labels={'value': 'Percentage (%)', 'timestamp': 'Time', 'variable': 'Asset Type'},
-                template=plotly_template,
-                hover_data={'btc_percentage': ':.2f', 'krw_percentage': ':.2f'}
+                labels={'Percentage': 'Percentage (%)', 'timestamp': 'Time', 'Asset Type': 'Asset Type'},
+                template=plotly_template
             )
 
+            # 레이아웃 조정
             fig_asset_pct.update_layout(
                 barmode='stack',  # 스택드 모드
                 xaxis_title='Time',
@@ -387,11 +409,12 @@ def main():
                 showlegend=True
             )
 
-            # 색상 설정
+            # 색상 설정 (BTC: 빨강, KRW: 파랑)
             fig_asset_pct.update_traces(
                 marker=dict(line=dict(width=0.5, color='white'))
             )
 
+            # 그래프 출력
             st.plotly_chart(fig_asset_pct, use_container_width=True, config=config)
 
     # 하단: 거래내역 표
