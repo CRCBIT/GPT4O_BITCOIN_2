@@ -58,8 +58,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-
-
 def get_connection():
     """SQLite 데이터베이스에 연결합니다."""
     return sqlite3.connect('bitcoin_trades.db')
@@ -467,26 +465,29 @@ def main():
             # Resample data to hourly intervals, taking the last available data point in each hour
             df_hourly = df.set_index('timestamp').resample('H').last().reset_index()
             
-            # Prepare data for 100% stacked bar chart
-            # Option 1: Normalize btc_balance and krw_balance to sum to 100% per hour
-            df_hourly['btc_percentage'] = (df_hourly['btc_balance'] / (df_hourly['btc_balance'] + df_hourly['krw_balance'])) * 100
-            df_hourly['krw_percentage'] = (df_hourly['krw_balance'] / (df_hourly['btc_balance'] + df_hourly['krw_balance'])) * 100
+            # BTC 잔액을 KRW 단위로 환산
+            df_hourly['btc_balance_krw'] = df_hourly['btc_balance'] * current_btc_price
+            
+            # 100% 누적 막대 그래프를 위한 비율 계산
+            total_balance_krw = df_hourly['btc_balance_krw'] + df_hourly['krw_balance']
+            df_hourly['btc_percentage'] = (df_hourly['btc_balance_krw'] / total_balance_krw) * 100
+            df_hourly['krw_percentage'] = (df_hourly['krw_balance'] / total_balance_krw) * 100
 
-            # Handle potential division by zero
+            # 잠재적인 0으로 나누는 경우 처리
             df_hourly[['btc_percentage', 'krw_percentage']] = df_hourly[['btc_percentage', 'krw_percentage']].replace([float('inf'), -float('inf')], 0)
             df_hourly[['btc_percentage', 'krw_percentage']] = df_hourly[['btc_percentage', 'krw_percentage']].fillna(0)
 
-            # Melt the dataframe for Plotly Express
+            # Plotly Express를 위한 데이터 변환 (Melt)
             df_melted = df_hourly.melt(id_vars=['timestamp'], value_vars=['btc_percentage', 'krw_percentage'],
                                        var_name='Balance Type', value_name='Percentage')
 
-            # Rename for better readability
+            # 가독성을 위한 이름 변경
             df_melted['Balance Type'] = df_melted['Balance Type'].replace({
-                'btc_percentage': 'BTC Balance',
+                'btc_percentage': 'BTC Balance (KRW)',
                 'krw_percentage': 'KRW Balance'
             })
 
-            # Create the 100% stacked bar chart
+            # 100% 누적 막대 그래프 생성
             fig_ratio = px.bar(
                 df_melted,
                 x='timestamp',
@@ -498,7 +499,7 @@ def main():
                 labels={'Percentage': 'Percentage (%)', 'timestamp': 'Time'}
             )
 
-            # Update layout for better visualization
+            # 누적 막대 모드 설정
             fig_ratio.update_layout(
                 barmode='stack',
                 xaxis=dict(
@@ -519,13 +520,13 @@ def main():
                 paper_bgcolor='rgba(0,0,0,0)'  # 투명 배경
             )
 
-            # Customize colors for clarity
+            # 색상 및 외곽선 커스터마이징
             fig_ratio.update_traces(
                 marker_line_color=marker_border_color,
                 marker_line_width=1.5
             )
 
-            # Display the 100% stacked bar chart
+            # 그래프 표시
             st.plotly_chart(fig_ratio, use_container_width=True, config=config)
 
     # 하단: 거래내역 표
