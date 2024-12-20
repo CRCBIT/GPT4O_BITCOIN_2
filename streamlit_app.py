@@ -3,6 +3,7 @@ import sqlite3
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 import pyupbit
 from streamlit_autorefresh import st_autorefresh
 
@@ -56,6 +57,8 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
+
 
 def get_connection():
     """SQLite 데이터베이스에 연결합니다."""
@@ -146,21 +149,6 @@ def main():
         st.warning('No trade data available.')
         return
 
-    # 총 자산 계산
-    df['total_assets'] = df['krw_balance'] + (df['btc_balance'] * df['btc_krw_price'])
-
-    # 비율 계산
-    df['btc_percentage'] = (df['btc_balance'] * df['btc_krw_price']) / df['total_assets'] * 100
-    df['krw_percentage'] = (df['krw_balance']) / df['total_assets'] * 100
-
-    # 비율 합계 검증 (디버깅용)
-    df['percentage_sum'] = df['btc_percentage'] + df['krw_percentage']
-    df['percentage_valid'] = df['percentage_sum'].between(99.9, 100.1)
-
-    # 검증 결과 출력 (디버깅용)
-    st.write("Percentage Sum Validation (First 5 Rows):")
-    st.write(df[['timestamp', 'btc_percentage', 'krw_percentage', 'percentage_sum', 'percentage_valid']].head())
-
     # 계산
     initial_investment = calculate_initial_investment(df)
     current_investment = calculate_current_investment(df)
@@ -177,6 +165,8 @@ def main():
     # Plotly Configuration 설정
     config = {
         'displayModeBar': False  # 모드바 완전히 숨기기
+        # 또는 특정 버튼만 제거하려면 다음과 같이 설정
+        # 'modeBarButtonsToRemove': ['toImage', 'toggleSpikelines']
     }
 
     with col1:
@@ -234,6 +224,9 @@ def main():
 
         # Total Assets 제목과 그래프 사이의 여백을 제거하여 그래프가 딱 붙게 함
         st.markdown("<h3>💵 Total Assets</h3>", unsafe_allow_html=True)
+        
+        # 총 자산 계산
+        df['total_assets'] = df['krw_balance'] + (df['btc_balance'] * df['btc_krw_price'])
         
         # y축 범위 계산 (패딩 포함)
         y_min = df['total_assets'].min()
@@ -293,8 +286,8 @@ def main():
         # Trade-Related Charts 제목 조절
         st.markdown("<h3>📈 Trade-Related Charts</h3>", unsafe_allow_html=True)
         
-        # 탭 생성: 기존 tab1, tab2 유지하고 tab3은 Asset Percentage로 설정
-        tab1, tab2, tab3 = st.tabs(["BTC Price Chart", "1-Year BTC Price (Daily)", "Asset Percentage"])
+        # 탭 생성
+        tab1, tab2, tab3, tab4, tab5 = st.tabs(["BTC Price Chart", "1-Year BTC Price (Daily)", "BTC Balance", "KRW Balance", "Avg Buy Price"])
 
         with tab1:
             ohlc = pyupbit.get_ohlcv("KRW-BTC", interval="minute5", count=2016)  # 2016 = 5 min intervals in 1 week
@@ -365,57 +358,108 @@ def main():
                 )
                 st.plotly_chart(fig, use_container_width=True, config=config)
 
+        # 수정된 부분: tab3, tab4, tab5
         with tab3:
-            st.markdown("### 💹 Asset Percentage Over Time", unsafe_allow_html=True)
-
-            if df.empty:
-                st.warning("No data available to display the asset percentage chart.")
-                return
-
-            # 데이터 롱 포맷으로 변환
-            df_long = df.melt(id_vars=['timestamp'], value_vars=['btc_percentage', 'krw_percentage'],
-                              var_name='Asset Type', value_name='Percentage')
-
-            # Asset Type 이름 변경 (가독성 향상)
-            df_long['Asset Type'] = df_long['Asset Type'].map({
-                'btc_percentage': 'BTC',
-                'krw_percentage': 'KRW'
-            })
-
-            # 데이터 유효성 검증
-            valid_df_long = df_long.dropna(subset=['Percentage'])
-
-            # 스택드 막대그래프 생성
-            fig_asset_pct = px.bar(
-                valid_df_long,
-                x='timestamp',
-                y='Percentage',
-                color='Asset Type',
-                title="Asset Percentage Over Time",
-                labels={'Percentage': 'Percentage (%)', 'timestamp': 'Time', 'Asset Type': 'Asset Type'},
+            fig = px.line(
+                df, 
+                x='timestamp', 
+                y='btc_balance', 
+                title="BTC Balance Over Time", 
+                markers=True, 
                 template=plotly_template
+                # Removed 'name' parameter
             )
+            # Set the trace name
+            fig.update_traces(name='BTC Balance')
 
-            # 레이아웃 조정
-            fig_asset_pct.update_layout(
-                barmode='stack',  # 스택드 모드
-                xaxis_title='Time',
-                yaxis_title='Percentage (%)',
-                margin=dict(l=40, r=20, t=50, b=50),
-                height=600,
+            # BUY/SELL 마커 추가
+            fig = add_buy_sell_markers(fig, df, 'timestamp', 'btc_balance', border_color=marker_border_color)
+            
+            fig.update_traces(
+                selector=dict(name='BTC Balance'),  # 메인 트레이스만 선택
+                line=dict(color='black', width=2),  # 선 두께 축소
+                marker=dict(size=4, symbol='circle', color='black')  # 마커 크기 축소
+            )
+            fig.update_layout(
+                margin=dict(l=40, r=20, t=30, b=20),  # 상단 마진 약간 추가
+                height=600,  # 차트 높이 축소
+                yaxis_title="BTC Balance",
+                xaxis=dict(showgrid=False),
+                yaxis=dict(showgrid=True, gridcolor='gray'),
                 plot_bgcolor='rgba(0,0,0,0)',
                 paper_bgcolor='rgba(0,0,0,0)',
-                hovermode='x unified',
-                showlegend=True
+                hovermode="x unified",
+                showlegend=False
             )
+            st.plotly_chart(fig, use_container_width=True, config=config)
 
-            # 색상 설정 (BTC: 빨강, KRW: 파랑)
-            fig_asset_pct.update_traces(
-                marker=dict(line=dict(width=0.5, color='white'))
+        with tab4:
+            fig = px.line(
+                df, 
+                x='timestamp', 
+                y='krw_balance', 
+                title="KRW Balance Over Time", 
+                markers=True, 
+                template=plotly_template
+                # Removed 'name' parameter
             )
+            # Set the trace name
+            fig.update_traces(name='KRW Balance')
 
-            # 그래프 출력
-            st.plotly_chart(fig_asset_pct, use_container_width=True, config=config)
+            # BUY/SELL 마커 추가
+            fig = add_buy_sell_markers(fig, df, 'timestamp', 'krw_balance', border_color=marker_border_color)
+            
+            fig.update_traces(
+                selector=dict(name='KRW Balance'),  # 메인 트레이스만 선택
+                line=dict(color='black', width=2),  # 선 색상 변경 및 두께 축소
+                marker=dict(size=4, symbol='circle', color='black')  # 마커 크기 축소
+            )
+            fig.update_layout(
+                margin=dict(l=40, r=20, t=30, b=20),  # 상단 마진 약간 추가
+                height=600,  # 차트 높이 축소
+                yaxis_title="KRW Balance",
+                xaxis=dict(showgrid=False),
+                yaxis=dict(showgrid=True, gridcolor='gray'),
+                plot_bgcolor='rgba(0,0,0,0)',
+                paper_bgcolor='rgba(0,0,0,0)',
+                hovermode="x unified",
+                showlegend=False
+            )
+            st.plotly_chart(fig, use_container_width=True, config=config)
+
+        with tab5:
+            fig = px.line(
+                df, 
+                x='timestamp', 
+                y='btc_avg_buy_price', 
+                title="BTC Average Buy Price Over Time", 
+                markers=True, 
+                template=plotly_template
+                # Removed 'name' parameter
+            )
+            # Set the trace name
+            fig.update_traces(name='BTC Avg Buy Price')
+
+            # BUY/SELL 마커 추가
+            fig = add_buy_sell_markers(fig, df, 'timestamp', 'btc_avg_buy_price', border_color=marker_border_color)
+            
+            fig.update_traces(
+                selector=dict(name='BTC Avg Buy Price'),  # 메인 트레이스만 선택
+                line=dict(color='black', width=2),  # 선 색상 변경 및 두께 축소
+                marker=dict(size=4, symbol='circle', color='black')  # 마커 크기 축소
+            )
+            fig.update_layout(
+                margin=dict(l=40, r=20, t=30, b=20),  # 상단 마진 약간 추가
+                height=600,  # 차트 높이 축소
+                yaxis_title="Average Buy Price (KRW)",
+                xaxis=dict(showgrid=False),
+                yaxis=dict(showgrid=True, gridcolor='gray'),
+                plot_bgcolor='rgba(0,0,0,0)',
+                paper_bgcolor='rgba(0,0,0,0)',
+                hovermode="x unified",
+                showlegend=False
+            )
+            st.plotly_chart(fig, use_container_width=True, config=config)
 
     # 하단: 거래내역 표
     with st.container():
