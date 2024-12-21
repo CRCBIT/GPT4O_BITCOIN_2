@@ -7,7 +7,7 @@ from plotly.subplots import make_subplots
 import pyupbit
 from streamlit_autorefresh import st_autorefresh
 
-deposit_withdrawal = 400000
+deposit_withdrawal = 500000
 
 # 항상 wide 모드 활성화, 제목 및 사이드바 설정
 st.set_page_config(
