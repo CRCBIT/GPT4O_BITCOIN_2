@@ -44,7 +44,7 @@ st.markdown(
     }
 
     /* 추가적인 여백 제거 (필요 시) */
-    .css-18e3th9 {  /* Streamlit의 내부 클래스 이름; 버전에 따라 다를 수 있음 */
+    .css-18e3th9 {
         padding-top: 1rem;
     }
 
@@ -102,7 +102,7 @@ def add_buy_sell_markers(fig, df, x_col, y_col, border_color='black'):
                 size=10,  # 마커 크기 약간 축소
                 color='red',
                 symbol='triangle-up',
-                line=dict(width=1.5, color=border_color)  # 테두리 두께 조정
+                line=dict(width=1.5, color=border_color)
             ),
             name='Buy',
             hovertemplate="<b>Buy</b><br>Time: %{x}<br>Price: %{y:,} KRW"
@@ -117,7 +117,7 @@ def add_buy_sell_markers(fig, df, x_col, y_col, border_color='black'):
                 size=10,  # 마커 크기 약간 축소
                 color='blue',
                 symbol='triangle-down',
-                line=dict(width=1.5, color=border_color)  # 테두리 두께 조정
+                line=dict(width=1.5, color=border_color)
             ),
             name='Sell',
             hovertemplate="<b>Sell</b><br>Time: %{x}<br>Price: %{y:,} KRW"
@@ -160,26 +160,25 @@ def main():
     # 변경된 레이아웃: 두 개의 컬럼 (col1과 col3)
     col1, col3 = st.columns([1, 3])
 
-    # Plotly Configuration 설정
+    # Plotly Configuration 설정 (모드바 숨기기 등)
     config = {
-        'displayModeBar': False  # 모드바 완전히 숨기기
+        'displayModeBar': False
     }
 
     with col1:
-        # Performance Metrics 제목 조절
+        # Performance Metrics
         st.markdown("<h3>⚡ Performance Metrics</h3>", unsafe_allow_html=True)
         
-        # Current Profit Rate - 조건부 색상 및 포맷팅
+        # Current Profit Rate
         if profit_rate > 0:
             formatted_profit = f"<span style='color:red; font-weight:bold;'>+{profit_rate:.2f}%</span>"
         elif profit_rate < 0:
             formatted_profit = f"<span style='color:blue; font-weight:bold;'>{profit_rate:.2f}%</span>"
         else:
             formatted_profit = f"{profit_rate:.2f}%"
-        
         st.markdown(f"**Current Profit Rate:** {formatted_profit}", unsafe_allow_html=True)
         
-        # Total Assets (KRW) - 조건부 색상 및 포맷팅
+        # Total Assets (KRW)
         if current_investment > initial_investment:
             assets_color = "red"
             assets_symbol = "+"
@@ -189,15 +188,12 @@ def main():
         else:
             assets_color = "black"
             assets_symbol = ""
-        
         formatted_assets = f"<span style='color:{assets_color}; font-weight:bold;'>{assets_symbol}{current_investment:,.0f} KRW</span>"
         st.markdown(f"**Total Assets (KRW):** {formatted_assets}", unsafe_allow_html=True)
         
-        # Current BTC Price (KRW)
+        # Current BTC Price (KRW) - 하루 전 데이터로 조건부 색상 및 화살표
         latest_time = df.iloc[-1]['timestamp']
         one_day_ago_time = latest_time - pd.Timedelta(days=1)
-        
-        # 하루 전 시간에 가장 가까운 데이터를 찾기
         previous_data = df[df['timestamp'] <= one_day_ago_time]
         
         if not previous_data.empty:
@@ -226,10 +222,10 @@ def main():
         # y축 범위 계산 (패딩 포함)
         y_min = df['total_assets'].min()
         y_max = df['total_assets'].max()
-        padding = (y_max - y_min) * 0.05  # 5% 패딩
+        padding = (y_max - y_min) * 0.05
         y_range = [y_min - padding, y_max + padding]
 
-        # Total Assets 영역 그래프 생성
+        # Total Assets 그래프
         total_assets_fig = px.area(
             df, 
             x='timestamp', 
@@ -237,15 +233,13 @@ def main():
             template=plotly_template, 
             hover_data={'total_assets': ':.0f'}
         )
-        
-        # 색상과 마커 스타일 커스터마이징
         total_assets_fig.update_traces(
             line=dict(color='green', width=2),
             fillcolor='rgba(0, 128, 0, 0.3)',
             marker=dict(size=4, symbol='circle', color='green')
         )
         
-        # 초기 투자 기준선 추가
+        # 초기 투자 기준선
         total_assets_fig.add_hline(
             y=initial_investment,
             line_dash="dash",
@@ -253,8 +247,6 @@ def main():
             annotation_text="Initial Investment",
             annotation_position="bottom right"
         )
-
-        # 레이아웃 조정
         total_assets_fig.update_layout(
             xaxis=dict(
                 title="Time",
@@ -288,9 +280,9 @@ def main():
             "Avg Buy Price"
         ])
 
-        # tab1: BTC Price Chart (5분봉, 최근 1주)
+        # tab1: BTC Price Chart (5분봉, 최근 7일만 표시 / 줌, 스크롤 불가)
         with tab1:
-            # count=2016 => 5분봉 × 2016개 = 대략 7일치
+            # 5분봉 * 2016 = 7일치
             ohlc = pyupbit.get_ohlcv("KRW-BTC", interval="minute5", count=2016)
             if ohlc is not None and not ohlc.empty:
                 ohlc = ohlc.reset_index()
@@ -302,28 +294,27 @@ def main():
                     close=ohlc['close'],
                     name='BTC',
                     increasing=dict(
-                        line=dict(color='#FF9999'),  # Light Red
+                        line=dict(color='#FF9999'),
                         fillcolor='#FF9999'
                     ),
                     decreasing=dict(
-                        line=dict(color='#9999FF'),  # Light Blue
+                        line=dict(color='#9999FF'),
                         fillcolor='#9999FF'
                     )
                 )])
                 # BUY/SELL 마커 추가
                 fig = add_buy_sell_markers(fig, df, 'timestamp', 'btc_krw_price', border_color=marker_border_color)
-                
-                # 아래 range 부분만 수정해서 최근 1주 보이도록 함
+
+                # 딱 7일치만 고정 표시
                 fig.update_layout(
                     xaxis=dict(
                         title="Time",
-                        rangeslider=dict(visible=True),
-                        # ↓↓↓ 수정된 부분 ↓↓↓
-                        range=[ohlc['index'].iloc[0], ohlc['index'].iloc[-1]]  # 최근 일주일 전체 범위
+                        rangeslider=dict(visible=False),  # 범위 슬라이더 비활성화
+                        range=[ohlc['index'].iloc[0], ohlc['index'].iloc[-1]]
                     ),
                     yaxis=dict(title="Price (KRW)"),
                     margin=dict(l=40, r=20, t=0, b=0),
-                    dragmode="pan",
+                    dragmode=None,  # 줌/팬 불가
                     height=450,
                     template=plotly_template,
                     showlegend=False
@@ -379,12 +370,10 @@ def main():
                 template=plotly_template,
                 hole=0.4
             )
-            
             fig_pie.update_traces(
-                marker=dict(colors=['#ADD8E6', '#90EE90']),  # Light Blue / Light Green
+                marker=dict(colors=['#ADD8E6', '#90EE90']),
                 textinfo='percent+label'
             )
-            
             fig_pie.update_layout(
                 margin=dict(l=20, r=20, t=50, b=20),
                 height=450,
@@ -392,14 +381,11 @@ def main():
                 plot_bgcolor='rgba(0,0,0,0)',
                 paper_bgcolor='rgba(0,0,0,0)'
             )
-            
             st.plotly_chart(fig_pie, use_container_width=True, config=config)
 
         # tab4: BTC/KRW Balance Ratio (100% Stacked Bar) with BTC Price Line
         with tab4:
-            # 시간 단위로 리샘플
             df_hourly = df.set_index('timestamp').resample('H').last().reset_index()
-            
             df_hourly['btc_balance_krw'] = df_hourly['btc_balance'] * df_hourly['btc_krw_price']
             total_balance_krw = df_hourly['btc_balance_krw'] + df_hourly['krw_balance']
             df_hourly['btc_percentage'] = (df_hourly['btc_balance_krw'] / total_balance_krw) * 100
