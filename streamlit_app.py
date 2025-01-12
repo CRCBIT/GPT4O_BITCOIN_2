@@ -86,7 +86,8 @@ def calculate_current_investment(df):
     current_btc_balance = df.iloc[-1]['btc_balance']
     current_btc_price = pyupbit.get_current_price("KRW-BTC")
     if current_btc_price is None:
-        return current_krw_balance + (current_btc_balance * df.iloc[-1]['btc_krw_price'])
+        # 만약 pyupbit API로 실패하면 마지막 btc_krw_price를 사용
+        current_btc_price = df.iloc[-1]['btc_krw_price']
     return current_krw_balance + (current_btc_balance * current_btc_price)
 
 def add_buy_sell_markers(fig, df, x_col, y_col, border_color='black'):
@@ -271,9 +272,11 @@ def main():
         st.markdown(f"**My Return:** {my_return_html}", unsafe_allow_html=True)
         st.markdown(f"**Market Return:** {mkt_return_html}", unsafe_allow_html=True)
 
-        # MDD, Sharpe
-        st.markdown(f"**MDD (My Portfolio):** {portfolio_mdd * 100:.2f}%")
-        st.markdown(f"**Sharpe Ratio (My Portfolio):** {portfolio_sharpe:.2f}")
+        # MDD, Sharpe Ratio (한 줄에 표시)
+        st.markdown(
+            f"**MDD:** {portfolio_mdd*100:.2f}% &nbsp;&nbsp;"
+            f"|&nbsp;&nbsp; **Sharpe Ratio:** {portfolio_sharpe:.2f}"
+        )
 
         # 내 현재 총 자산
         if current_investment > initial_investment:
@@ -427,6 +430,7 @@ def main():
         # tab3: 현재 보유 자산 BTC/KRW 비율 파이차트
         with tab3:
             current_btc_balance = df.iloc[-1]['btc_balance']
+            current_btc_price = pyupbit.get_current_price("KRW-BTC")
             if current_btc_price is None:
                 # 혹시 pyupbit API로 가져오지 못했으면 마지막 btc_krw_price로 대체
                 current_btc_price = df.iloc[-1]['btc_krw_price']
@@ -460,9 +464,6 @@ def main():
             if df_daily.empty or market_df.empty:
                 st.warning("포트폴리오 또는 시장 데이터를 불러올 수 없습니다.")
             else:
-                # 내 포트폴리오: df_daily['cum_return']
-                # 시장: market_df['cum_return']
-                # 일자 기준 merge
                 df_daily_plot = df_daily[['cum_return']].copy()
                 df_daily_plot['date'] = df_daily_plot.index.normalize()  # 0시 기준 date
                 market_plot = market_df[['cum_return']].copy()
@@ -517,7 +518,9 @@ def main():
 
         # 숫자 포맷
         if 'total_assets' not in displayed_df.columns:
-            displayed_df['total_assets'] = displayed_df['krw_balance'] + displayed_df['btc_balance'] * displayed_df['btc_krw_price']
+            displayed_df['total_assets'] = (
+                displayed_df['krw_balance'] + displayed_df['btc_balance'] * displayed_df['btc_krw_price']
+            )
         for col in ['total_assets','krw_balance','btc_avg_buy_price','btc_krw_price']:
             if col in displayed_df.columns:
                 displayed_df[col] = displayed_df[col].apply(lambda x: f"{int(x):,}" if pd.notnull(x) else x)
