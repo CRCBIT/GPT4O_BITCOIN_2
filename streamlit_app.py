@@ -155,11 +155,11 @@ def get_mdd(cum_return_series):
     mdd = drawdown.min()  # 최소값(가장 큰 낙폭)
     return mdd
 
-def get_sharpe_ratio(return_series, freq=252, rf=0.0):
+def get_sharpe_ratio(return_series, freq=365, rf=0.0):
     """
     샤프 지수 = (평균수익률 - 무위험수익률) / 표준편차 * sqrt(freq)
-    - 여기서는 일간 수익률(return_series)에 대해 freq=252 사용
-    - 크립토 특성상 365로 두기도 하지만, 일단 금융시장 표준 252
+    - 여기서는 일간 수익률(return_series)에 대해 freq=365 사용
+    - 크립토 특성상 365
     """
     mean_return = return_series.mean()
     std_return = return_series.std()
@@ -223,12 +223,26 @@ def main():
 
     # 시장 데이터(일봉) 불러오기
     market_df = load_market_data_from_timestamp(start_timestamp)
+    
+    # ─────────────────────────────────────────
+    # ★ 시장 수익률을 '실시간 시세' 기준으로 계산하도록 수정 ★
+    # ─────────────────────────────────────────
     if not market_df.empty:
+        # 시작 시점(포트폴리오 시작) 대비 BTC의 첫 종가
         market_start_price = market_df['close'].iloc[0]
-        market_current_price = market_df['close'].iloc[-1]
-        market_return_rate = ((market_current_price - market_start_price) / market_start_price) * 100
+
+        # 실시간 현재 BTC 시세
+        current_btc_price_realtime = pyupbit.get_current_price("KRW-BTC")
+
+        if current_btc_price_realtime is not None:
+            market_return_rate = ((current_btc_price_realtime - market_start_price) / market_start_price) * 100
+        else:
+            # 혹시 pyupbit API 실패 시 마지막 종가로 계산
+            market_current_price = market_df['close'].iloc[-1]
+            market_return_rate = ((market_current_price - market_start_price) / market_start_price) * 100
     else:
         market_return_rate = 0.0
+    # ─────────────────────────────────────────
 
     # 내 포트폴리오 일간 수익률 → MDD, 샤프지수
     df_daily = resample_portfolio_daily(df)
@@ -368,7 +382,6 @@ def main():
     with col3:
         st.markdown("<h3>📈 Trade-Related Charts</h3>", unsafe_allow_html=True)
         
-        # 탭4, 탭5 제거 → 4개 탭만
         tab1, tab2, tab3, tab4 = st.tabs([
             "BTC Price Chart (5min)",
             "1-Year BTC Price (Daily)",
@@ -403,8 +416,8 @@ def main():
                 )
                 st.plotly_chart(fig_5m, use_container_width=True, config=config)
 
-        # tab2: 최근 1년 BTC 일봉
-        with tab2:
+        # tab4: 최근 1년 BTC 일봉
+        with tab4:
             ohlc_daily = pyupbit.get_ohlcv("KRW-BTC", interval="day", count=365)
             if ohlc_daily is not None and not ohlc_daily.empty:
                 ohlc_daily = ohlc_daily.reset_index()
@@ -434,7 +447,6 @@ def main():
             current_btc_balance = df.iloc[-1]['btc_balance']
             current_btc_price = pyupbit.get_current_price("KRW-BTC")
             if current_btc_price is None:
-                # 혹시 pyupbit API로 가져오지 못했으면 마지막 btc_krw_price로 대체
                 current_btc_price = df.iloc[-1]['btc_krw_price']
             btc_balance_krw = current_btc_balance * current_btc_price
             current_krw_balance = df.iloc[-1]['krw_balance']
@@ -461,8 +473,8 @@ def main():
             )
             st.plotly_chart(fig_pie, use_container_width=True, config=config)
 
-        # tab4: "내 포트폴리오 vs 시장(BTC)" 누적수익률 비교
-        with tab4:
+        # tab2: "내 포트폴리오 vs 시장(BTC)" 누적수익률 비교
+        with tab2:
             if df_daily.empty or market_df.empty:
                 st.warning("포트폴리오 또는 시장 데이터를 불러올 수 없습니다.")
             else:
