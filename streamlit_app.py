@@ -382,11 +382,11 @@ def main():
     with col3:
         st.markdown("<h3>📈 Trade-Related Charts</h3>", unsafe_allow_html=True)
         
-        tab1, tab4, tab3, tab2 = st.tabs([
+        tab1, tab2, tab3, tab4 = st.tabs([
             "BTC Price Chart (5min)",
-            "1-Year BTC Price (Daily)",
+            "Portfolio vs. Market",
             "BTC/KRW Balance Ratio Pie Chart",
-            "Portfolio vs. Market"
+            "1-Year BTC Price (Daily)"
         ])
 
         # tab1: 최근 7일 BTC 5분봉
