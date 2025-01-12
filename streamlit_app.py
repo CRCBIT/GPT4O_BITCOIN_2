@@ -229,7 +229,7 @@ def main():
     # ─────────────────────────────────────────
     if not market_df.empty:
         # 시작 시점(포트폴리오 시작) 대비 BTC의 첫 종가
-        market_start_price = market_df['close'].iloc[0]
+        market_start_price = df.iloc[0]['btc_krw_price']
 
         # 실시간 현재 BTC 시세
         current_btc_price_realtime = pyupbit.get_current_price("KRW-BTC")
