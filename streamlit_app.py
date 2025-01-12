@@ -232,7 +232,6 @@ def main():
 
     # 내 포트폴리오 일간 수익률 → MDD, 샤프지수
     df_daily = resample_portfolio_daily(df)
-    # 포트폴리오 MDD, Sharpe
     portfolio_mdd = get_mdd(df_daily['cum_return']) if not df_daily.empty else 0
     portfolio_sharpe = get_sharpe_ratio(df_daily['daily_return']) if not df_daily.empty else 0
 
@@ -272,10 +271,13 @@ def main():
         st.markdown(f"**My Return:** {my_return_html}", unsafe_allow_html=True)
         st.markdown(f"**Market Return:** {mkt_return_html}", unsafe_allow_html=True)
 
-        # MDD, Sharpe Ratio (한 줄에 표시)
+        # MDD, Sharpe Ratio (볼드 처리)
+        mdd_html = f"<span style='font-weight:bold;'>{portfolio_mdd*100:.2f}%</span>"
+        sharpe_html = f"<span style='font-weight:bold;'>{portfolio_sharpe:.2f}</span>"
         st.markdown(
-            f"**MDD:** {portfolio_mdd*100:.2f}% &nbsp;&nbsp;"
-            f"|&nbsp;&nbsp; **Sharpe Ratio:** {portfolio_sharpe:.2f}"
+            f"**MDD:** {mdd_html} &nbsp;&nbsp;|&nbsp;&nbsp; "
+            f"**Sharpe Ratio:** {sharpe_html}",
+            unsafe_allow_html=True
         )
 
         # 내 현재 총 자산
