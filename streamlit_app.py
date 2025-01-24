@@ -225,7 +225,7 @@ def main():
     market_df = load_market_data_from_timestamp(start_timestamp)
     
     # ─────────────────────────────────────────
-    # ★ 시장 수익률을 '실시간 시세' 기준으로 계산하도록 수정 ★
+    # ★ 시장 수익률을 '실시간 시세' 기준으로 계산 ★
     # ─────────────────────────────────────────
     if not market_df.empty:
         # 시작 시점(포트폴리오 시작) 대비 BTC의 첫 종가
@@ -242,7 +242,6 @@ def main():
             market_return_rate = ((market_current_price - market_start_price) / market_start_price) * 100
     else:
         market_return_rate = 0.0
-    # ─────────────────────────────────────────
 
     # 내 포트폴리오 일간 수익률 → MDD, 샤프지수
     df_daily = resample_portfolio_daily(df)
@@ -252,7 +251,7 @@ def main():
     # 레이아웃
     st.title("AI BTC Dashboard")
 
-    col1, col3 = st.columns([1, 3])
+    col1, col2 = st.columns([1, 3])
     config = {'displayModeBar': False}
 
     with col1:
@@ -379,7 +378,8 @@ def main():
         )
         st.plotly_chart(fig_assets, use_container_width=True, config=config)
 
-    with col3:
+    # 여기부터 오른쪽 열(col2) 탭 영역
+    with col2:
         st.markdown("<h3>📈 Trade-Related Charts</h3>", unsafe_allow_html=True)
         
         tab1, tab2, tab3, tab4 = st.tabs([
@@ -391,9 +391,16 @@ def main():
 
         # tab1: 최근 7일 BTC 5분봉
         with tab1:
-            ohlc_5m = pyupbit.get_ohlcv("KRW-BTC", interval="minute5", count=2016)  # 5분봉 x 2016 ~= 7일
+            # 5분봉 x 2016 ~= 7일치 데이터
+            ohlc_5m = pyupbit.get_ohlcv("KRW-BTC", interval="minute5", count=2016)
             if ohlc_5m is not None and not ohlc_5m.empty:
+                # 차트용 데이터프레임
                 ohlc_5m = ohlc_5m.reset_index()
+                
+                # 최근 7일 범위에 해당하는 트레이드만 필터
+                min_time_7d = ohlc_5m['index'].min()
+                df_7d = df[df['timestamp'] >= min_time_7d]
+                
                 fig_5m = go.Figure(data=[go.Candlestick(
                     x=ohlc_5m['index'],
                     open=ohlc_5m['open'],
@@ -404,7 +411,9 @@ def main():
                     increasing=dict(line=dict(color='#FF9999'), fillcolor='#FF9999'),
                     decreasing=dict(line=dict(color='#9999FF'), fillcolor='#9999FF')
                 )])
-                fig_5m = add_buy_sell_markers(fig_5m, df, 'timestamp', 'btc_krw_price', marker_border_color)
+                # 최근 7일치 매매 마커만 추가
+                fig_5m = add_buy_sell_markers(fig_5m, df_7d, 'timestamp', 'btc_krw_price', marker_border_color)
+                
                 fig_5m.update_layout(
                     xaxis=dict(title="Time", rangeslider=dict(visible=False)),
                     yaxis=dict(title="Price (KRW)"),
