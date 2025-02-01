@@ -14,7 +14,7 @@ deposit_withdrawal = 0
 # 항상 wide 모드 활성화, 제목 및 사이드바 설정
 st.set_page_config(
     layout="wide",
-    page_title="AI BTC (OPENAI o1)",
+    page_title="AI BTC (o3-mini)",
     page_icon="📈",
     initial_sidebar_state="collapsed"
 )
@@ -249,7 +249,7 @@ def main():
     portfolio_sharpe = get_sharpe_ratio(df_daily['daily_return']) if not df_daily.empty else 0
 
     # 레이아웃
-    st.title("AI BTC Dashboard (OPENAI o1)")
+    st.title("AI BTC Dashboard (o3-mini)")
 
     col1, col2 = st.columns([1, 3])
     config = {'displayModeBar': False}
