@@ -17,7 +17,10 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException, ElementClickInterceptedException, WebDriverException, NoSuchElementException
+from selenium.common.exceptions import (
+    TimeoutException, ElementClickInterceptedException,
+    WebDriverException, NoSuchElementException
+)
 import logging
 from pydantic import BaseModel
 import sqlite3
@@ -27,6 +30,9 @@ from telegram import Bot
 import asyncio
 import re
 
+# 추가: 실시간 달러지수(DXY) 조회를 위해 yfinance 라이브러리를 활용
+import yfinance as yf
+
 # .env 파일에 저장된 환경 변수를 불러오기 (API 키 등)
 load_dotenv()
 
@@ -34,7 +40,19 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-deposit_withdrawal = 400000
+# 현재 날짜와 시간을 가져옵니다.
+now_dw = datetime.now()
+
+# 현재 연도의 12월 27일 13시를 기준 시간으로 설정합니다.
+target_dw = datetime(2024, 12, 27, 13, 0, 0)
+
+# 현재 시간이 기준 시간 이전인지 확인하고 deposit_withdrawal 값을 설정합니다.
+if now_dw < target_dw:
+    deposit_withdrawal = 500000
+else:
+    deposit_withdrawal = 0
+
+print(f"deposit_withdrawal = {deposit_withdrawal}")
 
 # Upbit 객체 생성
 access = os.getenv("UPBIT_ACCESS_KEY")
@@ -44,29 +62,20 @@ if not access or not secret:
     raise ValueError("Missing API keys. Please check your .env file.")
 upbit = pyupbit.Upbit(access, secret)
 
-# 텔레그램 봇 설정
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
-if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
-    logger.error("Telegram bot configuration is missing. Check your .env file.")
-    raise ValueError("Telegram bot configuration is missing.")
+class TradingDecision(BaseModel):
+    decision: str
+    percentage: int
+    reason: str
 
-bot = Bot(token=TELEGRAM_BOT_TOKEN)
 
-# 텔레그램 메시지 전송 함수
-def send_telegram_message(message):
-    async def _send_message():
-        try:
-            await bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=message)
-            logger.info(f"Message sent successfully: {message}")
-        except Exception as e:
-            logger.error(f"Failed to send Telegram message: {e}")
-
-# SQLite 데이터베이스 초기화 함수 - 거래 내역을 저장할 테이블을 생성
+# ---------------------- DB 초기화 및 관련 함수 ---------------------- #
 def init_db():
+    """SQLite 데이터베이스 초기화 (테이블 생성)"""
     conn = sqlite3.connect('bitcoin_trades.db')
     c = conn.cursor()
+
+    # trades 테이블: 매매 이력 저장
     c.execute('''CREATE TABLE IF NOT EXISTS trades
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
                   timestamp TEXT,
@@ -78,6 +87,8 @@ def init_db():
                   btc_avg_buy_price REAL,
                   btc_krw_price REAL,
                   reflection TEXT)''')
+    
+    # transactions 테이블: (예시) 입출금 이력 관리용
     c.execute('''CREATE TABLE IF NOT EXISTS transactions
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
                   timestamp TEXT,
@@ -85,75 +96,141 @@ def init_db():
                   amount REAL,
                   currency TEXT,
                   reason TEXT)''')
+
+    # orderbook_snapshots 테이블: 1시간 간격의 오더북 스냅샷 저장
+    # - snapshot_time: 스냅샷 생성 시각 (ISO8601)
+    # - orderbook_json: 실제 오더북 데이터(JSON)를 문자열로 저장
+    c.execute('''CREATE TABLE IF NOT EXISTS orderbook_snapshots
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                  snapshot_time TEXT,
+                  orderbook_json TEXT)''')
+
     conn.commit()
     return conn
 
-# 거래 기록을 DB에 저장하는 함수
-def log_trade(conn, decision, percentage, reason, btc_balance, krw_balance, btc_avg_buy_price, btc_krw_price, reflection=''):
+
+def log_trade(conn, decision, percentage, reason,
+              btc_balance, krw_balance, btc_avg_buy_price, btc_krw_price,
+              reflection=''):
+    """거래 기록을 trades 테이블에 저장"""
     c = conn.cursor()
     timestamp = datetime.now().isoformat()
     c.execute("""INSERT INTO trades 
-                 (timestamp, decision, percentage, reason, btc_balance, krw_balance, btc_avg_buy_price, btc_krw_price, reflection) 
+                 (timestamp, decision, percentage, reason, 
+                  btc_balance, krw_balance, btc_avg_buy_price, btc_krw_price, reflection) 
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-              (timestamp, decision, percentage, reason, btc_balance, krw_balance, btc_avg_buy_price, btc_krw_price, reflection))
-    conn.commit()
-
-# 입출금 내역을 DB에 저장하는 함수
-def log_transaction(conn, transaction_type, amount, currency, reason=''):
-    c = conn.cursor()
-    timestamp = datetime.now().isoformat()
-    c.execute("""INSERT INTO transactions 
-                 (timestamp, type, amount, currency, reason) 
-                 VALUES (?, ?, ?, ?, ?)""",
-              (timestamp, transaction_type, amount, currency, reason))
+              (timestamp, decision, percentage, reason,
+               btc_balance, krw_balance, btc_avg_buy_price, btc_krw_price, reflection))
     conn.commit()
 
 
-# 최근 투자 기록 조회
 def get_recent_trades(conn, days=7):
+    """최근 N일(days) 동안의 trades 이력 조회 -> Pandas DataFrame 반환"""
     c = conn.cursor()
-    seven_days_ago = (datetime.now() - timedelta(days=days)).isoformat()
-    c.execute("SELECT * FROM trades WHERE timestamp > ? ORDER BY timestamp DESC", (seven_days_ago,))
+    cutoff_time = (datetime.now() - timedelta(days=days)).isoformat()
+    c.execute("SELECT * FROM trades WHERE timestamp > ? ORDER BY timestamp DESC", (cutoff_time,))
     columns = [column[0] for column in c.description]
     return pd.DataFrame.from_records(data=c.fetchall(), columns=columns)
 
-# 최근 입출금 내역 조회
-def get_recent_transactions(conn, days=7):
-    c = conn.cursor()
-    seven_days_ago = (datetime.now() - timedelta(days=days)).isoformat()
-    c.execute("SELECT * FROM transactions WHERE timestamp > ? ORDER BY timestamp DESC", (seven_days_ago,))
-    columns = [column[0] for column in c.description]
-    return pd.DataFrame.from_records(data=c.fetchall(), columns=columns)
 
-# 최근 투자 기록을 기반으로 퍼포먼스 계산 (초기 잔고 대비 최종 잔고)
 def calculate_performance(trades_df):
+    """최근 투자 기록을 기반으로 퍼포먼스 계산 (초기 잔고 대비 최종 잔고 비율)"""
     if trades_df.empty:
         return 0  # 기록이 없을 경우 0%로 설정
-    # 초기 잔고 계산 (KRW + BTC * 현재 가격)
-    initial_balance = trades_df.iloc[-1]['krw_balance'] + trades_df.iloc[-1]['btc_balance'] * trades_df.iloc[-1]['btc_krw_price'] + deposit_withdrawal
-    # 최종 잔고 계산
-    final_balance = trades_df.iloc[0]['krw_balance'] + trades_df.iloc[0]['btc_balance'] * trades_df.iloc[0]['btc_krw_price']
+    # trades_df는 최신 순으로 정렬되어 있으므로
+    initial_balance = (
+        trades_df.iloc[-1]['krw_balance']
+        + trades_df.iloc[-1]['btc_balance'] * trades_df.iloc[-1]['btc_krw_price']
+        + deposit_withdrawal
+    )
+    final_balance = (
+        trades_df.iloc[0]['krw_balance']
+        + trades_df.iloc[0]['btc_balance'] * trades_df.iloc[0]['btc_krw_price']
+    )
     return (final_balance - initial_balance) / initial_balance * 100
 
-# AI 모델을 사용하여 최근 투자 기록과 시장 데이터를 기반으로 분석 및 반성을 생성하는 함수
-def generate_reflection(trades_df, current_market_data):
-    performance = calculate_performance(trades_df)  # 투자 퍼포먼스 계산
 
+# ---------------------- 오더북 스냅샷 관련 함수 ---------------------- #
+def store_orderbook_snapshot():
+    """
+    1시간마다 호출되어 오더북 스냅샷을 DB에 저장하는 함수.
+    schedule 등을 이용해 주기적으로 실행.
+    """
+    conn = sqlite3.connect('bitcoin_trades.db')
+    c = conn.cursor()
+
+    try:
+        ob = pyupbit.get_orderbook("KRW-BTC")
+        if ob is None:
+            logger.warning("Failed to get orderbook from Upbit.")
+            return
+        snapshot_time = datetime.now().isoformat()
+        # JSON 직렬화해서 문자열로 저장
+        ob_str = json.dumps(ob, ensure_ascii=False)
+        c.execute(""" 
+            INSERT INTO orderbook_snapshots (snapshot_time, orderbook_json)
+            VALUES (?, ?)
+        """, (snapshot_time, ob_str))
+        conn.commit()
+        logger.info(f"[store_orderbook_snapshot] Successfully stored snapshot at {snapshot_time}")
+    except Exception as e:
+        logger.error(f"Error storing orderbook snapshot: {e}")
+    finally:
+        conn.close()
+
+
+def get_recent_orderbook_snapshots(conn, hours=8):
+    """
+    최근 X시간 동안 저장된 오더북 스냅샷을 모두 조회.
+    hours=8로 하면 8시간치 스냅샷(1시간 간격 * 최대 8개 예상) 반환.
+    """
+    c = conn.cursor()
+    cutoff_time = (datetime.now() - timedelta(hours=hours)).isoformat()
+    c.execute("""
+        SELECT snapshot_time, orderbook_json 
+        FROM orderbook_snapshots
+        WHERE snapshot_time >= ?
+        ORDER BY snapshot_time ASC
+    """, (cutoff_time,))
+    rows = c.fetchall()
+    # 각 row -> [{'snapshot_time': ..., 'orderbook': ...}, ...] 형태로 파싱
+    snapshots = []
+    for row in rows:
+        stime, ob_json = row
+        try:
+            ob_data = json.loads(ob_json)
+        except json.JSONDecodeError:
+            ob_data = None
+        snapshots.append({
+            "snapshot_time": stime,
+            "orderbook": ob_data
+        })
+    return snapshots
+
+
+# ---------------------- AI 분석(Reflection) 관련 함수 ---------------------- #
+def generate_reflection(trades_df, current_market_data):
+    """
+    AI 모델을 사용하여 최근 투자 기록과 시장 데이터를 기반으로 반성(Reflection)을 생성
+    """
+    performance = calculate_performance(trades_df)
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     if not client.api_key:
         logger.error("OpenAI API key is missing or invalid.")
         return None
-    # OpenAI API 호출로 AI의 반성 일기 및 개선 사항 생성 요청
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {
-                "role": "system",
-                "content": "You are an AI trading assistant tasked with analyzing in detail recent trading performance and current market conditions to generate insights and improvements for future trading decisions."
-            },
-            {
-                "role": "user",
-                "content": f"""
+
+    # GPT 호출
+    try:
+        response = client.chat.completions.create(
+            model="o3-mini-2025-01-31",
+            messages=[
+                {
+                    "role": "developer",
+                    "content": "You are an AI trading assistant tasked with analyzing recent trading performance and current market conditions to generate insights and improvements for future trading decisions."
+                },
+                {
+                    "role": "user",
+                    "content": f"""
 Recent trading data:
 {trades_df.to_json(orient='records')}
 
@@ -162,17 +239,22 @@ Current market data:
 
 Overall performance in the last 7 days: {performance:.2f}%
 
-Please analyze in detail this data and provide:
+Please analyze this data and provide:
 1. A brief reflection on the recent trading decisions
 2. Insights on what worked well and what didn't
 3. Suggestions for improvement in future trading decisions
 4. Any patterns or trends you notice in the market data
 
+When describing each of the above, be sure to mention the data numbers that are important to your judgment and explain why.
+
 Limit your response to 250 words or less.
 """
-            }
-        ]
-    )
+                }
+            ], reasoning_effort= "high"
+        )
+    except Exception as e:
+        logger.error(f"Error generating reflection from GPT: {e}")
+        return None
 
     try:
         response_content = response.choices[0].message.content
@@ -181,44 +263,38 @@ Limit your response to 250 words or less.
         logger.error(f"Error extracting response content: {e}")
         return None
 
-# 데이터프레임에 보조 지표를 추가하는 함수
+
+# ---------------------- 지표 계산 함수(예시) ---------------------- #
 def add_indicators(df):
-    # 볼린저 밴드 추가
+    """ta 라이브러리를 활용하여 각종 지표를 추가"""
     indicator_bb = ta.volatility.BollingerBands(close=df['close'], window=20, window_dev=2)
     df['bb_bbm'] = indicator_bb.bollinger_mavg()
     df['bb_bbh'] = indicator_bb.bollinger_hband()
     df['bb_bbl'] = indicator_bb.bollinger_lband()
 
-    # RSI (Relative Strength Index) 추가
     df['rsi'] = ta.momentum.RSIIndicator(close=df['close'], window=14).rsi()
-
-    # MACD (Moving Average Convergence Divergence) 추가
     macd = ta.trend.MACD(close=df['close'])
     df['macd'] = macd.macd()
     df['macd_signal'] = macd.macd_signal()
     df['macd_diff'] = macd.macd_diff()
 
-    # 이동평균선 (단기, 장기)
     df['sma_20'] = ta.trend.SMAIndicator(close=df['close'], window=20).sma_indicator()
     df['ema_12'] = ta.trend.EMAIndicator(close=df['close'], window=12).ema_indicator()
 
-    # Stochastic Oscillator 추가
     stoch = ta.momentum.StochasticOscillator(
         high=df['high'], low=df['low'], close=df['close'], window=14, smooth_window=3)
     df['stoch_k'] = stoch.stoch()
     df['stoch_d'] = stoch.stoch_signal()
 
-    # Average True Range (ATR) 추가
     df['atr'] = ta.volatility.AverageTrueRange(
         high=df['high'], low=df['low'], close=df['close'], window=14).average_true_range()
 
-    # On-Balance Volume (OBV) 추가
     df['obv'] = ta.volume.OnBalanceVolumeIndicator(
         close=df['close'], volume=df['volume']).on_balance_volume()
-
     return df
 
-# 공포 탐욕 지수 조회
+
+# ---------------------- 외부 API 예시 함수(공포탐욕지수, 뉴스) ---------------------- #
 def get_fear_and_greed_index():
     url = "https://api.alternative.me/fng/"
     try:
@@ -230,34 +306,31 @@ def get_fear_and_greed_index():
         logger.error(f"Error fetching Fear and Greed Index: {e}")
         return None
 
-# 글로벌 변수로 마지막 뉴스 요청 시간 저장
+
 last_news_fetch_time = None
 cached_news = []
 
-# 뉴스 데이터 가져오기 (오전 한 번, 오후 한 번만 실행)
+
 def get_bitcoin_news():
+    """SERPAPI 사용 예시 (비트코인 관련 최신 뉴스 검색)"""
     global last_news_fetch_time, cached_news
     serpapi_key = os.getenv("SERPAPI_API_KEY")
     if not serpapi_key:
         logger.error("SERPAPI API key is missing.")
-        return []  # 빈 리스트 반환
+        return []
 
-    # 현재 시간
     now = datetime.now()
-
-    # 오전/오후 시간 체크 (오전: 00:00~11:59, 오후: 12:00~23:59)
     current_period = "morning" if now.hour < 12 else "afternoon"
     last_period = None
     if last_news_fetch_time:
         last_period = "morning" if last_news_fetch_time.hour < 12 else "afternoon"
 
-    # 같은 기간(오전 또는 오후)에 요청된 경우 캐싱된 뉴스 반환
+    # 같은 반나절에는 캐시 재활용
     if last_news_fetch_time and current_period == last_period:
         logger.info("Using cached news data:")
         log_news_to_console(cached_news)
         return cached_news
 
-    # 새로운 뉴스 요청
     url = "https://serpapi.com/search.json"
     params = {
         "engine": "google_news",
@@ -275,18 +348,17 @@ def get_bitcoin_news():
             {"title": item.get("title", ""), "date": item.get("date", "")}
             for item in news_results[:15]
         ]
-        last_news_fetch_time = now  # 뉴스 요청 시간 갱신
+        last_news_fetch_time = now
 
-        # 콘솔에 뉴스 로그 출력
         logger.info("Fetched new news data:")
         log_news_to_console(cached_news)
-
         return cached_news
+
     except requests.RequestException as e:
         logger.error(f"Error fetching news: {e}")
-        return cached_news  # 실패 시 캐시된 뉴스 반환
+        return cached_news
 
-# 뉴스 헤드라인 로그 포맷팅 함수
+
 def log_news_to_console(news):
     if not news:
         logger.info("No news available.")
@@ -294,120 +366,174 @@ def log_news_to_console(news):
         logger.info("\n".join([f"- {item['title']} ({item['date']})" for item in news]))
 
 
+# ---------------------- (추가) 달러지수(DXY) 실시간 조회 함수 ---------------------- #
+def get_dollar_index():
+    """
+    DX-Y.NYB 데이터를 yfinance로 받아,
+    최종적으로 인덱스를 KST(Asia/Seoul)로 변환한 뒤,
+    DataFrame 형태로 반환 (Close, + timestamp_kst).
+    """
+    try:
+        ticker = yf.Ticker("DX-Y.NYB")
+        
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=7)
+        
+        # 7일치 1시간봉 데이터
+        df = ticker.history(start=start_date, end=end_date, interval="1h")
+        if df.empty:
+            return None
+        
+        # 인덱스 TZ 확인
+        current_tz = df.index.tz
+        
+        # Naive면 'America/New_York'로 간주
+        if current_tz is None:
+            df.index = df.index.tz_localize('America/New_York')
+            print("DEBUG: localized to US/Eastern.")
+            
+        # KST 변환
+        df.index = df.index.tz_convert('Asia/Seoul')
+        
+        # 1) Close만 추출 + 복사
+        df_kst = df[["Close"]].copy()
+        # 2) 인덱스를 KST 문자열로 만들어 별도 컬럼 'timestamp_kst'에 저장
+        df_kst["timestamp_kst"] = df_kst.index.strftime('%Y-%m-%d %H:%M:%S %Z%z')
+        # 3) 인덱스는 더 이상 필요 없으므로 reset_index (drop=True)
+        df_kst.reset_index(drop=True, inplace=True)
+        
+        return df_kst
+    
+    except Exception as e:
+        logger.error(f"Error fetching DXY from yfinance: {e}")
+        return None
 
 
-### 메인 AI 트레이딩 로직
+# ---------------------- (추가) 채권 수익률 실시간 조회 함수 ---------------------- #
+def get_bond_yield():
+    """
+    미국 10년물 채권 수익률 데이터를 yfinance로 받아,
+    최종적으로 인덱스를 KST(Asia/Seoul)로 변환한 뒤,
+    DataFrame 형태로 반환 (Close, + timestamp_kst).
+    """
+    try:
+        # 미국 10년물 채권 수익률 티커 (^TNX)를 사용
+        ticker = yf.Ticker("^TNX")
+        
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=7)
+        
+        # 7일치 1시간봉 데이터
+        df = ticker.history(start=start_date, end=end_date, interval="1h")
+        if df.empty:
+            return None
+        
+        current_tz = df.index.tz
+        if current_tz is None:
+            df.index = df.index.tz_localize('America/New_York')
+        
+        df.index = df.index.tz_convert('Asia/Seoul')
+        
+        df_kst = df[["Close"]].copy()
+        df_kst["timestamp_kst"] = df_kst.index.strftime('%Y-%m-%d %H:%M:%S %Z%z')
+        df_kst.reset_index(drop=True, inplace=True)
+        
+        return df_kst
+    
+    except Exception as e:
+        logger.error(f"Error fetching Bond Yield from yfinance: {e}")
+        return None
+
+
+# ---------------------- 메인 AI 트레이딩 로직 ---------------------- #
 def ai_trading():
+    """8시간 간격으로 실행되는 메인 트레이딩 로직"""
     global upbit
-    ### 데이터 가져오기
-    # 1. 현재 투자 상태 조회
+
+    # 현재 잔고 조회
     all_balances = upbit.get_balances()
     filtered_balances = [balance for balance in all_balances if balance['currency'] in ['BTC', 'KRW']]
 
-    # 2. 오더북(호가 데이터) 조회
-    orderbook = pyupbit.get_orderbook("KRW-BTC")
-
-    # 3. 차트 데이터 조회 및 보조지표 추가
+    # 시간봉/일봉 차트 데이터 수집 + 지표 계산
     df_daily = pyupbit.get_ohlcv("KRW-BTC", interval="day", count=180)
     df_daily = dropna(df_daily)
     df_daily = add_indicators(df_daily)
 
-    df_hourly = pyupbit.get_ohlcv("KRW-BTC", interval="minute60", count=168)  # 7 days of hourly data
+    df_hourly = pyupbit.get_ohlcv("KRW-BTC", interval="minute60", count=168)
     df_hourly = dropna(df_hourly)
     df_hourly = add_indicators(df_hourly)
 
-    # 최근 데이터만 사용하도록 설정 (메모리 절약)
-    df_daily_recent = df_daily.tail(90)
+    df_daily_recent = df_daily.tail(60)
     df_hourly_recent = df_hourly.tail(48)
 
-    # 4. 공포 탐욕 지수 가져오기
+    # 외부 데이터 (공포탐욕지수, 뉴스)
     fear_greed_index = get_fear_and_greed_index()
-
-    # 5. 뉴스 헤드라인 가져오기
     news_headlines = get_bitcoin_news()
 
-    # 6. 전략 추가
+    # (추가) 달러지수(DXY) 실시간 가져오기
+    dxy_series = get_dollar_index()
+    if dxy_series is not None:
+        dxy_value_json = dxy_series.to_json(date_format='iso', orient='index')
+    else:
+        dxy_value_json = None
 
-    f = open("strategy.txt", "r", encoding="utf-8")
-    strategy = f.read()
-    f.close()
-    ### AI에게 데이터 제공하고 판단 받기
-    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-    if not client.api_key:
-        logger.error("OpenAI API key is missing or invalid.")
-        return None
+    # (추가) 채권 수익률 실시간 가져오기
+    bond_yield_series = get_bond_yield()
+    if bond_yield_series is not None:
+        bond_yield_json = bond_yield_series.to_json(date_format='iso', orient='index')
+    else:
+        bond_yield_json = None
+
+    # --- 최근 8시간의 오더북 스냅샷 불러오기 --- #
+    with sqlite3.connect('bitcoin_trades.db') as conn:
+        recent_orderbooks = get_recent_orderbook_snapshots(conn, hours=8)
+
+    # (추가) 현재 오더북(실시간)도 한 번 가져오고 싶다면:
+    current_orderbook = pyupbit.get_orderbook("KRW-BTC")
+    
+    # ----------------- 여기까지 데이터 준비 완료 ----------------- #
+    # AI가 참고할 시장 데이터 구성
+    current_market_data = {
+        "fear_greed_index": fear_greed_index,
+        "dollar_index(DXY)": dxy_value_json,
+        "U.S. 10-Year Treasury Yield(^TNX)": bond_yield_json,
+        "news_headlines": news_headlines,
+        "orderbook_history": recent_orderbooks,
+        "daily_ohlcv": df_daily_recent.to_dict(),
+        "hourly_ohlcv": df_hourly_recent.to_dict(),
+    }
+
+    # DB 연결해서 최근 트레이드 이력과 reflection 생성
     try:
-        # 데이터베이스 연결
         with sqlite3.connect('bitcoin_trades.db') as conn:
-            # 최근 거래 내역 가져오기
             recent_trades = get_recent_trades(conn)
-
-            # 최근 입출금 내역 가져오기
-            recent_transactions = get_recent_transactions(conn)
-
-            # 현재 시장 데이터 수집 (기존 코드에서 가져온 데이터 사용)
-            current_market_data = {
-                "fear_greed_index": fear_greed_index,
-                "news_headlines": news_headlines,
-                "orderbook": orderbook,
-                "daily_ohlcv": df_daily_recent.to_dict(),
-                "hourly_ohlcv": df_hourly_recent.to_dict(),
-                "transactions": recent_transactions.to_dict()
-            }
-
-            # 반성 및 개선 내용 생성
             reflection = generate_reflection(recent_trades, current_market_data)
 
-            # AI 모델에 반성 내용 제공
-            # Few-shot prompting으로 JSON 예시 추가
-            examples = """
-Example Response 1:
-{
-  "decision": "buy",
-  "percentage": 50,
-  "reason": "Based on the current market indicators and positive news, it's a good opportunity to invest."
-}
-
-Example Response 2:
-{
-  "decision": "sell",
-  "percentage": 30,
-  "reason": "Due to negative trends in the market and high fear index, it is advisable to reduce holdings."
-}
-
-Example Response 3:
-{
-  "decision": "hold",
-  "percentage": 0,
-  "reason": "Market indicators are neutral; it's best to wait for a clearer signal."
-}
-"""
+            # AI에게 "매수/매도/홀드" 의사결정 요청
+            client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+            if not client.api_key:
+                logger.error("OpenAI API key is missing or invalid.")
+                return None
 
             response = client.chat.completions.create(
-                model="gpt-4o-mini",
+                model="o3-mini-2025-01-31",
                 messages=[
                     {
-                        "role": "system",
-                        "content": f"""You are an expert in Bitcoin investing. This analysis is performed every 1 hours. Analyze in detail the provided data and determine whether to buy, sell, or hold at the current moment. Consider the following in your analysis step by step:
+                        "role": "developer",
+                        "content": f"""You are an expert in Bitcoin trading strategies. This analysis is performed every 4 hours. 
 
-- Technical indicators and market data
-- Recent news headlines and their potential impact on Bitcoin price
-- The Fear and Greed Index and its implications
-- Overall market sentiment
-- Recent trading performance and reflection
+You have already produced a factual reflection of recent trading performance (see {reflection}) in the previous step. Now, based on that reflection plus the latest market data provided, decide whether to BUY, SELL, or HOLD at this exact moment. 
 
-Recent trading reflection:
-{reflection}
+Please follow these instructions:
 
-Here's the strategy of an anonymous successful Bitcoin investor in South Korea. you should keep in mind:
+1. Incorporate the prior Reflection’s insights (factual performance review, lessons learned, etc.).
+2. Analyze current technical indicators (OHLCV with indicators, past 8 hours orderbook data), recent headlines, the Fear and Greed Index, 7-days recent Dollar Index (DXY), and 7-days recent U.S. 10-Year Treasury Yield (TNX))
+3. Include the overall market sentiment, including any short-term or long-term signals you see.
+4. Recommend a single decision: “buy,” “sell,” or “hold.”
+5. For “buy” or “sell,” provide an integer percentage (1-100) that reflects how strongly you believe in that position size relative to available capital. For “hold,” the percentage must be 0.
+6. Give a clear, data-driven explanation: cite specific numbers (RSI levels, support/resistance, etc.) or events (headline summaries, fear/greed values, volume spikes, DXY trend) that influenced your reasoning.
 
-{strategy}
-
-Based on your analysis, make a decision and provide your reasoning.
-
-Please provide your response in the following JSON format:
-
-{examples}
+Your goal is to generate a well-grounded yet potentially creative or aggressive strategy based on the data. If strong signals point to an opportunity, you may propose a larger percentage, but justify it with numbers.
 
 Ensure that the percentage is an integer between 1 and 100 for buy/sell decisions, and exactly 0 for hold decisions.
 Your percentage should reflect the strength of your conviction in the decision based on the analyzed data.
@@ -415,52 +541,50 @@ Your percentage should reflect the strength of your conviction in the decision b
                     },
                     {
                         "role": "user",
-                        "content": f"""Current investment status: {json.dumps(filtered_balances)}
-Orderbook: {json.dumps(orderbook)}
-Daily OHLCV with indicators (recent 90 days): {df_daily_recent.to_json()}
-Hourly OHLCV with indicators (recent 48 hours): {df_hourly_recent.to_json()}
+                        "content": f"""Recent trading reflection from the previous step:
+{reflection}
+
+Current investment status: {json.dumps(filtered_balances)}
+Orderbook snapshots (last 8 hours): {json.dumps(recent_orderbooks)}
+Daily OHLCV (recent 60 days) with indicators: {df_daily_recent.to_json()}
+Hourly OHLCV (recent 48 hours) with indicators: {df_hourly_recent.to_json()}
 Recent news headlines: {json.dumps(news_headlines)}
 Fear and Greed Index: {json.dumps(fear_greed_index)}
-Transactions: {recent_transactions.to_json()}
+Dollar Index (DXY, recent 7 days): {dxy_value_json}
+U.S. 10-Year Treasury Yield (^TNX, recent 7 days): {bond_yield_json}
 """
                     }
-                ]
+                ], response_format={
+                    "type": "json_schema",
+                    "json_schema": {
+                        "name": "trading_decision",
+                        "strict": True,
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "decision": {"type": "string", "enum": ["buy", "sell", "hold"]},
+                                "percentage": {"type": "integer"},
+                                "reason": {"type": "string"}
+                            },
+                            "required": ["decision", "percentage", "reason"],
+                            "additionalProperties": False
+                        }
+                    }
+                }, reasoning_effort="high"
             )
 
             response_text = response.choices[0].message.content
 
-            # AI 응답 파싱
-            def parse_ai_response(response_text):
-                try:
-                    # Extract JSON part from the response
-                    json_match = re.search(r'\{.*?\}', response_text, re.DOTALL)
-                    if json_match:
-                        json_str = json_match.group(0)
-                        # Parse JSON
-                        parsed_json = json.loads(json_str)
-                        decision = parsed_json.get('decision')
-                        percentage = parsed_json.get('percentage')
-                        reason = parsed_json.get('reason')
-                        return {'decision': decision, 'percentage': percentage, 'reason': reason}
-                    else:
-                        logger.error("No JSON found in AI response.")
-                        return None
-                except json.JSONDecodeError as e:
-                    logger.error(f"JSON parsing error: {e}")
-                    return None
-
-            parsed_response = parse_ai_response(response_text)
-            if not parsed_response:
-                logger.error("Failed to parse AI response.")
+            # AI 응답(JSON) 직접 파싱
+            try:
+                parsed_response = json.loads(response_text)
+            except json.JSONDecodeError as e:
+                logger.error(f"JSON parsing error: {e}")
                 return
 
             decision = parsed_response.get('decision')
             percentage = parsed_response.get('percentage')
             reason = parsed_response.get('reason')
-
-            if not decision or reason is None:
-                logger.error("Incomplete data in AI response.")
-                return
 
             logger.info(f"AI Decision: {decision.upper()}")
             logger.info(f"Percentage: {percentage}")
@@ -468,6 +592,7 @@ Transactions: {recent_transactions.to_json()}
 
             order_executed = False
 
+            # ---------------------- 주문 실행 로직 ---------------------- #
             if decision == "buy":
                 my_krw = upbit.get_balance("KRW")
                 if my_krw is None:
@@ -481,13 +606,13 @@ Transactions: {recent_transactions.to_json()}
                         if order:
                             logger.info(f"Buy order executed successfully: {order}")
                             order_executed = True
-                            send_telegram_message(f"\u2705 비트코인 구매 완료\n구매 금액: {buy_amount:.2f} KRW\n잔액: {my_krw - buy_amount:.2f} KRW\n이유: {reason}")
                         else:
                             logger.error("Buy order failed.")
                     except Exception as e:
                         logger.error(f"Error executing buy order: {e}")
                 else:
-                    logger.warning("Buy Order Failed: Insufficient KRW (less than 5000 KRW)")
+                    logger.warning("Buy Order Failed: Insufficient KRW (less than 5000 KRW).")
+            
             elif decision == "sell":
                 my_btc = upbit.get_balance("KRW-BTC")
                 if my_btc is None:
@@ -496,50 +621,57 @@ Transactions: {recent_transactions.to_json()}
                 sell_amount = my_btc * (percentage / 100)
                 current_price = pyupbit.get_current_price("KRW-BTC")
                 if sell_amount * current_price > 5000:
-
+                    logger.info(f"Sell Order Executed: {percentage}% of held BTC")
                     try:
                         order = upbit.sell_market_order("KRW-BTC", sell_amount)
                         if order:
-                            logger.info(f"Sell Order Executed: {percentage}% of held BTC")
                             order_executed = True
-                            send_telegram_message(f"\u2705 비트코인 판매 완료\n판매 수량: {sell_amount:.4f} BTC\n판매 금액: {sell_amount * current_price:.2f} KRW\n이유: {reason}")
                         else:
                             logger.error("Sell order failed.")
                     except Exception as e:
                         logger.error(f"Error executing sell order: {e}")
                 else:
-                    logger.warning("Sell Order Failed: Insufficient BTC (less than 5000 KRW worth)")
+                    logger.warning("Sell Order Failed: Insufficient BTC (less than 5000 KRW worth).")
+            
             elif decision == "hold":
                 logger.info("Decision is to hold. No action taken.")
-                send_telegram_message(f"\u2705 비트코인 홀드 결정\n현재 상태 유지\n이유: {reason}")
+            
             else:
                 logger.error("Invalid decision received from AI.")
                 return
 
-            # 거래 실행 여부와 관계없이 현재 잔고 조회
-            time.sleep(2)  # API 호출 제한을 고려하여 잠시 대기
+            # 거래 실행 후 잔고 갱신
+            time.sleep(2)  # API호출 제한 고려
             balances = upbit.get_balances()
-            btc_balance = next((float(balance['balance']) for balance in balances if balance['currency'] == 'BTC'), 0)
-            krw_balance = next((float(balance['balance']) for balance in balances if balance['currency'] == 'KRW'), 0)
-            btc_avg_buy_price = next((float(balance['avg_buy_price']) for balance in balances if balance['currency'] == 'BTC'), 0)
+            btc_balance = next((float(b['balance']) for b in balances if b['currency'] == 'BTC'), 0)
+            krw_balance = next((float(b['balance']) for b in balances if b['currency'] == 'KRW'), 0)
+            btc_avg_buy_price = next((float(b['avg_buy_price']) for b in balances if b['currency'] == 'BTC'), 0)
             current_btc_price = pyupbit.get_current_price("KRW-BTC")
 
-            # 거래 기록을 DB에 저장하기
-            log_trade(conn, decision, percentage if order_executed else 0, reason,
-                      btc_balance, krw_balance, btc_avg_buy_price, current_btc_price, reflection)
+            # 거래 기록 DB 삽입
+            log_trade(conn,
+                      decision,
+                      percentage if order_executed else 0,
+                      reason,
+                      btc_balance,
+                      krw_balance,
+                      btc_avg_buy_price,
+                      current_btc_price,
+                      reflection)
+
     except sqlite3.Error as e:
         logger.error(f"Database connection error: {e}")
         return
 
+
+# ---------------------- 메인 실행 (스케줄 설정) ---------------------- #
 if __name__ == "__main__":
-    # 데이터베이스 초기화
     init_db()
 
-    # 중복 실행 방지를 위한 변수
     trading_in_progress = False
 
-    # 트레이딩 작업을 수행하는 함수
-    def job():
+    def job_ai_trading():
+        """8시간 간격으로 실행되는 트레이딩 스케줄 함수"""
         global trading_in_progress
         if trading_in_progress:
             logger.warning("Trading job is already in progress, skipping this run.")
@@ -552,40 +684,26 @@ if __name__ == "__main__":
         finally:
             trading_in_progress = False
 
-    job()
+    def job_orderbook_snapshot():
+        """1시간 간격으로 오더북 스냅샷을 저장하는 스케줄 함수"""
+        store_orderbook_snapshot()
 
-    # 매 1시간마다 실행
-    schedule.every().day.at("01:30").do(job)
-    schedule.every().day.at("02:30").do(job)
-    schedule.every().day.at("03:30").do(job)
-    schedule.every().day.at("04:30").do(job)
-    schedule.every().day.at("05:30").do(job)
-    schedule.every().day.at("06:30").do(job)
-    schedule.every().day.at("07:30").do(job)
-    schedule.every().day.at("08:30").do(job)
-    schedule.every().day.at("09:30").do(job)
-    schedule.every().day.at("10:30").do(job)
-    schedule.every().day.at("11:30").do(job)
-    schedule.every().day.at("12:30").do(job)
-    schedule.every().day.at("13:30").do(job)
-    schedule.every().day.at("14:30").do(job)
-    schedule.every().day.at("15:30").do(job)
-    schedule.every().day.at("16:30").do(job)
-    schedule.every().day.at("17:30").do(job)
-    schedule.every().day.at("18:30").do(job)
-    schedule.every().day.at("19:30").do(job)
-    schedule.every().day.at("20:30").do(job)
-    schedule.every().day.at("21:30").do(job)
-    schedule.every().day.at("22:30").do(job)
-    schedule.every().day.at("23:30").do(job)
-    schedule.every().day.at("00:30").do(job)    
+    job_ai_trading()
 
+    # 스케줄 등록
+    # 1) 오더북 스냅샷: 매 정시(:29/59)에 30분 간격으로 실행
+    schedule.every().hour.at(":29").do(job_orderbook_snapshot)
+    schedule.every().hour.at(":59").do(job_orderbook_snapshot)
+
+    # 2) 8시간마다 트레이딩 실행 (예: 04:30, 12:30, 20:30)
+    schedule.every().day.at("04:30").do(job_ai_trading)
+    schedule.every().day.at("12:30").do(job_ai_trading)
+    schedule.every().day.at("20:30").do(job_ai_trading)
+    schedule.every().day.at("08:30").do(job_ai_trading)
+    schedule.every().day.at("16:30").do(job_ai_trading)
+    schedule.every().day.at("00:30").do(job_ai_trading)
+    
+    # 메인 루프
     while True:
         schedule.run_pending()
         time.sleep(1)
-                                        
-
-
-
-
-
