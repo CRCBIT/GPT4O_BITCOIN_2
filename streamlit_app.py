@@ -195,8 +195,8 @@ def load_market_data_from_timestamp(start_timestamp):
     return ohlcv
 
 def main():
-    # 페이지 자동 리프레시 (80초마다 재실행)
-    st_autorefresh(interval=80000, limit=None, key="auto_refresh")
+    # 페이지 자동 리프레시 (5분마다 재실행)
+    st_autorefresh(interval=300000, limit=None, key="auto_refresh")
 
     # 테마 선택
     theme = st.sidebar.radio("테마 선택", ("light", "dark"))
