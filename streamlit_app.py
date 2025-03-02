@@ -25,36 +25,31 @@ st.markdown(
     <style>
     /* 메인 컨테이너의 상단 패딩 줄이기 */
     .block-container {
-        padding-top: 1rem;  /* 기본값보다 작은 패딩으로 조정 */
+        padding-top: 1rem;
     }
-
     /* 제목 위의 여백 제거 및 텍스트 아래에 밑줄 추가 */
     h1 {
         margin-top: 0;
-        margin-bottom: 0.5rem; /* 제목과 섹션 사이 간격 조정 */
-        text-decoration: underline; /* 실제 텍스트 아래에 밑줄 추가 */
-        text-decoration-color: currentColor; /* 밑줄 색상을 텍스트 색상과 동일하게 설정 */
-        text-decoration-thickness: 2px; /* 밑줄 두께 설정 */
-        font-size: 30px !important; /* 글자 크기 약간 축소 */
+        margin-bottom: 0.5rem;
+        text-decoration: underline;
+        text-decoration-color: currentColor;
+        text-decoration-thickness: 2px;
+        font-size: 30px !important;
     }
-
     /* 모든 h3 요소에 일관된 스타일 적용 */
     h3 {
-        margin-top: 0.5rem; /* 상단 여백 조정 */
-        margin-bottom: 0.5rem; /* 하단 여백 조정 */
-        font-size: 20px; /* 일관된 글자 크기 약간 축소 */
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+        font-size: 20px;
     }
-
     /* 추가적인 여백 제거 (필요 시) */
     .css-18e3th9 {
         padding-top: 1rem;
     }
-
     .stPlotlyChart {
         padding-top: 0 !important;
         padding-bottom: 0 !important;
     }
-
     </style>
     """,
     unsafe_allow_html=True
@@ -74,7 +69,7 @@ def load_data():
     return df
 
 def calculate_initial_investment(df):
-    """초기 투자 금액(내가 투자 시작 시점의 평가금액 + 예치금/출금액 반영)을 계산합니다."""
+    """초기 투자 금액(투자 시작 시점의 평가금액 + 예치금/출금액 반영)을 계산합니다."""
     initial_krw_balance = df.iloc[0]['krw_balance']
     initial_btc_balance = df.iloc[0]['btc_balance']
     initial_btc_price = df.iloc[0]['btc_krw_price']
@@ -86,7 +81,7 @@ def calculate_current_investment(df):
     current_btc_balance = df.iloc[-1]['btc_balance']
     current_btc_price = pyupbit.get_current_price("KRW-BTC")
     if current_btc_price is None:
-        # 만약 pyupbit API로 실패하면 마지막 btc_krw_price를 사용
+        # pyupbit API 실패 시 마지막 btc_krw_price 사용
         current_btc_price = df.iloc[-1]['btc_krw_price']
     return current_krw_balance + (current_btc_balance * current_btc_price)
 
@@ -142,24 +137,20 @@ def resample_portfolio_daily(df):
     df_daily = df.set_index('timestamp').resample('D').last().dropna(subset=['total_assets'])
     df_daily['daily_return'] = df_daily['total_assets'].pct_change().fillna(0)
     df_daily['cum_return'] = (1 + df_daily['daily_return']).cumprod()
-
     return df_daily
 
 def get_mdd(cum_return_series):
     """
     최대 낙폭(MDD)을 계산.
-    cum_return_series: 예) [1.0, 1.02, 1.05, 1.03, 1.07, ...]
     """
     peak = cum_return_series.cummax()
     drawdown = (cum_return_series - peak) / peak
-    mdd = drawdown.min()  # 최소값(가장 큰 낙폭)
+    mdd = drawdown.min()
     return mdd
 
 def get_sharpe_ratio(return_series, freq=365, rf=0.0):
     """
     샤프 지수 = (평균수익률 - 무위험수익률) / 표준편차 * sqrt(freq)
-    - 여기서는 일간 수익률(return_series)에 대해 freq=365 사용
-    - 크립토 특성상 365
     """
     mean_return = return_series.mean()
     std_return = return_series.std()
@@ -174,7 +165,6 @@ def load_market_data_from_timestamp(start_timestamp):
     일간 수익률, 누적수익률 계산하여 반환.
     """
     now = pd.Timestamp.now()
-    # 일봉으로 가져오려면 count 기반이므로, 대략 (총 일수 + 예비 일수) 잡아야 함
     day_diff = (now - start_timestamp).days + 5
     if day_diff < 1:
         day_diff = 10
@@ -183,15 +173,11 @@ def load_market_data_from_timestamp(start_timestamp):
     if ohlcv is None or ohlcv.empty:
         return pd.DataFrame()
 
-    # start_timestamp보다 이후인 데이터만 필터
-    # 'index'가 일자(datetime), 시분초는 0시로 표시
     ohlcv = ohlcv.reset_index()
-    ohlcv = ohlcv[ohlcv['index'] >= start_timestamp.normalize()]  # 날짜 기준으로 비교
-
+    ohlcv = ohlcv[ohlcv['index'] >= start_timestamp.normalize()]
     ohlcv = ohlcv.sort_values(by='index').set_index('index')
     ohlcv['daily_return'] = ohlcv['close'].pct_change().fillna(0)
     ohlcv['cum_return'] = (1 + ohlcv['daily_return']).cumprod()
-
     return ohlcv
 
 def main():
@@ -213,7 +199,7 @@ def main():
         st.warning("No trade data available.")
         return
 
-    # 최초 거래 시점(분 단위)
+    # 최초 거래 시점
     start_timestamp = df.iloc[0]['timestamp']
 
     # 내 포트폴리오 초기 / 현재 평가금액
@@ -224,20 +210,13 @@ def main():
     # 시장 데이터(일봉) 불러오기
     market_df = load_market_data_from_timestamp(start_timestamp)
     
-    # ─────────────────────────────────────────
     # ★ 시장 수익률을 '실시간 시세' 기준으로 계산 ★
-    # ─────────────────────────────────────────
     if not market_df.empty:
-        # 시작 시점(포트폴리오 시작) 대비 BTC의 첫 종가
         market_start_price = df.iloc[0]['btc_krw_price']
-
-        # 실시간 현재 BTC 시세
         current_btc_price_realtime = pyupbit.get_current_price("KRW-BTC")
-
         if current_btc_price_realtime is not None:
             market_return_rate = ((current_btc_price_realtime - market_start_price) / market_start_price) * 100
         else:
-            # 혹시 pyupbit API 실패 시 마지막 종가로 계산
             market_current_price = market_df['close'].iloc[-1]
             market_return_rate = ((market_current_price - market_start_price) / market_start_price) * 100
     else:
@@ -284,7 +263,7 @@ def main():
         st.markdown(f"**My Return:** {my_return_html}", unsafe_allow_html=True)
         st.markdown(f"**Market Return:** {mkt_return_html}", unsafe_allow_html=True)
 
-        # MDD, Sharpe Ratio (볼드 처리)
+        # MDD, Sharpe Ratio
         mdd_html = f"<span style='font-weight:bold;'>{portfolio_mdd*100:.2f}%</span>"
         sharpe_html = f"<span style='font-weight:bold;'>{portfolio_sharpe:.2f}</span>"
         st.markdown(
@@ -309,7 +288,6 @@ def main():
         # 현재 BTC 시세
         current_btc_price = pyupbit.get_current_price("KRW-BTC")
         if current_btc_price is not None:
-            # 하루 전 대비 색상
             latest_time = df.iloc[-1]['timestamp']
             one_day_ago = latest_time - timedelta(days=1)
             prev_data = df[df['timestamp'] <= one_day_ago]
@@ -378,7 +356,7 @@ def main():
         )
         st.plotly_chart(fig_assets, use_container_width=True, config=config)
 
-    # 여기부터 오른쪽 열(col2) 탭 영역
+    # 오른쪽 열(col2) 탭 영역
     with col2:
         st.markdown("<h3>📈 Trade-Related Charts</h3>", unsafe_allow_html=True)
         
@@ -388,19 +366,14 @@ def main():
             "BTC/KRW Balance Ratio Pie Chart",
             "1-Year BTC Price (Daily)"
         ])
-
+        
         # tab1: 최근 7일 BTC 5분봉
         with tab1:
-            # 5분봉 x 2016 ~= 7일치 데이터
             ohlc_5m = pyupbit.get_ohlcv("KRW-BTC", interval="minute5", count=2016)
             if ohlc_5m is not None and not ohlc_5m.empty:
-                # 차트용 데이터프레임
                 ohlc_5m = ohlc_5m.reset_index()
-                
-                # 최근 7일 범위에 해당하는 트레이드만 필터
                 min_time_7d = ohlc_5m['index'].min()
                 df_7d = df[df['timestamp'] >= min_time_7d]
-                
                 fig_5m = go.Figure(data=[go.Candlestick(
                     x=ohlc_5m['index'],
                     open=ohlc_5m['open'],
@@ -411,9 +384,7 @@ def main():
                     increasing=dict(line=dict(color='#FF9999'), fillcolor='#FF9999'),
                     decreasing=dict(line=dict(color='#9999FF'), fillcolor='#9999FF')
                 )])
-                # 최근 7일치 매매 마커만 추가
                 fig_5m = add_buy_sell_markers(fig_5m, df_7d, 'timestamp', 'btc_krw_price', marker_border_color)
-                
                 fig_5m.update_layout(
                     xaxis=dict(title="Time", rangeslider=dict(visible=False)),
                     yaxis=dict(title="Price (KRW)"),
@@ -424,7 +395,81 @@ def main():
                     showlegend=False
                 )
                 st.plotly_chart(fig_5m, use_container_width=True, config=config)
-
+        
+        # tab2: "Portfolio vs. Market" 누적수익률 비교 (거래 시점 기준)
+        with tab2:
+            if df.empty:
+                st.warning("거래 데이터가 없습니다.")
+            else:
+                df = df.sort_values(by='timestamp')
+                # 포트폴리오 누적수익률 계산 (거래 시점의 총 자산 기준)
+                df['total_assets'] = df['krw_balance'] + (df['btc_balance'] * df['btc_krw_price'])
+                df['portfolio_return'] = df['total_assets'].pct_change().fillna(0)
+                df['portfolio_cum_return'] = (1 + df['portfolio_return']).cumprod()
+                # 시장 누적수익률 계산 (거래 시점의 BTC 가격 기준)
+                df['market_return'] = df['btc_krw_price'].pct_change().fillna(0)
+                df['market_cum_return'] = (1 + df['market_return']).cumprod()
+                
+                fig_compare = go.Figure()
+                fig_compare.add_trace(
+                    go.Scatter(
+                        x=df['timestamp'],
+                        y=df['portfolio_cum_return'],
+                        mode='lines',
+                        name='Portfolio Cumulative Return',
+                        line=dict(color='blue')
+                    )
+                )
+                fig_compare.add_trace(
+                    go.Scatter(
+                        x=df['timestamp'],
+                        y=df['market_cum_return'],
+                        mode='lines',
+                        name='Market Cumulative Return',
+                        line=dict(color='orange')
+                    )
+                )
+                fig_compare.update_layout(
+                    title="Portfolio vs. Market (BTC) Cumulative Return (Trade Timestamps)",
+                    xaxis_title="Time",
+                    yaxis_title="Cumulative Return",
+                    template=plotly_template,
+                    height=450,
+                    hovermode="x unified",
+                    legend=dict(x=0.01, y=0.99)
+                )
+                st.plotly_chart(fig_compare, use_container_width=True, config=config)
+        
+        # tab3: BTC/KRW Balance Ratio 파이차트
+        with tab3:
+            current_btc_balance = df.iloc[-1]['btc_balance']
+            current_btc_price = pyupbit.get_current_price("KRW-BTC")
+            if current_btc_price is None:
+                current_btc_price = df.iloc[-1]['btc_krw_price']
+            btc_balance_krw = current_btc_balance * current_btc_price
+            current_krw_balance = df.iloc[-1]['krw_balance']
+            labels = ['BTC Balance (KRW)', 'KRW Balance']
+            values = [btc_balance_krw, current_krw_balance]
+            fig_pie = px.pie(
+                names=labels,
+                values=values,
+                title="Current BTC/KRW Balance Ratio",
+                template=plotly_template,
+                hole=0.4
+            )
+            fig_pie.update_traces(
+                marker=dict(colors=['#ADD8E6', '#90EE90']),
+                textinfo='percent+label'
+            )
+            fig_pie.update_layout(
+                margin=dict(l=20, r=20, t=50, b=20),
+                height=450,
+                showlegend=True,
+                plot_bgcolor='rgba(0,0,0,0)',
+                paper_bgcolor='rgba(0,0,0,0)'
+            )
+            st.plotly_chart(fig_pie, use_container_width=True, config=config)
+        
         # tab4: 최근 1년 BTC 일봉
         with tab4:
             ohlc_daily = pyupbit.get_ohlcv("KRW-BTC", interval="day", count=365)
@@ -451,100 +496,17 @@ def main():
                 )
                 st.plotly_chart(fig_daily, use_container_width=True, config=config)
 
-        # tab3: 현재 보유 자산 BTC/KRW 비율 파이차트
-        with tab3:
-            current_btc_balance = df.iloc[-1]['btc_balance']
-            current_btc_price = pyupbit.get_current_price("KRW-BTC")
-            if current_btc_price is None:
-                current_btc_price = df.iloc[-1]['btc_krw_price']
-            btc_balance_krw = current_btc_balance * current_btc_price
-            current_krw_balance = df.iloc[-1]['krw_balance']
-            
-            labels = ['BTC Balance (KRW)', 'KRW Balance']
-            values = [btc_balance_krw, current_krw_balance]
-            fig_pie = px.pie(
-                names=labels,
-                values=values,
-                title="Current BTC/KRW Balance Ratio",
-                template=plotly_template,
-                hole=0.4
-            )
-            fig_pie.update_traces(
-                marker=dict(colors=['#ADD8E6', '#90EE90']),
-                textinfo='percent+label'
-            )
-            fig_pie.update_layout(
-                margin=dict(l=20, r=20, t=50, b=20),
-                height=450,
-                showlegend=True,
-                plot_bgcolor='rgba(0,0,0,0)',
-                paper_bgcolor='rgba(0,0,0,0)'
-            )
-            st.plotly_chart(fig_pie, use_container_width=True, config=config)
-
-        # tab2: "내 포트폴리오 vs 시장(BTC)" 누적수익률 비교
-        with tab2:
-            if df_daily.empty:
-                st.warning("포트폴리오 데이터를 불러올 수 없습니다.")
-            else:
-                df_daily_plot = df_daily[['cum_return']].copy()
-                df_daily_plot['date'] = df_daily_plot.index.normalize()  # 0시 기준 date
-
-                # 거래 시점의 btc_krw_price를 사용하여 시장 수익률 계산
-                market_trade = df.set_index('timestamp').resample('D').last()
-                market_trade['daily_return'] = market_trade['btc_krw_price'].pct_change().fillna(0)
-                market_trade['cum_return'] = (1 + market_trade['daily_return']).cumprod()
-                market_trade = market_trade[['cum_return']].copy()
-                market_trade['date'] = market_trade.index.normalize()
-
-                merged = pd.merge(df_daily_plot, market_trade, on='date', how='inner', suffixes=('_port', '_mkt'))
-                merged = merged.sort_values(by='date')
-
-                fig_compare = go.Figure()
-                fig_compare.add_trace(
-                    go.Scatter(
-                        x=merged['date'],
-                        y=merged['cum_return_port'],
-                        mode='lines',
-                        name='Portfolio Cumulative Return',
-                        line=dict(color='blue')
-                    )
-                )
-                fig_compare.add_trace(
-                    go.Scatter(
-                        x=merged['date'],
-                        y=merged['cum_return_mkt'],
-                        mode='lines',
-                        name='Market Cumulative Return',
-                        line=dict(color='orange')
-                    )
-                )
-                fig_compare.update_layout(
-                    title="Portfolio vs. Market (BTC) Cumulative Return",
-                    xaxis_title="Date",
-                    yaxis_title="Cumulative Return",
-                    template=plotly_template,
-                    height=450,
-                    hovermode="x unified",
-                    legend=dict(x=0.01, y=0.99)
-                )
-                st.plotly_chart(fig_compare, use_container_width=True, config=config)
-
     # 하단: 거래내역 표
     with st.container():
         st.markdown("<h3>📋 Trade History</h3>", unsafe_allow_html=True)
-        
         df['timestamp_display'] = df['timestamp'].dt.strftime('%Y-%m-%d %H:%M')
         displayed_df = df.copy()
         displayed_df['timestamp'] = displayed_df['timestamp_display']
-
         displayed_df = displayed_df.drop(columns=['id', 'timestamp_display'], errors='ignore')
         displayed_df = displayed_df.rename(columns={
             'reason': '이유',
             'reflection': '관점'
         })
-
-        # 숫자 포맷
         if 'total_assets' not in displayed_df.columns:
             displayed_df['total_assets'] = (
                 displayed_df['krw_balance'] + displayed_df['btc_balance'] * displayed_df['btc_krw_price']
@@ -552,14 +514,10 @@ def main():
         for col in ['total_assets','krw_balance','btc_avg_buy_price','btc_krw_price']:
             if col in displayed_df.columns:
                 displayed_df[col] = displayed_df[col].apply(lambda x: f"{int(x):,}" if pd.notnull(x) else x)
-
-        # 컬럼 순서
         krw_btc_columns = ['krw_balance', 'btc_balance', 'btc_avg_buy_price', 'btc_krw_price']
         non_krw_btc_columns = [col for col in displayed_df.columns if col not in krw_btc_columns]
         final_columns = non_krw_btc_columns + krw_btc_columns
         displayed_df = displayed_df[final_columns]
-
-        # BUY / SELL 강조
         styled_df = displayed_df.style.applymap(
             lambda x: 'background-color: red; color: white;' if x == 'buy' else
                       'background-color: blue; color: white;' if x == 'sell' else '',
