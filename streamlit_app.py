@@ -484,15 +484,20 @@ def main():
 
         # tab2: "내 포트폴리오 vs 시장(BTC)" 누적수익률 비교
         with tab2:
-            if df_daily.empty or market_df.empty:
-                st.warning("포트폴리오 또는 시장 데이터를 불러올 수 없습니다.")
+            if df_daily.empty:
+                st.warning("포트폴리오 데이터를 불러올 수 없습니다.")
             else:
                 df_daily_plot = df_daily[['cum_return']].copy()
                 df_daily_plot['date'] = df_daily_plot.index.normalize()  # 0시 기준 date
-                market_plot = market_df[['cum_return']].copy()
-                market_plot['date'] = market_plot.index.normalize()
 
-                merged = pd.merge(df_daily_plot, market_plot, on='date', how='inner', suffixes=('_port', '_mkt'))
+                # 거래 시점의 btc_krw_price를 사용하여 시장 수익률 계산
+                market_trade = df.set_index('timestamp').resample('D').last()
+                market_trade['daily_return'] = market_trade['btc_krw_price'].pct_change().fillna(0)
+                market_trade['cum_return'] = (1 + market_trade['daily_return']).cumprod()
+                market_trade = market_trade[['cum_return']].copy()
+                market_trade['date'] = market_trade.index.normalize()
+
+                merged = pd.merge(df_daily_plot, market_trade, on='date', how='inner', suffixes=('_port', '_mkt'))
                 merged = merged.sort_values(by='date')
 
                 fig_compare = go.Figure()
