@@ -1,469 +1,562 @@
-#!/usr/bin/env python3
-"""메모리 주식 모델을 로컬에서 계산하고 Streamlit Cloud 브랜치로 게시한다.
+"""Streamlit Cloud 전용 뷰어.
 
-무거운 yfinance 수집·워크포워드·앙상블 학습은 이 파일을 실행하는 컴퓨터에서만
-수행한다. 결과는 pickle이 아닌 CSV/JSON으로 직렬화하고, 임시 clone에서 지정된
-파일만 커밋하므로 사용자의 현재 Git 작업트리를 변경하지 않는다.
+모델 학습·yfinance·sklearn·외부 HTTP 호출을 하지 않는다. 로컬 계산기가 Git에
+게시한 published_data의 CSV/JSON만 읽어 빠르고 재현 가능하게 표시한다.
 """
 
 from __future__ import annotations
 
-import argparse
-import hashlib
 import json
 import math
-import os
-import re
-import shutil
-import subprocess
-import sys
-import tempfile
-import time
-from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
 
 import numpy as np
 import pandas as pd
-
-import memory_stock_predict_pro as engine
-
-try:
-    import fcntl
-except ImportError:  # pragma: no cover - Ubuntu에서는 항상 사용 가능
-    fcntl = None
+import plotly.graph_objects as go
+import streamlit as st
+from plotly.subplots import make_subplots
 
 
-PROJECT_DIR = Path(__file__).resolve().parent
-CLOUD_DIR = PROJECT_DIR / "cloud"
-DEFAULT_REPO = "git@github.com:CRCBIT/GPT4O_BITCOIN_2.git"
-DEFAULT_BRANCH = "main"
-SCHEMA_VERSION = 1
+BASE_DIR = Path(__file__).resolve().parent
+DATA_DIR = BASE_DIR / "published_data"
+EXPECTED_SCHEMA = 1
+SPOT_NAMES = {
+    "DRAM_DDR5_16Gb": "DRAM DDR5 16Gb",
+    "DRAM_DDR4_8Gb": "DRAM DDR4 8Gb",
+    "NAND_TLC_512Gb": "NAND TLC 512Gb",
+}
+MODEL_NAMES = {
+    "boost_interaction": "비선형 Boosting",
+    "boost_smooth": "강규제 Boosting",
+    "extra_trees": "Extra Trees",
+    "linear_shrinkage": "선형 Shrinkage",
+}
 
 
-def log(message: str) -> None:
-    stamp = datetime.now().astimezone().strftime("%Y-%m-%d %H:%M:%S %Z")
-    print(f"[{stamp}] {message}", flush=True)
-
-
-def run_command(args: list[str], cwd: Path | None = None,
-                check: bool = True) -> subprocess.CompletedProcess:
-    env = os.environ.copy()
-    env.setdefault("GIT_TERMINAL_PROMPT", "0")
-    result = subprocess.run(
-        args, cwd=str(cwd) if cwd else None, env=env,
-        text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-        check=False,
-    )
-    if check and result.returncode != 0:
-        detail = (result.stderr or result.stdout).strip()
-        raise RuntimeError(f"명령 실패({result.returncode}): {' '.join(args)}\n{detail}")
-    return result
-
-
-def clean_json(value: Any) -> Any:
-    """numpy/pandas/NaN을 엄격한 JSON 값으로 변환한다."""
-    if value is None or value is pd.NA:
-        return None
-    if isinstance(value, dict):
-        return {str(k): clean_json(v) for k, v in value.items()}
-    if isinstance(value, (list, tuple, set, np.ndarray)):
-        return [clean_json(v) for v in value]
-    if isinstance(value, (pd.Timestamp, datetime)):
-        if pd.isna(value):
-            return None
-        return pd.Timestamp(value).isoformat()
-    if isinstance(value, (np.integer,)):
-        return int(value)
-    if isinstance(value, (np.floating, float)):
-        number = float(value)
-        return number if math.isfinite(number) else None
-    if isinstance(value, (np.bool_, bool)):
-        return bool(value)
-    if pd.isna(value):
-        return None
-    return value
-
-
-def write_json(path: Path, payload: Any) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        json.dumps(clean_json(payload), ensure_ascii=False, indent=2,
-                   sort_keys=True, allow_nan=False) + "\n",
-        encoding="utf-8",
-    )
-
-
-def sha256_file(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
-
-
-def safe_ticker_name(ticker: str) -> str:
-    return re.sub(r"[^A-Za-z0-9_-]+", "_", ticker).strip("_") or "ticker"
-
-
-def frame_to_csv(frame: pd.DataFrame, path: Path, *, index: bool = False,
-                 compression: str | None = None) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    frame.to_csv(path, index=index, encoding="utf-8", compression=compression)
-
-
-def metrics_summary(metrics: dict | None) -> dict:
-    if not metrics:
-        return {}
-    return {
-        "overall": metrics.get("overall"),
-        "base": metrics.get("base"),
-        "naive": metrics.get("naive"),
-        "n": metrics.get("n"),
-        "accuracy_ci": metrics.get("accuracy_ci"),
-        "brier": metrics.get("brier"),
-        "brier_base": metrics.get("brier_base"),
-        "brier_skill": metrics.get("brier_skill"),
-        "log_loss": metrics.get("log_loss"),
-        "auc": metrics.get("auc"),
-        "ece": metrics.get("ece"),
-        "prec_up": metrics.get("prec_up"),
-        "n_up": metrics.get("n_up"),
-        "prec_dn": metrics.get("prec_dn"),
-        "n_dn": metrics.get("n_dn"),
-    }
-
-
-def latest_quote_payload(prices: dict[str, pd.DataFrame]) -> dict:
-    payload = {}
-    for ticker, frame in prices.items():
-        if frame.empty or "Close" not in frame:
-            continue
-        close = pd.to_numeric(frame["Close"], errors="coerce").dropna()
-        if close.empty:
-            continue
-        payload[ticker] = {
-            "date": close.index[-1],
-            "close": close.iloc[-1],
-            "previous_close": close.iloc[-2] if len(close) >= 2 else None,
-        }
-    return payload
-
-
-def build_bundle(out: dict, destination: Path, *, period: str, horizon: int,
-                 threshold: int, cost_bps: int) -> dict:
-    """학습 결과를 Cloud가 sklearn 없이 읽을 수 있는 데이터 계약으로 만든다."""
-    destination.mkdir(parents=True, exist_ok=True)
-    prices = out["prices"]
-    oos = out["oos"].copy()
-    scores = out["scores"].copy()
-    metrics = engine.compute_metrics(oos, thr=threshold, horizon=horizon)
-    reliability = engine.reliability_summary(metrics)
-
-    plans: dict[str, dict] = {}
-    board_rows = []
-    score_map = (scores.set_index("ticker") if not scores.empty
-                 else pd.DataFrame())
-    for ticker in engine.TICKERS:
-        if ticker not in prices or scores.empty or ticker not in score_map.index:
-            continue
-        score = float(score_map.loc[ticker, "score"])
-        evidence = engine.score_evidence(oos, ticker, score, horizon=horizon)
-        plan = engine.make_action_plan(
-            prices[ticker], score, out["ret_stats"].get(ticker), horizon,
-            threshold, engine.ticker_currency(ticker),
-            quality=reliability.get("quality", 0.35), evidence=evidence,
-        )
-        data_rows = out["data"][out["data"]["ticker"] == ticker].sort_values("date")
-        reasons = engine.plain_reasons(ticker, data_rows.iloc[-1]) \
-            if len(data_rows) else []
-        plan.update({
-            "ticker": ticker,
-            "name": engine.TICKERS[ticker],
-            "date": score_map.loc[ticker, "date"],
-            "reasons": reasons,
-        })
-        plans[ticker] = plan
-        ev = plan.get("evidence", {})
-        board_rows.append({
-            "ticker": ticker,
-            "종목": engine.TICKERS[ticker],
-            "행동": f"{plan['emoji']} {plan['label']}",
-            "상승확률": plan["score"] / 100.0,
-            "실행점수": plan["decision_score"],
-            "유사점수_실제상승률": ev.get("rate"),
-            "유사점수_표본수": ev.get("n"),
-            "현재가": plan.get("price"),
-            "매수기준": plan.get("buy"),
-            "목표가": plan.get("target"),
-            "예상하단": plan.get("t_lo"),
-            "예상상단": plan.get("t_hi"),
-            "손절가": plan.get("stop"),
-            "예상수익률": plan.get("er"),
-            "통화": plan.get("ccy"),
-            "핵심근거": " · ".join(reasons) if reasons else plan.get("why_short"),
-        })
-
-    frame_to_csv(scores, destination / "scores.csv")
-    frame_to_csv(pd.DataFrame(board_rows), destination / "decision_board.csv")
-    frame_to_csv(oos, destination / "oos.csv.gz", compression="gzip")
-    frame_to_csv(out["spot_data"], destination / "spot_prices.csv")
-
-    importance = out.get("importance")
-    imp_frame = (importance.rename("importance").rename_axis("feature").reset_index()
-                 if isinstance(importance, pd.Series)
-                 else pd.DataFrame(columns=["feature", "importance"]))
-    frame_to_csv(imp_frame, destination / "feature_importance.csv")
-
-    if metrics:
-        per_ticker = metrics["per_ticker"].rename_axis("ticker").reset_index()
-        calibration = metrics["calibration"].reset_index()
-        if "bin" in calibration:
-            calibration["bin"] = calibration["bin"].astype(str)
-        frame_to_csv(per_ticker, destination / "metrics_per_ticker.csv")
-        frame_to_csv(calibration, destination / "calibration.csv")
-        frame_to_csv(metrics["rolling"], destination / "rolling_accuracy.csv")
-    else:
-        frame_to_csv(pd.DataFrame(), destination / "metrics_per_ticker.csv")
-        frame_to_csv(pd.DataFrame(), destination / "calibration.csv")
-        frame_to_csv(pd.DataFrame(), destination / "rolling_accuracy.csv")
-
-    ticker_files = {}
-    price_dir = destination / "prices"
-    for ticker in engine.TICKERS:
-        if ticker not in prices:
-            continue
-        filename = f"{safe_ticker_name(ticker)}.csv.gz"
-        frame = prices[ticker].copy().rename_axis("date").reset_index()
-        frame_to_csv(frame, price_dir / filename, compression="gzip")
-        ticker_files[ticker] = f"prices/{filename}"
-
-    write_json(destination / "plans.json", plans)
-    write_json(destination / "metrics_summary.json", metrics_summary(metrics))
-    write_json(destination / "reliability.json", reliability)
-    write_json(destination / "model_info.json", out.get("model_info", {}))
-    write_json(destination / "ret_stats.json", out.get("ret_stats", {}))
-    write_json(destination / "spot_status.json", out.get("spot_status", {}))
-
-    latest_date = None
-    if not scores.empty:
-        latest_date = pd.to_datetime(scores["date"], errors="coerce").max()
-    generated_at = datetime.now(timezone.utc)
-    hashes = {
-        str(path.relative_to(destination)): sha256_file(path)
-        for path in sorted(destination.rglob("*"))
-        if path.is_file() and path.name != "manifest.json"
-    }
-    identity_material = "\n".join(f"{k}:{v}" for k, v in hashes.items())
-    generation_id = hashlib.sha256(identity_material.encode("utf-8")).hexdigest()[:20]
-    manifest = {
-        "schema_version": SCHEMA_VERSION,
-        "generation_id": generation_id,
-        "generated_at_utc": generated_at,
-        "generated_at_local": generated_at.astimezone(),
-        "engine_version": engine.VERSION,
-        "period": period,
-        "horizon": horizon,
-        "threshold": threshold,
-        "cost_bps": cost_bps,
-        "latest_market_date": latest_date,
-        "feature_count": len(out.get("feat_cols", [])),
-        "oos_rows": len(oos),
-        "wf_step": out.get("profile", {}).get("wf_step"),
-        "ticker_names": engine.TICKERS,
-        "ticker_files": ticker_files,
-        "latest_quotes": latest_quote_payload(prices),
-        "spot_columns": [c for c in out["spot_data"].columns if c != "날짜"],
-        "files": hashes,
-    }
-    write_json(destination / "manifest.json", manifest)
-    return clean_json(manifest)
-
-
-def validate_branch(branch: str) -> None:
-    if (not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._/-]*", branch)
-            or ".." in branch or branch.endswith("/") or "//" in branch):
-        raise ValueError(f"안전하지 않은 Git 브랜치 이름: {branch!r}")
-
-
-def copy_cloud_payload(bundle_dir: Path, checkout: Path) -> None:
-    target_data = checkout / "published_data"
-    if target_data.exists():
-        shutil.rmtree(target_data)
-    shutil.copytree(bundle_dir, target_data)
-    shutil.copy2(CLOUD_DIR / "streamlit_app.py", checkout / "streamlit_app.py")
-    shutil.copy2(CLOUD_DIR / "requirements.txt", checkout / "requirements.txt")
-    config_target = checkout / ".streamlit" / "config.toml"
-    config_target.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(CLOUD_DIR / ".streamlit" / "config.toml", config_target)
-
-
-def publish_to_git(bundle_dir: Path, manifest: dict, *, repo_url: str,
-                   branch: str, git_name: str, git_email: str) -> str:
-    """임시 clone에서만 수정하고 지정 브랜치로 원자적 commit/push."""
-    validate_branch(branch)
-    remote_check = run_command(
-        ["git", "ls-remote", "--exit-code", "--heads", repo_url, branch],
-        check=False,
-    )
-    branch_exists = remote_check.returncode == 0
-    if remote_check.returncode not in (0, 2):
-        detail = (remote_check.stderr or remote_check.stdout).strip()
-        raise RuntimeError(
-            "GitHub 접근에 실패했습니다. `gh auth login` 또는 SSH 인증을 먼저 "
-            f"설정하세요.\n{detail}"
-        )
-
-    with tempfile.TemporaryDirectory(prefix="memory-dashboard-git-") as temp:
-        checkout = Path(temp) / "repo"
-        clone = ["git", "clone", "--depth", "1"]
-        if branch_exists:
-            clone += ["--branch", branch]
-        clone += [repo_url, str(checkout)]
-        run_command(clone)
-        if not branch_exists:
-            run_command(["git", "switch", "-c", branch], cwd=checkout)
-
-        old_manifest_path = checkout / "published_data" / "manifest.json"
-        if old_manifest_path.exists():
-            try:
-                old_manifest = json.loads(old_manifest_path.read_text(encoding="utf-8"))
-                if old_manifest.get("generation_id") == manifest.get("generation_id"):
-                    log("시장 데이터/모델 결과가 직전 게시본과 같아 Git push를 생략합니다.")
-                    return "unchanged"
-            except (OSError, json.JSONDecodeError):
-                pass
-
-        copy_cloud_payload(bundle_dir, checkout)
-        run_command([
-            "git", "add", "--", "streamlit_app.py", "requirements.txt",
-            ".streamlit/config.toml", "published_data",
-        ], cwd=checkout)
-        if run_command(["git", "diff", "--cached", "--quiet"],
-                       cwd=checkout, check=False).returncode == 0:
-            log("변경 파일이 없어 Git push를 생략합니다.")
-            return "unchanged"
-        run_command(["git", "config", "user.name", git_name], cwd=checkout)
-        run_command(["git", "config", "user.email", git_email], cwd=checkout)
-        market_date = manifest.get("latest_market_date") or "unknown-date"
-        message = f"data: refresh memory dashboard ({market_date})"
-        run_command(["git", "commit", "-m", message], cwd=checkout)
-        run_command([
-            "git", "push", "origin", f"HEAD:refs/heads/{branch}",
-        ], cwd=checkout)
-        commit = run_command(
-            ["git", "rev-parse", "--short", "HEAD"], cwd=checkout
-        ).stdout.strip()
-        return commit
-
-
-@contextmanager
-def single_instance_lock(path: Path):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    handle = path.open("a+", encoding="utf-8")
+def read_json(path: Path, default=None):
     try:
-        if fcntl is not None:
-            try:
-                fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-            except BlockingIOError as exc:
-                raise RuntimeError("이미 다른 로컬 학습/게시 작업이 실행 중입니다.") from exc
-        yield
-    finally:
-        if fcntl is not None:
-            fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
-        handle.close()
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {} if default is None else default
 
 
-def export_local_copy(source: Path, destination: Path) -> None:
-    destination.mkdir(parents=True, exist_ok=True)
-    shutil.copytree(source, destination, dirs_exist_ok=True)
+def read_csv(name: str, **kwargs) -> pd.DataFrame:
+    path = DATA_DIR / name
+    if not path.exists():
+        return pd.DataFrame()
+    try:
+        return pd.read_csv(path, **kwargs)
+    except Exception:
+        return pd.DataFrame()
 
 
-def run_cycle(args: argparse.Namespace) -> str:
-    lock_path = Path(args.lock_file).expanduser().resolve()
-    with single_instance_lock(lock_path):
-        log(f"로컬 모델 계산 시작: {args.period}, {args.horizon}거래일 전망")
-        started = time.monotonic()
-        result = engine.run_pipeline(
-            args.horizon, args.period, spot_data=None,
-            refresh_token=int(time.time()), force_spot=args.force_spot,
+def parse_date_column(frame: pd.DataFrame, column: str = "date") -> pd.DataFrame:
+    if column in frame:
+        frame = frame.copy()
+        frame[column] = pd.to_datetime(frame[column], errors="coerce")
+    return frame
+
+
+@st.cache_data(show_spinner=False)
+def load_bundle(generation_id: str) -> dict:
+    del generation_id  # 캐시 무효화 키
+    manifest = read_json(DATA_DIR / "manifest.json")
+    prices = {}
+    for ticker, relative in manifest.get("ticker_files", {}).items():
+        path = DATA_DIR / relative
+        if not path.exists():
+            continue
+        try:
+            frame = pd.read_csv(path, compression="gzip")
+            frame = parse_date_column(frame)
+            prices[ticker] = frame.dropna(subset=["date"]).sort_values("date")
+        except Exception:
+            continue
+    return {
+        "manifest": manifest,
+        "plans": read_json(DATA_DIR / "plans.json"),
+        "metrics": read_json(DATA_DIR / "metrics_summary.json"),
+        "reliability": read_json(DATA_DIR / "reliability.json"),
+        "model_info": read_json(DATA_DIR / "model_info.json"),
+        "spot_status": read_json(DATA_DIR / "spot_status.json"),
+        "board": read_csv("decision_board.csv"),
+        "scores": parse_date_column(read_csv("scores.csv")),
+        "oos": parse_date_column(read_csv("oos.csv.gz", compression="gzip")),
+        "spot": parse_date_column(read_csv("spot_prices.csv"), "날짜"),
+        "importance": read_csv("feature_importance.csv"),
+        "per_ticker": read_csv("metrics_per_ticker.csv"),
+        "calibration": read_csv("calibration.csv"),
+        "rolling": parse_date_column(read_csv("rolling_accuracy.csv")),
+        "prices": prices,
+    }
+
+
+def finite(value, fallback=np.nan) -> float:
+    try:
+        number = float(value)
+        return number if math.isfinite(number) else fallback
+    except (TypeError, ValueError):
+        return fallback
+
+
+def ticker_currency(ticker: str) -> str:
+    if ticker.endswith((".KS", ".KQ")):
+        return "KRW"
+    if ticker.endswith(".T"):
+        return "JPY"
+    return "USD"
+
+
+def fmt_price(value, currency: str) -> str:
+    number = finite(value)
+    if not math.isfinite(number):
+        return "-"
+    return f"{number:,.0f}" if currency in ("KRW", "JPY") else f"{number:,.2f}"
+
+
+def fmt_pct(value, digits: int = 1) -> str:
+    number = finite(value)
+    return "-" if not math.isfinite(number) else f"{number:+.{digits}%}"
+
+
+def ema(series: pd.Series, n: int) -> pd.Series:
+    return series.ewm(span=n, adjust=False, min_periods=max(3, n // 2)).mean()
+
+
+def rsi(series: pd.Series, n: int = 14) -> pd.Series:
+    diff = series.diff()
+    up = diff.clip(lower=0).ewm(alpha=1 / n, adjust=False).mean()
+    down = (-diff.clip(upper=0)).ewm(alpha=1 / n, adjust=False).mean()
+    rs = up / down.replace(0, np.nan)
+    return 100 - 100 / (1 + rs)
+
+
+def technical_figure(price: pd.DataFrame, score_history: pd.DataFrame):
+    data = price.tail(756).copy()
+    close = pd.to_numeric(data["Close"], errors="coerce")
+    e12, e26 = ema(close, 12), ema(close, 26)
+    macd = e12 - e26
+    signal = ema(macd, 9)
+    hist = macd - signal
+    fig = make_subplots(
+        rows=3, cols=1, shared_xaxes=True, vertical_spacing=0.035,
+        row_heights=[0.56, 0.22, 0.22],
+        specs=[[{"secondary_y": True}], [{}], [{}]],
+    )
+    ohlc = {"Open", "High", "Low", "Close"} <= set(data.columns)
+    if ohlc:
+        fig.add_trace(go.Candlestick(
+            x=data["date"], open=data["Open"], high=data["High"],
+            low=data["Low"], close=data["Close"], name="OHLC",
+            increasing_line_color="#16a34a", decreasing_line_color="#ef4444"),
+            row=1, col=1, secondary_y=False)
+    else:
+        fig.add_trace(go.Scatter(x=data["date"], y=close, name="종가"),
+                      row=1, col=1, secondary_y=False)
+    for n, color in ((20, "#2563eb"), (60, "#f59e0b"), (120, "#7c3aed")):
+        fig.add_trace(go.Scatter(
+            x=data["date"], y=close.rolling(n).mean(), name=f"MA{n}",
+            line=dict(width=1.1, color=color)), row=1, col=1, secondary_y=False)
+    if not score_history.empty:
+        fig.add_trace(go.Scatter(
+            x=score_history["date"], y=score_history["score"], name="상승확률",
+            line=dict(width=1.2, color="#db2777"), opacity=0.75),
+            row=1, col=1, secondary_y=True)
+    rsi14 = rsi(close, 14)
+    fig.add_trace(go.Scatter(x=data["date"], y=rsi14, name="RSI(14)",
+                             line=dict(color="#0f766e")), row=2, col=1)
+    fig.add_hline(y=70, line_dash="dot", line_color="#ef4444", row=2, col=1)
+    fig.add_hline(y=30, line_dash="dot", line_color="#2563eb", row=2, col=1)
+    colors = np.where(hist >= 0, "rgba(22,163,74,.65)", "rgba(239,68,68,.65)")
+    fig.add_trace(go.Bar(x=data["date"], y=hist, name="MACD Hist",
+                         marker_color=colors), row=3, col=1)
+    fig.add_trace(go.Scatter(x=data["date"], y=macd, name="MACD"), row=3, col=1)
+    fig.add_trace(go.Scatter(x=data["date"], y=signal, name="Signal"), row=3, col=1)
+    fig.update_yaxes(title_text="가격", row=1, col=1, secondary_y=False)
+    fig.update_yaxes(title_text="확률", range=[0, 100], ticksuffix="%",
+                     row=1, col=1, secondary_y=True)
+    fig.update_yaxes(title_text="RSI", range=[0, 100], row=2, col=1)
+    fig.update_layout(height=690, hovermode="x unified", bargap=0,
+                      margin=dict(t=30, b=20, l=20, r=20),
+                      legend=dict(orientation="h", y=1.04),
+                      xaxis_rangeslider_visible=False)
+    return fig
+
+
+def ladder_figure(plan: dict):
+    currency = plan.get("ccy", "USD")
+    points = []
+    specs = [
+        ("stop", "손절", "#dc2626", "triangle-down"),
+        ("reentry", "재진입", "#7c3aed", "triangle-up"),
+        ("buy", "매수", "#16a34a", "triangle-up"),
+        ("price", "현재", "#111827", "diamond"),
+        ("trim", "축소", "#f59e0b", "triangle-down"),
+        ("target", "목표", "#2563eb", "star"),
+    ]
+    for key, label, color, marker in specs:
+        value = finite(plan.get(key))
+        if math.isfinite(value):
+            points.append((value, label, color, marker))
+    points.sort()
+    fig = go.Figure()
+    if points:
+        fig.add_scatter(x=[points[0][0], points[-1][0]], y=[0, 0], mode="lines",
+                        line=dict(color="#cbd5e1", width=2), showlegend=False)
+        for i, (value, label, color, marker) in enumerate(points):
+            fig.add_scatter(
+                x=[value], y=[0], mode="markers+text",
+                marker=dict(size=13, color=color, symbol=marker),
+                text=[f"{label}<br>{fmt_price(value, currency)}"],
+                textposition="top center" if i % 2 == 0 else "bottom center",
+                showlegend=False)
+    fig.update_yaxes(visible=False, range=[-1, 1])
+    fig.update_layout(height=180, margin=dict(t=10, b=10, l=10, r=10))
+    return fig
+
+
+def equity_curve(oos: pd.DataFrame, ticker: str, horizon: int,
+                 threshold: int, cost_bps: int):
+    group = oos[oos["ticker"] == ticker].dropna(subset=["fwd_ret"]).sort_values("date")
+    group = group.iloc[::max(1, horizon)].copy()
+    if len(group) < 4:
+        return None, None
+    returns = pd.to_numeric(group["fwd_ret"], errors="coerce").fillna(0).clip(lower=-0.99)
+    active = pd.to_numeric(group["score"], errors="coerce") >= threshold
+    strategy = pd.Series(np.where(active, returns - cost_bps / 10_000.0, 0.0))
+    curve = pd.DataFrame({
+        "date": group["date"].to_numpy(),
+        "시그널 추종": (1 + strategy).cumprod(),
+        "단순 보유": (1 + returns.reset_index(drop=True)).cumprod(),
+    })
+
+    def perf(series: pd.Series):
+        nav = (1 + series).cumprod()
+        total = float(nav.iloc[-1] - 1)
+        years = max(len(series) * horizon / 252.0, 1 / 252)
+        cagr = (1 + total) ** (1 / years) - 1 if total > -1 else -1
+        mdd = float((nav / nav.cummax() - 1).min())
+        vol = float(series.std(ddof=1))
+        sharpe = float(series.mean() / vol * np.sqrt(252 / horizon)) if vol > 0 else np.nan
+        return {"total": total, "cagr": cagr, "mdd": mdd, "sharpe": sharpe}
+
+    return curve, {"strategy": perf(strategy), "benchmark": perf(returns.reset_index(drop=True)),
+                   "trades": int(active.sum()), "exposure": float(active.mean())}
+
+
+def portfolio_view(manifest: dict, plans: dict, ticker_names: dict):
+    if "portfolio" not in st.session_state:
+        st.session_state.portfolio = pd.DataFrame([
+            {"티커": ticker, "수량": 0.0, "평단": 0.0}
+            for ticker in ticker_names
+        ])
+    edited = st.data_editor(
+        st.session_state.portfolio, num_rows="dynamic", hide_index=True,
+        use_container_width=True,
+        column_config={
+            "티커": st.column_config.SelectboxColumn(
+                "티커", options=list(ticker_names), required=True),
+            "수량": st.column_config.NumberColumn("수량", min_value=0.0, format="%.6g"),
+            "평단": st.column_config.NumberColumn("평단(현지통화)", min_value=0.0,
+                                                   format="%.8g"),
+        },
+    )
+    st.session_state.portfolio = edited.copy()
+    quotes = manifest.get("latest_quotes", {})
+    usdkrw = finite(quotes.get("KRW=X", {}).get("close"))
+    usdjpy = finite(quotes.get("JPY=X", {}).get("close"))
+
+    def to_krw(value: float, currency: str):
+        if currency == "KRW":
+            return value
+        if currency == "USD" and math.isfinite(usdkrw):
+            return value * usdkrw
+        if currency == "JPY" and math.isfinite(usdkrw) and math.isfinite(usdjpy):
+            return value * usdkrw / usdjpy
+        return np.nan
+
+    rows = []
+    for _, row in edited.iterrows():
+        ticker = str(row.get("티커", ""))
+        quantity = finite(row.get("수량"), 0.0)
+        average = finite(row.get("평단"), 0.0)
+        quote = finite(quotes.get(ticker, {}).get("close"))
+        if quantity <= 0 or not math.isfinite(quote):
+            continue
+        currency = ticker_currency(ticker)
+        value = to_krw(quantity * quote, currency)
+        cost = to_krw(quantity * average, currency) if average > 0 else np.nan
+        expected = finite(plans.get(ticker, {}).get("er"), 0.0)
+        rows.append({
+            "종목": ticker_names.get(ticker, ticker), "티커": ticker,
+            "수량": quantity, "현재가": fmt_price(quote, currency),
+            "평가액(₩)": value, "수익률": value / cost - 1 if cost > 0 else np.nan,
+            "모델 예상수익률": expected, "예상평가액(₩)": value * (1 + expected),
+            "행동": plans.get(ticker, {}).get("label", "신호 없음"),
+        })
+    view = pd.DataFrame(rows)
+    if view.empty:
+        st.info("수량을 입력하면 마지막 로컬 게시 시세 기준 평가액이 표시됩니다.")
+        return
+    total = float(view["평가액(₩)"].sum())
+    expected_total = float(view["예상평가액(₩)"].sum())
+    c1, c2, c3 = st.columns(3)
+    c1.metric("총 평가액", f"₩{total:,.0f}")
+    c2.metric("모델 예상자산", f"₩{expected_total:,.0f}", fmt_pct(expected_total / total - 1))
+    c3.metric("예상 증감", f"₩{expected_total-total:+,.0f}")
+    display = view.copy()
+    for col in ("평가액(₩)", "예상평가액(₩)"):
+        display[col] = display[col].map(lambda x: f"₩{x:,.0f}")
+    for col in ("수익률", "모델 예상수익률"):
+        display[col] = display[col].map(fmt_pct)
+    st.dataframe(display, use_container_width=True, hide_index=True)
+    st.caption("실시간 조회가 아니라 마지막 로컬 계산 시세 기준입니다.")
+
+
+def main():
+    st.set_page_config(page_title="Memory Stock Predict", page_icon="🧠",
+                       layout="wide", initial_sidebar_state="expanded")
+    st.markdown("""
+    <style>
+    .block-container {padding-top:1.15rem; padding-bottom:3rem; max-width:1540px;}
+    .hero {padding:1.3rem 1.55rem; border-radius:1.1rem; margin-bottom:1rem;
+      background:linear-gradient(125deg,#0f172a,#1d4ed8); color:white;}
+    .hero h1 {font-size:2rem; margin:0 0 .25rem 0;}
+    .hero p {margin:0; opacity:.8;}
+    div[data-testid="stMetric"] {background:rgba(127,127,127,.055);
+      border:1px solid rgba(127,127,127,.15); padding:.85rem 1rem; border-radius:.85rem;}
+    </style>
+    """, unsafe_allow_html=True)
+
+    manifest = read_json(DATA_DIR / "manifest.json")
+    if not manifest:
+        st.error("게시 데이터가 없습니다. 로컬에서 local_train_publish.py를 먼저 실행하세요.")
+        st.stop()
+    if manifest.get("schema_version") != EXPECTED_SCHEMA:
+        st.error("Cloud 앱과 게시 데이터의 스키마 버전이 맞지 않습니다.")
+        st.stop()
+    bundle = load_bundle(str(manifest.get("generation_id", "unknown")))
+    ticker_names = manifest.get("ticker_names", {})
+    plans = bundle["plans"]
+    metrics = bundle["metrics"]
+    reliability = bundle["reliability"]
+
+    st.markdown("""
+    <div class="hero"><h1>Memory Stock Predict</h1>
+    <p>로컬 워크스테이션 계산 결과를 읽는 경량 Streamlit Cloud 대시보드</p></div>
+    """, unsafe_allow_html=True)
+
+    generated = pd.to_datetime(manifest.get("generated_at_utc"), utc=True, errors="coerce")
+    age_hours = ((pd.Timestamp.now(tz="UTC") - generated).total_seconds() / 3600
+                 if pd.notna(generated) else np.nan)
+    if math.isfinite(age_hours) and age_hours > 24:
+        st.warning(f"마지막 게시 후 {age_hours:.1f}시간이 지났습니다. 로컬 계산기를 확인하세요.")
+
+    with st.sidebar:
+        st.header("게시 상태")
+        st.metric("기준일", str(manifest.get("latest_market_date", "-"))[:10])
+        st.metric("로컬 계산 시각", generated.tz_convert("Asia/Seoul").strftime("%m-%d %H:%M")
+                  if pd.notna(generated) else "-")
+        st.metric("OOS 예측", f"{int(manifest.get('oos_rows', 0)):,}건")
+        st.caption(
+            f"{str(manifest.get('period', '-')).upper()} 학습 · "
+            f"{manifest.get('horizon', '-')}거래일 전망 · "
+            f"엔진 v{manifest.get('engine_version', '-')}"
         )
-        with tempfile.TemporaryDirectory(prefix="memory-dashboard-data-") as temp:
-            bundle_dir = Path(temp) / "published_data"
-            manifest = build_bundle(
-                result, bundle_dir, period=args.period, horizon=args.horizon,
-                threshold=args.threshold, cost_bps=args.cost_bps,
-            )
-            export_local_copy(bundle_dir, Path(args.output_dir).expanduser().resolve())
-            log(
-                f"데이터 묶음 완성: {manifest['generation_id']} · "
-                f"OOS {manifest['oos_rows']:,}행 · {time.monotonic()-started:.1f}초"
-            )
-            if args.no_push:
-                return "local-only"
-            commit = publish_to_git(
-                bundle_dir, manifest, repo_url=args.repo_url,
-                branch=args.branch, git_name=args.git_name,
-                git_email=args.git_email,
-            )
-            log(f"Git 게시 완료: {args.branch} · {commit}")
-            return commit
+        st.divider()
+        st.caption("이 앱은 학습·외부 시세 요청을 하지 않습니다. Git 브랜치의 마지막 "
+                   "검증 완료 결과만 읽습니다.")
 
+    available = [ticker for ticker in ticker_names if ticker in plans]
+    best = max(available, key=lambda x: finite(plans[x].get("decision_score"), -np.inf)) \
+        if available else None
+    worst = min(available, key=lambda x: finite(plans[x].get("decision_score"), np.inf)) \
+        if available else None
+    h1, h2, h3, h4 = st.columns(4)
+    h1.metric("모델 신뢰도", f"{reliability.get('emoji', '⚪')} "
+              f"{reliability.get('grade', '검증 전')}")
+    h2.metric("상대 최강", ticker_names.get(best, "-") if best else "-",
+              f"실행점수 {finite(plans[best].get('decision_score')):.0f}" if best else None)
+    h3.metric("상대 최약", ticker_names.get(worst, "-") if worst else "-",
+              f"실행점수 {finite(plans[worst].get('decision_score')):.0f}" if worst else None)
+    h4.metric("ROC-AUC", f"{finite(metrics.get('auc')):.3f}"
+              if math.isfinite(finite(metrics.get("auc"))) else "-")
 
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="로컬 모델 계산 결과를 Streamlit Cloud용 Git 브랜치에 게시")
-    parser.add_argument("--repo-url", default=DEFAULT_REPO)
-    parser.add_argument("--branch", default=DEFAULT_BRANCH)
-    parser.add_argument("--period", choices=list(engine.PERIOD_PROFILES), default="10y")
-    parser.add_argument("--horizon", type=int, choices=(10, 20, 40), default=20)
-    parser.add_argument("--threshold", type=int, choices=range(52, 71), default=55)
-    parser.add_argument("--cost-bps", type=int, default=25)
-    parser.add_argument("--interval-hours", type=float, default=0.0,
-                        help="0이면 한 번만, 양수면 해당 시간마다 계속 실행")
-    parser.add_argument("--force-spot", action="store_true",
-                        help="현물가 TTL 캐시를 무시하고 즉시 재수집")
-    parser.add_argument("--no-push", action="store_true",
-                        help="로컬 데이터만 만들고 GitHub에는 게시하지 않음")
-    parser.add_argument(
-        "--output-dir", default=str(PROJECT_DIR / "last_published_data"))
-    parser.add_argument(
-        "--lock-file", default="~/.cache/memory-stock-publisher/run.lock")
-    parser.add_argument("--git-name", default="Memory Dashboard Bot")
-    parser.add_argument(
-        "--git-email", default="memory-dashboard-bot@users.noreply.github.com")
-    args = parser.parse_args()
-    if args.interval_hours < 0:
-        parser.error("--interval-hours는 0 이상이어야 합니다.")
-    if args.cost_bps < 0 or args.cost_bps > 500:
-        parser.error("--cost-bps는 0~500 범위여야 합니다.")
-    validate_branch(args.branch)
-    return args
+    tab_today, tab_chart, tab_portfolio, tab_validation, tab_spot, tab_model = st.tabs([
+        "① 오늘의 결론", "② 기술적 차트", "③ 내 포트폴리오",
+        "④ 검증·백테스트", "⑤ 현물가", "⑥ 모델",
+    ])
 
+    with tab_today:
+        st.subheader("오늘 무엇을 할 것인가")
+        st.info(f"{reliability.get('emoji', '⚪')} {reliability.get('advice', '-')}")
+        board = bundle["board"].copy()
+        if board.empty:
+            st.warning("게시된 의사결정 데이터가 없습니다.")
+        else:
+            for col in ("상승확률", "유사점수_실제상승률", "예상수익률"):
+                if col in board:
+                    board[col] = pd.to_numeric(board[col], errors="coerce").map(
+                        lambda x: "-" if pd.isna(x) else f"{x:.1%}")
+            for col in ("현재가", "매수기준", "목표가", "예상하단", "예상상단", "손절가"):
+                if col in board:
+                    board[col] = [fmt_price(v, c) for v, c in zip(board[col], board["통화"])]
+            show_cols = [c for c in [
+                "종목", "행동", "상승확률", "실행점수", "유사점수_실제상승률",
+                "유사점수_표본수", "현재가", "매수기준", "목표가", "손절가", "핵심근거"
+            ] if c in board]
+            st.dataframe(board[show_cols], use_container_width=True, hide_index=True)
+        if available:
+            selected = st.selectbox("상세 종목", available,
+                                    format_func=lambda x: ticker_names.get(x, x))
+            plan = plans[selected]
+            c1, c2, c3, c4 = st.columns(4)
+            c1.metric("현재 행동", f"{plan.get('emoji', '')} {plan.get('label', '-')}")
+            c2.metric("보정 상승확률", f"{finite(plan.get('score')):.1f}%")
+            c3.metric("기대수익률", fmt_pct(plan.get("er")))
+            atr_risk = finite(plan.get("atr")) / finite(plan.get("price")) \
+                if finite(plan.get("price"), 0) > 0 else np.nan
+            c4.metric("ATR 위험폭", fmt_pct(atr_risk))
+            st.plotly_chart(ladder_figure(plan), use_container_width=True)
 
-def main() -> int:
-    args = parse_args()
-    while True:
-        try:
-            run_cycle(args)
-        except KeyboardInterrupt:
-            log("사용자가 작업을 중단했습니다.")
-            return 130
-        except Exception as exc:  # 다음 예약 실행은 계속 살아 있어야 한다.
-            log(f"실패: {type(exc).__name__}: {exc}")
-            if args.interval_hours <= 0:
-                raise
-        if args.interval_hours <= 0:
-            return 0
-        wait_seconds = max(60.0, args.interval_hours * 3600.0)
-        log(f"다음 계산까지 {wait_seconds/3600:.2f}시간 대기합니다.")
-        try:
-            time.sleep(wait_seconds)
-        except KeyboardInterrupt:
-            log("예약 실행을 종료합니다.")
-            return 130
+    with tab_chart:
+        st.subheader("가격·기술적 지표·과거 OOS 확률")
+        price_choices = [t for t in ticker_names if t in bundle["prices"]]
+        if not price_choices:
+            st.info("게시된 가격 데이터가 없습니다.")
+        else:
+            selected = st.selectbox("차트 종목", price_choices, key="chart_ticker",
+                                    format_func=lambda x: ticker_names.get(x, x))
+            history = bundle["oos"]
+            score_history = history[history["ticker"] == selected] \
+                if not history.empty and "ticker" in history else pd.DataFrame()
+            st.plotly_chart(technical_figure(bundle["prices"][selected], score_history),
+                            use_container_width=True)
+
+    with tab_portfolio:
+        st.subheader("내 포트폴리오")
+        st.caption("입력값은 현재 브라우저 세션에만 있으며 GitHub에 저장되지 않습니다.")
+        portfolio_view(manifest, plans, ticker_names)
+
+    with tab_validation:
+        st.subheader("완전 아웃오브샘플 검증")
+        if not metrics:
+            st.info("검증 결과가 없습니다.")
+        else:
+            lo_hi = metrics.get("accuracy_ci") or [np.nan, np.nan]
+            v1, v2, v3, v4, v5 = st.columns(5)
+            v1.metric("방향 적중률", f"{finite(metrics.get('overall')):.1%}",
+                      f"95% CI {finite(lo_hi[0]):.1%}~{finite(lo_hi[1]):.1%}")
+            v2.metric("베이스라인 대비",
+                      f"{finite(metrics.get('overall'))-finite(metrics.get('naive')):+.1%}p")
+            v3.metric("ROC-AUC", f"{finite(metrics.get('auc')):.3f}")
+            v4.metric("Brier skill", f"{finite(metrics.get('brier_skill')):+.1%}")
+            v5.metric("보정오차 ECE", f"{finite(metrics.get('ece')):.1%}")
+            left, right = st.columns(2)
+            calibration = bundle["calibration"]
+            with left:
+                if not calibration.empty:
+                    fig = go.Figure()
+                    fig.add_scatter(x=[0, 1], y=[0, 1], name="완전 보정",
+                                    line=dict(dash="dash", color="gray"))
+                    fig.add_scatter(x=calibration["예측확률"], y=calibration["실제상승률"],
+                                    name="모델", mode="lines+markers")
+                    fig.update_layout(title="확률 보정도", height=340,
+                                      xaxis_tickformat=".0%", yaxis_tickformat=".0%")
+                    st.plotly_chart(fig, use_container_width=True)
+            with right:
+                per_ticker = bundle["per_ticker"].copy()
+                if not per_ticker.empty:
+                    per_ticker["ticker"] = per_ticker["ticker"].map(
+                        lambda x: ticker_names.get(x, x))
+                    st.dataframe(per_ticker, use_container_width=True, hide_index=True)
+            rolling = bundle["rolling"]
+            if not rolling.empty:
+                fig = go.Figure()
+                fig.add_scatter(x=rolling["date"], y=rolling["모델 적중률"], name="모델")
+                fig.add_scatter(x=rolling["date"], y=rolling["무조건 상승 적중률"],
+                                name="무조건 상승", line=dict(dash="dot"))
+                fig.update_layout(title="최근 250개 예측 이동 적중률", height=330,
+                                  yaxis_tickformat=".0%")
+                st.plotly_chart(fig, use_container_width=True)
+            oos = bundle["oos"]
+            if not oos.empty:
+                bt_ticker = st.selectbox(
+                    "백테스트 종목", sorted(oos["ticker"].dropna().unique()),
+                    format_func=lambda x: ticker_names.get(x, x))
+                curve, stats = equity_curve(
+                    oos, bt_ticker, int(manifest["horizon"]),
+                    int(manifest["threshold"]), int(manifest["cost_bps"]))
+                if curve is not None:
+                    b1, b2, b3, b4 = st.columns(4)
+                    b1.metric("누적수익", fmt_pct(stats["strategy"]["total"]))
+                    b2.metric("CAGR", fmt_pct(stats["strategy"]["cagr"]))
+                    b3.metric("MDD", fmt_pct(stats["strategy"]["mdd"]))
+                    b4.metric("Sharpe", f"{finite(stats['strategy']['sharpe']):.2f}")
+                    fig = go.Figure()
+                    fig.add_scatter(x=curve["date"], y=curve["시그널 추종"], name="시그널")
+                    fig.add_scatter(x=curve["date"], y=curve["단순 보유"], name="보유",
+                                    line=dict(dash="dot"))
+                    fig.update_layout(height=360, yaxis_title="누적 배수")
+                    st.plotly_chart(fig, use_container_width=True)
+
+    with tab_spot:
+        st.subheader("DRAM·NAND 현물가")
+        status = bundle["spot_status"]
+        st.caption(status.get("message", "마지막 로컬 계산 결과"))
+        spot = bundle["spot"]
+        if spot.empty:
+            st.info("게시된 현물가가 없습니다.")
+        else:
+            product_series = []
+            for col in [c for c in spot.columns if c != "날짜"]:
+                series = pd.to_numeric(spot[col], errors="coerce")
+                valid = pd.DataFrame({"date": spot["날짜"], "value": series}).dropna()
+                if len(valid) >= 2:
+                    product_series.append((col, valid))
+            if product_series:
+                columns = st.columns(len(product_series), gap="small")
+                for box, (col, values) in zip(columns, product_series):
+                    label = SPOT_NAMES.get(col, col.replace("_", " "))
+                    latest = values.iloc[-1]
+                    box.metric(label, f"US${latest['value']:,.3f}",
+                               pd.Timestamp(latest["date"]).strftime("%Y-%m-%d"))
+                    fig = go.Figure(go.Scatter(
+                        x=values["date"], y=values["value"], mode="lines+markers",
+                        line=dict(width=2.2, color="#2563eb"), marker=dict(size=5)))
+                    fig.update_layout(title=label, height=310, showlegend=False,
+                                      margin=dict(t=45, b=25, l=40, r=10),
+                                      yaxis_title="USD", hovermode="x unified")
+                    box.plotly_chart(fig, use_container_width=True)
+
+    with tab_model:
+        st.subheader("최종 앙상블과 변수 중요도")
+        model_info = bundle["model_info"]
+        weights = model_info.get("weights", {})
+        losses = model_info.get("validation_losses", {})
+        if weights:
+            model_table = pd.DataFrame([
+                {"모델": MODEL_NAMES.get(name, name), "가중치": weight,
+                 "검증 Log-loss": losses.get(name)}
+                for name, weight in weights.items()
+            ]).sort_values("가중치", ascending=False)
+            st.dataframe(model_table, use_container_width=True, hide_index=True)
+            st.caption(f"확률 보정 표본 {int(model_info.get('calibration_rows', 0)):,}행")
+        importance = bundle["importance"].head(20).sort_values("importance")
+        if not importance.empty:
+            fig = go.Figure(go.Bar(
+                x=importance["importance"], y=importance["feature"], orientation="h"))
+            fig.update_layout(height=560, title="순열 변수 중요도")
+            st.plotly_chart(fig, use_container_width=True)
+        st.caption(
+            f"게시 ID {manifest.get('generation_id')} · 피처 {manifest.get('feature_count')}개 · "
+            f"워크포워드 {manifest.get('wf_step')}거래일 간격"
+        )
+
+    st.divider()
+    st.caption("본 대시보드는 마지막 로컬 계산 시점의 통계적 추정치이며 수익을 보장하지 않습니다.")
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()
