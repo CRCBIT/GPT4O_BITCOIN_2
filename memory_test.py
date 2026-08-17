@@ -14,9 +14,10 @@
   4) 다음 거래 가능 가격·거래비용을 반영한 워크포워드 백테스트로 이 모델이
      과거에 얼마나 맞았는지(방향·확률보정·수익·낙폭)를 쉬운 말로 보여주고
   5) 보유 종목(티커/수량/평단)을 입력하면 현재 자산 · 예상 자산 · 지금 행동을 계산하며
-  6) DRAM/NAND 현물가를 화면에서 직접 입력·관리하고 모델 피처로 반영한다.
-     포트폴리오와 수기 데이터는 브라우저 세션별로 격리되어 공개 배포에서도
-     다른 방문자에게 노출되지 않는다.
+  6) TrendForce 공개 페이지에서 DRAM/NAND 현물가를 자동 수집하고,
+     공개 주간 업데이트 기사로 초기 이력을 백필한 뒤 모델 피처로 반영한다.
+     수집 장애 시 마지막 정상 캐시를 사용하며, 화면에서 수동 보정도 가능하다.
+     포트폴리오와 수동 보정값은 브라우저 세션별로 격리된다.
 
 실행
   pip install streamlit yfinance scikit-learn plotly pandas numpy
@@ -36,7 +37,15 @@
 
 from __future__ import annotations
 
+import concurrent.futures
+import html
+import io
 import os
+import re
+import threading
+import time
+import urllib.parse
+import urllib.request
 import warnings
 from dataclasses import dataclass
 
@@ -77,13 +86,21 @@ MIN_CALIBRATION_ROWS = 150
 RECENCY_HALF_LIFE_DAYS = 756 # 최근 3년(약 756거래일)에 가중치 절반
 MACRO_RELEASE_LAG = 1        # 국가별 마감 시차 누수 방지용 보수적 1거래일 지연
 DEFAULT_COST_BPS = 25        # 왕복 수수료+슬리피지 기본값 0.25%
-VERSION = "4.0"
+VERSION = "4.1"
 ENTRY_ATR = 1.0             # 조정 시 매수가 = 현재가 − 1.0 × ATR(14)
 STOP_ATR = 2.0              # 손절가 = 기준가 − 2.0 × ATR(14)
 TRIM_ATR = 0.5              # 반등 시 축소가 = 현재가 + 0.5 × ATR(14)
 SPOT_CSV = "spot_prices.csv"
+AUTO_SPOT_CACHE = os.getenv("MEMORY_AUTO_SPOT_CACHE", "auto_spot_prices.csv")
+AUTO_SPOT_TTL_HOURS = 6
+AUTO_SPOT_NEWS_PAGES = 12
+TREND_DRAM_URL = "https://www.trendforce.com/price/dram/dram_spot"
+TREND_NAND_URL = "https://www.trendforce.com/price/flash/flash_spot"
+TREND_NEWS_TAG = "https://www.trendforce.com/news/tag/ddr4/"
 PORTFOLIO_CSV = "portfolio.csv"
-SPOT_DEFAULT_COLS = ["DRAM_DDR5_16Gb", "NAND_TLC_512Gb"]  # 현물가 기본 컬럼
+SPOT_DEFAULT_COLS = [
+    "DRAM_DDR5_16Gb", "DRAM_DDR4_8Gb", "NAND_TLC_512Gb"
+]  # TrendForce Session Average, USD
 PORT_COLS = ["티커", "수량", "평단", "모델연동", "배수"]
 
 # 짧은 기간을 단순히 UI에만 추가하면 MIN_TRAIN_DAYS=500 때문에 1년 모델은
@@ -307,39 +324,495 @@ def _retry(fn, tries: int = 2):
 
 
 def download_prices(period: str = DEFAULT_PERIOD) -> dict[str, pd.DataFrame]:
+    """Yahoo 가격을 티커별로 안전하게 내려받는다.
+
+    Streamlit Cloud에서는 한 종목의 짧거나 비정상적인 데이터가 yfinance 내부의
+    보정/윈도우 연산에서 예외를 내도 전체 앱이 죽지 않도록 개별 격리한다.
+    price repair는 명시적으로 끈다.
+    """
     import yfinance as yf
 
     symbols = list(TICKERS) + list(MACRO)
-    # yfinance는 3y·15y 문자열을 공식 period로 받지 않는다. 3y는 5y를 받아
-    # 절단해 불필요한 max 다운로드를 피하고, 15y만 max를 받아 절단한다.
     yf_period = "5y" if period == "3y" else (
         period if period in {"1y", "2y", "5y", "10y", "ytd", "max"} else "max")
-    raw = _retry(lambda: yf.download(
-        symbols, period=yf_period, auto_adjust=True,
-        group_by="ticker", progress=False, threads=True,
-    ))
+
+    def clean_frame(df: pd.DataFrame | None, sym: str) -> pd.DataFrame | None:
+        if df is None or not isinstance(df, pd.DataFrame) or df.empty:
+            return None
+
+        # yfinance 버전에 따라 단일 티커도 MultiIndex를 돌려줄 수 있다.
+        if isinstance(df.columns, pd.MultiIndex):
+            if sym in df.columns.get_level_values(0):
+                df = df[sym]
+            elif sym in df.columns.get_level_values(-1):
+                df = df.xs(sym, axis=1, level=-1)
+            else:
+                # OHLC 레벨만 남길 수 있으면 남긴다.
+                for level in range(df.columns.nlevels):
+                    vals = set(map(str, df.columns.get_level_values(level)))
+                    if "Close" in vals:
+                        df = df.droplevel(
+                            [i for i in range(df.columns.nlevels) if i != level],
+                            axis=1)
+                        break
+
+        df = df.dropna(how="all").copy()
+        if df.empty or "Close" not in df.columns:
+            return None
+
+        keep = pd.DataFrame(index=df.index)
+        keep["Close"] = pd.to_numeric(df["Close"], errors="coerce")
+        for col in ("Open", "High", "Low", "Volume"):
+            keep[col] = (pd.to_numeric(df[col], errors="coerce")
+                         if col in df.columns else np.nan)
+        keep = _naive_index(keep.dropna(subset=["Close"]))
+
+        if period.endswith("y") and period[:-1].isdigit():
+            cutoff = pd.Timestamp.today().normalize() - pd.DateOffset(
+                years=int(period[:-1]))
+            keep = keep[keep.index >= cutoff]
+
+        # 너무 짧은 시계열은 MA60/기술지표 및 학습에 실질적으로 도움이 없고
+        # 외부 라이브러리의 작은-window edge case를 유발할 수 있으므로 제외.
+        if len(keep) < 80:
+            return None
+        return keep
+
     out: dict[str, pd.DataFrame] = {}
+
+    # 멀티티커 threads=True 다운로드는 한 종목의 장애가 묶음 전체에 영향을 주기 쉽다.
+    # 캐시가 있으므로 안정성을 우선해 종목별로 받는다.
     for sym in symbols:
+        df = None
         try:
-            if isinstance(raw.columns, pd.MultiIndex):
-                df = raw[sym]
-            else:  # 심볼 1개만 성공한 경우 등
-                df = raw
-            df = df.dropna(how="all")
-            if df.empty or "Close" not in df.columns:
-                continue
-            keep = df[["Close"]].copy()
-            for c in ("Open", "High", "Low", "Volume"):
-                keep[c] = df[c] if c in df.columns else np.nan
-            keep = _naive_index(keep.dropna(subset=["Close"]))
-            if period.endswith("y") and period[:-1].isdigit():
-                cutoff = pd.Timestamp.today().normalize() - pd.DateOffset(
-                    years=int(period[:-1]))
-                keep = keep[keep.index >= cutoff]
-            out[sym] = keep
+            df = _retry(
+                lambda sym=sym: yf.Ticker(sym).history(
+                    period=yf_period,
+                    interval="1d",
+                    auto_adjust=True,
+                    actions=False,
+                    repair=False,       # 중요: SciPy/NumPy price-repair window 경로 차단
+                    keepna=False,
+                    timeout=20,
+                ),
+                tries=1,
+            )
         except Exception:
-            continue
+            df = None
+
+        cleaned = clean_frame(df, sym)
+
+        # Ticker.history가 실패했을 때만 단일 ticker download로 한 번 더 시도.
+        if cleaned is None:
+            try:
+                df2 = yf.download(
+                    sym,
+                    period=yf_period,
+                    interval="1d",
+                    auto_adjust=True,
+                    actions=False,
+                    repair=False,
+                    progress=False,
+                    threads=False,
+                    timeout=20,
+                )
+                cleaned = clean_frame(df2, sym)
+            except Exception:
+                cleaned = None
+
+        if cleaned is not None:
+            out[sym] = cleaned
+
+    if not any(sym in out for sym in TICKERS):
+        raise RuntimeError(
+            "분석 대상 종목의 가격 데이터를 받지 못했습니다. "
+            "Yahoo Finance 응답 또는 yfinance 버전을 확인하세요."
+        )
     return out
+
+# ──────────────────────────────
+# DRAM/NAND 현물가 자동 수집
+# ──────────────────────────────
+_AUTO_SPOT_LOCK = threading.Lock()
+
+
+def _http_text(url: str, timeout: int = 20) -> str:
+    """공개 페이지만 읽는 가벼운 HTTP 클라이언트.
+
+    외부 requests/lxml 의존성을 추가하지 않아 기존 배포환경에서도 작동한다.
+    로그인·유료 다운로드 URL은 접근하지 않는다.
+    """
+    req = urllib.request.Request(
+        url,
+        headers={
+            "User-Agent": (
+                "Mozilla/5.0 (compatible; MemoryStockDashboard/4.1; "
+                "+https://www.trendforce.com/)"
+            ),
+            "Accept": "text/html,application/xhtml+xml,text/csv;q=0.9,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.9",
+        },
+    )
+    with urllib.request.urlopen(req, timeout=timeout) as response:
+        raw = response.read(4_000_000)
+        charset = response.headers.get_content_charset() or "utf-8"
+    return raw.decode(charset, errors="replace")
+
+
+def _plain_html(fragment: str) -> str:
+    fragment = re.sub(
+        r"<(script|style)\b[^>]*>.*?</\1>", " ", fragment,
+        flags=re.IGNORECASE | re.DOTALL,
+    )
+    fragment = re.sub(r"<[^>]+>", " ", fragment)
+    return re.sub(r"\s+", " ", html.unescape(fragment)).strip()
+
+
+def _number(value) -> float | None:
+    text = str(value).replace(",", "")
+    match = re.search(r"[-+]?\d+(?:\.\d+)?", text)
+    if not match:
+        return None
+    try:
+        return float(match.group())
+    except ValueError:
+        return None
+
+
+def _normalise_spot_data(df: pd.DataFrame | None) -> pd.DataFrame:
+    """날짜+숫자 컬럼 형태로 정규화한다. 사용자 커스텀 컬럼도 보존."""
+    if df is None or df.empty:
+        return pd.DataFrame(
+            {"날짜": pd.Series(dtype="datetime64[ns]"),
+             **{c: pd.Series(dtype=float) for c in SPOT_DEFAULT_COLS}}
+        )
+    out = df.copy()
+    if "날짜" not in out.columns:
+        if isinstance(out.index, pd.DatetimeIndex):
+            out = out.reset_index()
+        out = out.rename(columns={out.columns[0]: "날짜"})
+    out["날짜"] = pd.to_datetime(out["날짜"], errors="coerce").dt.normalize()
+    out = out.dropna(subset=["날짜"])
+    for col in [c for c in out.columns if c != "날짜"]:
+        out[col] = pd.to_numeric(out[col], errors="coerce")
+    return (out.sort_values("날짜").groupby("날짜", as_index=False)
+               .last().reset_index(drop=True))
+
+
+def merge_spot_data(*frames: pd.DataFrame | None) -> pd.DataFrame:
+    """앞에서 뒤 순서로 병합하며, 뒤의 프레임이 같은 날짜·컬럼을 덮어쓴다."""
+    merged: pd.DataFrame | None = None
+    for frame in frames:
+        clean = _normalise_spot_data(frame)
+        if clean.empty:
+            continue
+        indexed = clean.set_index("날짜")
+        merged = indexed if merged is None else indexed.combine_first(merged)
+    if merged is None:
+        return _normalise_spot_data(None)
+    merged.index.name = "날짜"
+    return _normalise_spot_data(merged.reset_index())
+
+
+def _quote_from_table(page_html: str, item_pattern: str) -> dict | None:
+    """TrendForce HTML 표에서 해당 품목의 Session Average를 추출."""
+    table_re = re.compile(r"<table\b[^>]*>(.*?)</table>", re.I | re.S)
+    row_re = re.compile(r"<tr\b[^>]*>(.*?)</tr>", re.I | re.S)
+    cell_re = re.compile(r"<t[dh]\b[^>]*>(.*?)</t[dh]>", re.I | re.S)
+    for table_match in table_re.finditer(page_html):
+        rows = []
+        for row_html in row_re.findall(table_match.group(1)):
+            cells = [_plain_html(x) for x in cell_re.findall(row_html)]
+            if cells:
+                rows.append(cells)
+        if len(rows) < 2 or "Item" not in rows[0]:
+            continue
+        header = rows[0]
+        for row in rows[1:]:
+            if not row or not re.fullmatch(item_pattern, row[0], flags=re.I):
+                continue
+            mapped = {header[i]: row[i] for i in range(min(len(header), len(row)))}
+            value = _number(mapped.get("Session Average", mapped.get("Average")))
+            if value is None or value <= 0:
+                continue
+            before = _plain_html(page_html[max(0, table_match.start() - 30000):
+                                           table_match.start()])
+            dates = re.findall(
+                r"Last\s*Update\s*:?[ ]*(\d{4}-\d{2}-\d{2})", before,
+                flags=re.I,
+            )
+            if not dates:
+                continue
+            change_text = str(mapped.get(
+                "Session Change", mapped.get("Average Change", "")))
+            change = _number(change_text)
+            if change is not None and "▼" in change_text and change > 0:
+                change = -change
+            return {
+                "date": pd.Timestamp(dates[-1]).normalize(),
+                "value": float(value),
+                "change_pct": change,
+                "item": row[0],
+            }
+    return None
+
+
+def _current_trendforce_spot() -> tuple[pd.DataFrame, dict, list[str]]:
+    """TrendForce 공개 표의 최신 현물가와 직전 세션 가격을 읽는다."""
+    pages: dict[str, str] = {}
+    errors: list[str] = []
+
+    def get_page(name_url):
+        name, url = name_url
+        return name, _retry(lambda: _http_text(url), tries=1)
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+        futures = {
+            pool.submit(get_page, item): item[0]
+            for item in (("dram", TREND_DRAM_URL), ("nand", TREND_NAND_URL))
+        }
+        for future, name in futures.items():
+            try:
+                key, value = future.result()
+                pages[key] = value
+            except Exception as exc:  # noqa: BLE001
+                errors.append(f"{name} 페이지: {type(exc).__name__}")
+
+    specs = (
+        ("DRAM_DDR5_16Gb", "dram", r"DDR5\s+16Gb\s+\(2Gx8\)\s+4800/5600"),
+        ("DRAM_DDR4_8Gb", "dram", r"DDR4\s+8Gb\s+\(1Gx8\)\s+3200"),
+        ("NAND_TLC_512Gb", "nand", r"512Gb\s+TLC"),
+    )
+    records: list[dict] = []
+    updates: dict[str, str] = {}
+    for col, page_key, pattern in specs:
+        quote = _quote_from_table(pages.get(page_key, ""), pattern)
+        if quote is None:
+            errors.append(f"{col} 표 파싱 실패")
+            continue
+        date = quote["date"]
+        records.append({"날짜": date, col: quote["value"]})
+        updates[col] = date.strftime("%Y-%m-%d")
+        chg = quote.get("change_pct")
+        if chg is not None and -95 < chg < 500:
+            previous = quote["value"] / (1.0 + chg / 100.0)
+            records.append({"날짜": date - pd.offsets.BDay(1), col: previous})
+    return _normalise_spot_data(pd.DataFrame(records)), updates, errors
+
+
+def _trendforce_article_urls(page_count: int) -> tuple[list[str], list[str]]:
+    """DRAM 태그 페이지의 공개 Memory Spot Price Update 기사 URL."""
+    page_urls = [TREND_NEWS_TAG] + [
+        urllib.parse.urljoin(TREND_NEWS_TAG, f"page/{page}/")
+        for page in range(2, page_count + 1)
+    ]
+    errors: list[str] = []
+
+    def parse_page(url: str) -> list[str]:
+        page_html = _retry(lambda: _http_text(url), tries=1)
+        found: list[str] = []
+        for href in re.findall(r'''href=["']([^"']+)["']''', page_html, re.I):
+            absolute = urllib.parse.urljoin(url, html.unescape(href))
+            absolute = absolute.split("#", 1)[0].split("?", 1)[0]
+            if "/news/20" not in absolute:
+                continue
+            if not any(token in absolute for token in (
+                "spot-price-update", "spot-market-update", "weekly-price-update"
+            )):
+                continue
+            if absolute not in found:
+                found.append(absolute)
+        return found
+
+    collected: list[str] = []
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
+        futures = {pool.submit(parse_page, url): url for url in page_urls}
+        for future, url in futures.items():
+            try:
+                collected.extend(future.result())
+            except Exception as exc:  # noqa: BLE001
+                errors.append(
+                    f"기사 목록 {url.rstrip('/').rsplit('/', 1)[-1]}: "
+                    f"{type(exc).__name__}"
+                )
+    return list(dict.fromkeys(collected)), errors
+
+
+def _spot_from_article(url: str) -> dict | None:
+    """공개 주간 기사 본문의 명시적인 USD 현물가만 추출."""
+    match = re.search(r"/news/(\d{4})/(\d{2})/(\d{2})/", url)
+    if not match:
+        return None
+    page_html = _retry(lambda: _http_text(url), tries=1)
+    paragraphs = [
+        _plain_html(block)
+        for block in re.findall(r"<p\b[^>]*>(.*?)</p>", page_html, re.I | re.S)
+    ]
+    dram_values: list[float] = []
+    nand_values: list[float] = []
+    for paragraph in paragraphs:
+        usd_values = [
+            float(x) for x in re.findall(
+                r"US\$+\s*([0-9]+(?:\.[0-9]+)?)", paragraph, re.I
+            )
+        ]
+        if not usd_values:
+            continue
+        is_mainstream_dram = bool(
+            re.search(r"DDR4\s*(?:1Gx8|8Gb).*?3200", paragraph, re.I)
+            or re.search(r"average spot price of mainstream chips", paragraph, re.I)
+        )
+        if is_mainstream_dram:
+            dram_values.append(usd_values[-1])
+        if re.search(r"512Gb\s*TLC", paragraph, re.I):
+            nand_values.append(usd_values[-1])
+    record: dict = {
+        "날짜": pd.Timestamp(
+            year=int(match.group(1)), month=int(match.group(2)), day=int(match.group(3))
+        )
+    }
+    if dram_values and 0.05 < dram_values[-1] < 500:
+        record["DRAM_DDR4_8Gb"] = dram_values[-1]
+    if nand_values and 0.05 < nand_values[-1] < 500:
+        record["NAND_TLC_512Gb"] = nand_values[-1]
+    return record if len(record) > 1 else None
+
+
+def _trendforce_public_history() -> tuple[pd.DataFrame, list[str]]:
+    """공개 주간 기사로 초기 학습용 이력을 백필(유료 이력 우회 안 함)."""
+    try:
+        page_count = int(os.getenv("MEMORY_SPOT_NEWS_PAGES", AUTO_SPOT_NEWS_PAGES))
+    except ValueError:
+        page_count = AUTO_SPOT_NEWS_PAGES
+    page_count = min(20, max(1, page_count))
+    urls, errors = _trendforce_article_urls(page_count)
+    records: list[dict] = []
+    with concurrent.futures.ThreadPoolExecutor(max_workers=6) as pool:
+        futures = {pool.submit(_spot_from_article, url): url for url in urls[:80]}
+        for future, url in futures.items():
+            try:
+                record = future.result()
+                if record:
+                    records.append(record)
+            except Exception as exc:  # noqa: BLE001
+                errors.append(
+                    f"기사 {url.rstrip('/').rsplit('/', 1)[-1][:32]}: "
+                    f"{type(exc).__name__}"
+                )
+    return _normalise_spot_data(pd.DataFrame(records)), errors
+
+
+def _read_auto_spot_cache(path: str = AUTO_SPOT_CACHE) -> pd.DataFrame:
+    try:
+        if os.path.exists(path):
+            return _normalise_spot_data(pd.read_csv(path))
+    except Exception:
+        pass
+    return _normalise_spot_data(None)
+
+
+def _save_auto_spot_cache(df: pd.DataFrame, path: str = AUTO_SPOT_CACHE) -> bool:
+    """공개 시세 캐시는 개인정보가 아니므로 세션 간 공유해 요청을 최소화."""
+    if df.empty:
+        return False
+    tmp = f"{path}.tmp-{os.getpid()}"
+    try:
+        with _AUTO_SPOT_LOCK:
+            _normalise_spot_data(df).to_csv(tmp, index=False)
+            os.replace(tmp, path)
+        return True
+    except Exception:
+        try:
+            if os.path.exists(tmp):
+                os.remove(tmp)
+        except OSError:
+            pass
+        return False
+
+
+def _remote_spot_csv() -> tuple[pd.DataFrame, str | None]:
+    """선택: 라이선스 내역/Google Sheets 등 게시 CSV URL을 자동 병합."""
+    url = os.getenv("MEMORY_SPOT_CSV_URL", "").strip()
+    if not url:
+        return _normalise_spot_data(None), None
+    try:
+        csv_text = _retry(lambda: _http_text(url), tries=1)
+        return _normalise_spot_data(pd.read_csv(io.StringIO(csv_text))), None
+    except Exception as exc:  # noqa: BLE001
+        return _normalise_spot_data(None), f"원격 CSV: {type(exc).__name__}"
+
+
+def _history_is_sufficient(df: pd.DataFrame) -> bool:
+    return all(
+        col in df.columns and pd.to_numeric(df[col], errors="coerce").notna().sum() >= 12
+        for col in ("DRAM_DDR4_8Gb", "NAND_TLC_512Gb")
+    )
+
+
+def fetch_auto_spot_prices(force: bool = False) -> tuple[pd.DataFrame, dict]:
+    """
+    최신값 → 공개 기사 백필 → 캐시 폴백을 하나의 DataFrame으로 만든다.
+
+    MEMORY_SPOT_CSV_URL을 설정하면 사용자가 정상적으로 구매/공유받은
+    이력 CSV가 가장 높은 우선순위로 덮어쓴다.
+    """
+    cache = _read_auto_spot_cache()
+    try:
+        age_hours = (time.time() - os.path.getmtime(AUTO_SPOT_CACHE)) / 3600
+    except OSError:
+        age_hours = np.inf
+    remote_url_set = bool(os.getenv("MEMORY_SPOT_CSV_URL", "").strip())
+    if (not force and not remote_url_set and not cache.empty
+            and age_hours <= AUTO_SPOT_TTL_HOURS):
+        latest = pd.to_datetime(cache["날짜"]).max()
+        return cache, {
+            "state": "cached", "rows": len(cache), "latest_date": latest,
+            "history_ready": _history_is_sufficient(cache), "errors": [],
+            "message": f"{AUTO_SPOT_TTL_HOURS}시간 이내 자동 캐시",
+        }
+
+    errors: list[str] = []
+    remote, remote_error = _remote_spot_csv()
+    if remote_error:
+        errors.append(remote_error)
+    seed = merge_spot_data(cache, remote)
+
+    history = _normalise_spot_data(None)
+    if not _history_is_sufficient(seed):
+        history, history_errors = _trendforce_public_history()
+        errors.extend(history_errors)
+
+    current = _normalise_spot_data(None)
+    updates: dict[str, str] = {}
+    try:
+        current, updates, current_errors = _current_trendforce_spot()
+        errors.extend(current_errors)
+    except Exception as exc:  # noqa: BLE001
+        errors.append(f"최신 현물가: {type(exc).__name__}")
+
+    merged = merge_spot_data(cache, history, current, remote)
+    fetched_any = not current.empty or not history.empty or not remote.empty
+    saved = _save_auto_spot_cache(merged) if fetched_any else False
+
+    if not current.empty:
+        state = "live"
+        message = "TrendForce 공개 현물가 갱신 완료"
+    elif not cache.empty:
+        state = "stale"
+        message = "수집 장애로 마지막 정상 캐시 사용"
+    elif not merged.empty:
+        state = "partial"
+        message = "공개 이력만 부분 수집"
+    else:
+        state = "failed"
+        message = "자동 현물가를 받지 못함"
+    latest = pd.to_datetime(merged["날짜"]).max() if not merged.empty else None
+    return merged, {
+        "state": state, "rows": len(merged), "latest_date": latest,
+        "history_ready": _history_is_sufficient(merged),
+        "updates": updates, "saved": saved,
+        "errors": errors[:8], "message": message,
+    }
 
 
 # ──────────────────────────────────────────────────────────────
@@ -404,20 +877,21 @@ def build_macro_features(prices: dict, master: pd.DatetimeIndex) -> pd.DataFrame
 def load_spot_features(master: pd.DatetimeIndex,
                        spot_data: pd.DataFrame | None = None,
                        path: str = SPOT_CSV):
-    """DRAM/NAND 현물가 CSV(수기 입력 가능)를 20/60일 변화율 피처로 병합.
-    입력이 주간·월간이어도 되도록 최대 70거래일까지 ffill."""
+    """DRAM/NAND 현물가를 20/60일 변화율 피처로 병합.
+
+    주간 공개 자료도 쓸 수 있게 70거래일까지 유지하고, 해당 일자의
+    한국장이 닫힌 후 게시될 수 있으므로 1거래일 지연해 누수를 막는다.
+    """
     try:
         if spot_data is not None and not spot_data.empty:
-            df = spot_data.copy()
-            date_col = "날짜" if "날짜" in df.columns else df.columns[0]
-            df[date_col] = pd.to_datetime(df[date_col], errors="coerce")
-            df = df.dropna(subset=[date_col]).set_index(date_col).sort_index()
+            df = _normalise_spot_data(spot_data).set_index("날짜")
         elif local_persistence_enabled() and os.path.exists(path):
-            df = pd.read_csv(path, parse_dates=[0], index_col=0).sort_index()
+            df = _normalise_spot_data(pd.read_csv(path)).set_index("날짜")
         else:
             return None
         df = df.apply(pd.to_numeric, errors="coerce")
-        df = _naive_index(df).reindex(master).ffill(limit=70)
+        df = (_naive_index(df).reindex(master).ffill(limit=70)
+              .shift(MACRO_RELEASE_LAG))
     except Exception:
         return None
     out = pd.DataFrame(index=master)
@@ -530,8 +1004,11 @@ def assemble_dataset(prices: dict, horizon: int,
     peer = build_peer_features(prices, master)
 
     frames = []
+    min_history = max(220, int(horizon) + 30)
     for sym in tick_syms:
         df = prices[sym]
+        if len(df) < min_history:
+            continue
         X = build_ticker_features(df)
         X = pd.concat([X, macro.reindex(df.index)], axis=1)
         if spot is not None:
@@ -562,6 +1039,12 @@ def assemble_dataset(prices: dict, horizon: int,
         X["ticker"] = sym
         X.index.name = "date"
         frames.append(X.reset_index())
+
+    if not frames:
+        raise RuntimeError(
+            f"학습에 필요한 가격 이력이 부족합니다. 최소 {min_history}거래일 이상의 "
+            "정상 종목 데이터가 필요합니다."
+        )
 
     data = pd.concat(frames, ignore_index=True).sort_values("date")
     for sym in TICKERS:  # 종목 원핫 (풀링 학습용)
@@ -903,14 +1386,29 @@ def equity_curve(oos: pd.DataFrame, ticker: str, horizon: int, thr: int = 55,
 
 def feature_importance(final_model, data: pd.DataFrame, feat_cols: list[str],
                        n_rows: int = 1000):
+    """순열 중요도는 설명용 부가기능이므로 실패해도 예측 파이프라인을 중단하지 않는다."""
     if final_model is None:
         return None
     from sklearn.inspection import permutation_importance
+
     lab = data.dropna(subset=["y"]).sort_values("date").tail(n_rows)
-    if len(lab) < 200:
+    if len(lab) < 200 or not feat_cols:
         return None
-    r = permutation_importance(final_model, lab[feat_cols], lab["y"],
-                               n_repeats=3, random_state=0, scoring="accuracy")
+
+    try:
+        r = permutation_importance(
+            final_model,
+            lab[feat_cols],
+            lab["y"],
+            n_repeats=3,
+            random_state=0,
+            scoring="accuracy",
+        )
+    except Exception:
+        # Streamlit Cloud/의존성 버전 조합에서 설명용 계산이 실패해도
+        # 핵심 예측·백테스트 결과는 정상 제공한다.
+        return None
+
     imp = pd.Series(r.importances_mean, index=feat_cols)
     imp.index = [feat_label(c) for c in imp.index]
     return imp.sort_values(ascending=False)
@@ -1436,7 +1934,7 @@ def build_portfolio_view(pf: pd.DataFrame, quotes: dict,
 
 
 # ──────────────────────────────────────────────────────────────
-# 현물가 입력 파일 입출력 (UI용)
+# 현물가 수동 보정 파일 입출력 (UI용)
 # ──────────────────────────────────────────────────────────────
 def load_spot_editor(path: str = SPOT_CSV) -> pd.DataFrame:
     if os.path.exists(path):
@@ -1466,12 +1964,16 @@ def save_spot_editor(df: pd.DataFrame, path: str = SPOT_CSV) -> None:
 # ──────────────────────────────────────────────────────────────
 def run_pipeline(horizon: int, period: str,
                  spot_data: pd.DataFrame | None = None,
-                 refresh_token: int = 0):
+                 refresh_token: int = 0,
+                 force_spot: bool = False):
+    auto_spot, spot_status = fetch_auto_spot_prices(force=force_spot)
+    # 자동값이 기본이고, 사용자 세션의 수동 값이 같은 날짜·품목만 덮어쓴다.
+    merged_spot = merge_spot_data(auto_spot, spot_data)
     del refresh_token  # 캐시 키만 바꾸기 위한 사용자 세션별 토큰
     profile = PERIOD_PROFILES.get(period, PERIOD_PROFILES[DEFAULT_PERIOD])
     prices = download_prices(period)
     missing = [s for s in list(TICKERS) + list(MACRO) if s not in prices]
-    data, feat_cols = assemble_dataset(prices, horizon, spot_data=spot_data)
+    data, feat_cols = assemble_dataset(prices, horizon, spot_data=merged_spot)
     oos, final_model = walk_forward(
         data, feat_cols, horizon,
         min_train_days=profile["min_train_days"],
@@ -1485,7 +1987,8 @@ def run_pipeline(horizon: int, period: str,
     return {"prices": prices, "data": data, "feat_cols": feat_cols,
             "oos": oos, "scores": scores, "importance": imp,
             "missing": missing, "ret_stats": ret_stats,
-            "spot_used": spot_used, "profile": profile}
+            "spot_used": spot_used, "spot_data": merged_spot,
+            "spot_status": spot_status, "profile": profile}
 
 
 # ──────────────────────────────────────────────────────────────
@@ -1564,16 +2067,19 @@ def main():
         cost_bps = st.number_input("왕복 거래비용 (bp)", min_value=0,
                                    max_value=200, value=DEFAULT_COST_BPS, step=5,
                                    help="25bp = 0.25%. 백테스트에만 차감됩니다.")
-        if st.button("내 세션 데이터 새로고침", use_container_width=True):
+        if st.button("주가·DRAM·NAND 즉시 새로고침", use_container_width=True):
+            with st.spinner("DRAM·NAND 최신 공개 시세를 확인 중..."):
+                fetch_auto_spot_prices(force=True)
             st.session_state.refresh_token += 1
             st.rerun()
-        st.caption("첫 실행은 워크포워드 재학습으로 1~3분 걸릴 수 있습니다.")
+        st.caption("첫 실행은 현물가 공개 이력 백필과 워크포워드 "
+                   "재학습으로 1~3분 걸릴 수 있습니다.")
         st.divider()
         st.caption("공개 배포 안전 기본값: 사용자 입력은 세션 격리 · XSRF/CORS 보호 · "
-                   "서버 공용 CSV 저장 안 함")
+                   "공개 현물가 캐시만 공유")
 
     run_cached = st.cache_data(
-        ttl=3600, show_spinner="시차 누수 방지 데이터셋과 워크포워드 모델을 계산 중..."
+        ttl=3600, show_spinner="DRAM·NAND 현물가와 워크포워드 모델을 계산 중..."
     )(run_pipeline)
     try:
         out = run_cached(horizon, period, st.session_state.spot_df,
@@ -1855,46 +2361,49 @@ def main():
     with tab_data:
         st.markdown('<div class="section-kicker">MEMORY SPOT DATA</div>',
                     unsafe_allow_html=True)
-        st.subheader("DRAM·NAND 현물가 입력")
-        st.caption("주간·월간 입력도 최대 70거래일까지 유지합니다. 공개 배포에서는 "
-                   "현재 방문자의 세션에만 반영됩니다.")
-        spot_edit = st.data_editor(
-            st.session_state.spot_df, num_rows="dynamic", hide_index=True,
-            use_container_width=True,
-            key=f"spot_editor_{st.session_state.spot_editor_version}",
-            column_config={"날짜": st.column_config.DateColumn("날짜", required=True)})
-        sc1, sc2 = st.columns([1, 3])
-        if sc1.button("현물가 적용·재학습", use_container_width=True):
-            clean = spot_edit.copy()
-            clean["날짜"] = pd.to_datetime(clean["날짜"], errors="coerce")
-            clean = clean.dropna(subset=["날짜"]).sort_values("날짜").reset_index(drop=True)
-            st.session_state.spot_df = clean
-            if local_persistence_enabled():
-                save_spot_editor(clean)
-            st.session_state.refresh_token += 1
-            st.rerun()
-        sc2.download_button("현물가 CSV 다운로드",
-                            st.session_state.spot_df.to_csv(index=False).encode("utf-8-sig"),
-                            file_name="memory_spot_prices.csv", mime="text/csv")
-        uploaded_spot = st.file_uploader("현물가 CSV 불러오기", type=["csv"],
-                                         key="spot_upload")
-        if uploaded_spot is not None and st.button("불러온 현물가 적용"):
-            try:
-                loaded = pd.read_csv(io.BytesIO(uploaded_spot.getvalue()))
-                loaded = loaded.rename(columns={loaded.columns[0]: "날짜"})
-                loaded["날짜"] = pd.to_datetime(loaded["날짜"], errors="coerce")
-                st.session_state.spot_df = loaded.dropna(subset=["날짜"])
-                st.session_state.spot_editor_version += 1
-                st.session_state.refresh_token += 1
-                st.rerun()
-            except Exception as e:
-                st.error(f"현물가 CSV를 읽지 못했습니다: {e}")
+        st.subheader("DRAM·NAND 현물가 자동 수집")
+        st.caption(
+            "TrendForce 공개 표의 최신 Session Average를 6시간마다 갱신하고, "
+            "공개 주간 업데이트 기사로 학습 이력을 자동 백필합니다. "
+            "현물가는 게시 다음 거래일부터만 모델이 보도록 지연합니다."
+        )
+        spot_status = out["spot_status"]
+        status_text = spot_status.get("message", "-")
+        if spot_status.get("state") in {"live", "cached"}:
+            st.success(f"자동 수집 정상 · {status_text}")
+        elif spot_status.get("state") in {"stale", "partial"}:
+            st.warning(status_text)
+        else:
+            st.error(status_text)
+
+        spot_loaded = out["spot_data"]
+        spot_names = {
+            "DRAM_DDR5_16Gb": "DRAM DDR5 16Gb",
+            "DRAM_DDR4_8Gb": "DRAM DDR4 8Gb",
+            "NAND_TLC_512Gb": "NAND TLC 512Gb",
+        }
+        quote_cols = st.columns(3)
+        for box, col in zip(quote_cols, SPOT_DEFAULT_COLS):
+            if col in spot_loaded:
+                valid = pd.to_numeric(spot_loaded[col], errors="coerce").dropna()
+            else:
+                valid = pd.Series(dtype=float)
+            if valid.empty:
+                box.metric(spot_names[col], "-")
+            else:
+                idx = valid.index[-1]
+                quote_date = pd.to_datetime(spot_loaded.loc[idx, "날짜"])
+                box.metric(spot_names[col], f"US${valid.iloc[-1]:,.3f}",
+                           quote_date.strftime("%Y-%m-%d"), delta_color="off")
 
         if out["spot_used"]:
-            st.success("모델 반영 중: " + " · ".join(feat_label(c) for c in out["spot_used"]))
+            st.success("모델 실제 반영 중: "
+                       + " · ".join(feat_label(c) for c in out["spot_used"]))
+        elif spot_status.get("history_ready"):
+            st.info("현물가 이력은 수집됐지만 현재 학습 기간에서 유효 피처가 아직 없습니다.")
         else:
-            st.info("컬럼당 서로 다른 날짜의 값이 3개 이상 있어야 변화율 피처가 생성됩니다.")
-        spot_loaded = st.session_state.spot_df
+            st.warning("자동 이력이 12개 이상 쌓여야 20/60일 변화율이 안정적으로 반영됩니다.")
+
         spot_cols = [c for c in spot_loaded.columns if c != "날짜"]
         if spot_cols and len(spot_loaded) >= 2:
             fig = go.Figure()
@@ -1903,10 +2412,57 @@ def main():
                 if len(s) >= 2 and s.iloc[0] != 0:
                     fig.add_scatter(x=s.index, y=s / s.iloc[0] * 100,
                                     name=col, mode="lines+markers")
-            fig.update_layout(title="현물가 상대 추이 (첫 입력=100)", height=330,
+            fig.update_layout(title="현물가 상대 추이 (첫 수집값=100)", height=330,
                               margin=dict(t=45, b=10),
                               legend=dict(orientation="h", y=1.12))
             st.plotly_chart(fig, use_container_width=True)
+
+        st.download_button(
+            "자동+수동 병합 현물가 CSV 다운로드",
+            spot_loaded.to_csv(index=False).encode("utf-8-sig"),
+            file_name="memory_spot_prices.csv", mime="text/csv",
+        )
+        if spot_status.get("errors"):
+            with st.expander("수집 경고 상세"):
+                st.code("\n".join(spot_status["errors"]))
+
+        with st.expander("선택 사항 · 수동 보정/CSV 불러오기"):
+            st.caption("자동값이 틀린 날짜만 입력하면 해당 셀이 우선 반영됩니다. "
+                       "공개 배포에서는 현재 방문자 세션에만 저장됩니다.")
+            spot_edit = st.data_editor(
+                st.session_state.spot_df, num_rows="dynamic", hide_index=True,
+                use_container_width=True,
+                key=f"spot_editor_{st.session_state.spot_editor_version}",
+                column_config={"날짜": st.column_config.DateColumn(
+                    "날짜", required=True)},
+            )
+            sc1, sc2 = st.columns(2)
+            if sc1.button("수동 보정 적용·재학습", use_container_width=True):
+                clean = _normalise_spot_data(spot_edit)
+                st.session_state.spot_df = clean
+                if local_persistence_enabled():
+                    save_spot_editor(clean)
+                st.session_state.refresh_token += 1
+                st.rerun()
+            if sc2.button("수동 보정 초기화", use_container_width=True):
+                st.session_state.spot_df = _normalise_spot_data(None)
+                if local_persistence_enabled():
+                    save_spot_editor(st.session_state.spot_df)
+                st.session_state.spot_editor_version += 1
+                st.session_state.refresh_token += 1
+                st.rerun()
+
+            uploaded_spot = st.file_uploader("현물가 CSV 불러오기", type=["csv"],
+                                             key="spot_upload")
+            if uploaded_spot is not None and st.button("불러온 현물가를 수동 보정으로 적용"):
+                try:
+                    loaded = pd.read_csv(io.BytesIO(uploaded_spot.getvalue()))
+                    st.session_state.spot_df = _normalise_spot_data(loaded)
+                    st.session_state.spot_editor_version += 1
+                    st.session_state.refresh_token += 1
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"현물가 CSV를 읽지 못했습니다: {e}")
 
     with tab_method:
         st.markdown('<div class="section-kicker">MODEL & GOVERNANCE</div>',
@@ -1918,8 +2474,12 @@ def main():
             f"갭·캔들 변동폭 등 총 {len(out['feat_cols'])}개 유효 피처를 사용합니다.\n"
             "- **기간별 학습 프로파일:** 1년·3년·5년·10년·15년마다 첫 학습일, "
             "확률 보정 구간, 최근가중 반감기를 함께 바꿔 짧은 구간도 실제 학습됩니다.\n"
-            "- **교차시장 시차 누수 차단:** 미국·환율·금리 피처를 1거래일 늦춰 한국 장에서 "
-            "같은 날짜의 미확정 미국 종가를 보지 않게 했습니다.\n"
+            "- **DRAM·NAND 자동 학습:** TrendForce 공개 표의 최신 Session Average와 "
+            "공개 주간 업데이트의 DRAM DDR4 8Gb·NAND TLC 512Gb 이력을 "
+            "20/60일 변화율로 바꿔 학습합니다.\n"
+            "- **교차시장 시차 누수 차단:** 미국·환율·금리·현물가 피처를 "
+            "1거래일 늦춰 한국 장에서 같은 날짜의 미확정/장 마감 후 "
+            "게시 값을 보지 않게 했습니다.\n"
             "- **확률 보정:** 매 재학습 시 최근 252거래일을 시간순 홀드아웃으로 두고 "
             "sigmoid 보정을 한 뒤, Brier skill과 보정오차를 공개합니다.\n"
             f"- **레짐 적응:** 현재 {period.upper()} 설정에서는 최근 "
@@ -1929,8 +2489,8 @@ def main():
             "CAGR·MDD·Sharpe를 적용합니다.\n"
             "- **불확실성 노출:** 현재 점수 근처의 과거 실제 상승률·표본수·Wilson 구간과 "
             "향후 수익률 10~90% 범위를 함께 보여줍니다.\n"
-            "- **공개 배포 데이터 격리:** 포트폴리오와 수기 현물가는 서버 공용 파일이 아닌 "
-            "방문자 세션에 저장합니다.\n"
+            "- **공개 배포 데이터 격리:** 공개 현물가 캐시만 공유하고, 포트폴리오와 "
+            "수동 보정값은 방문자 세션에 저장합니다.\n"
             "- **동종그룹 상대강도:** 광범위 SOX 대비 강도 외에, 그날 다른 메모리 5종목 "
             "평균 대비 초과수익률(peer_rel20/60)을 추가했습니다. '어느 메모리주가 더 "
             "강한가'를 더 직접 겨냥합니다.\n"
@@ -1962,13 +2522,14 @@ def main():
                                      "현재값": round(feat_display_value(col, last[col]), 5),
                                      "역사적 백분위": f"{(histv < last[col]).mean():.0%}"})
                 st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
-        st.warning("이 모델은 가격·기술적 지표·거시·수기 현물가를 사용합니다. "
+        st.warning("이 모델은 가격·기술적 지표·거시·자동 DRAM/NAND 현물가를 사용합니다. "
                    "실적 컨센서스 변경, 공급계약, "
                    "CAPEX, 재고, 지정학적 사건을 자동으로 읽지 않으므로 최종 투자결정을 "
                    "대체하지 않습니다.")
 
     st.divider()
-    st.caption("데이터: Yahoo Finance 수정주가·지연시세. 확률·목표가·예상자산은 "
+    st.caption("데이터: Yahoo Finance 수정주가·지연시세 · TrendForce 공개 DRAM/NAND 현물가. "
+               "확률·목표가·예상자산은 "
                "과거 패턴의 통계 추정치이며 수익을 보장하지 않습니다. 투자 판단과 결과의 "
                "책임은 사용자에게 있습니다.")
 
