@@ -19,8 +19,20 @@ from plotly.subplots import make_subplots
 
 
 BASE_DIR = Path(__file__).resolve().parent
-DATA_DIR = BASE_DIR / "published_data"
+PUBLISHED_ROOT = BASE_DIR / "published_data"
 EXPECTED_SCHEMA = 1
+
+# Streamlit에서 마우스로 선택할 수 있는 항목
+PERIOD_OPTIONS = {
+    "1y": "1년 · 최근 레짐 중심",
+    "3y": "3년 · 최근 사이클",
+    "5y": "5년 · 중기 사이클",
+    "10y": "10년 · 권장",
+    "15y": "15년 · 장기 스트레스",
+}
+HORIZON_OPTIONS = [10, 20, 40]
+DEFAULT_PERIOD = "10y"
+DEFAULT_HORIZON = 20
 SPOT_NAMES = {
     "DRAM_DDR5_16Gb": "DRAM DDR5 16Gb",
     "DRAM_DDR4_8Gb": "DRAM DDR4 8Gb",
@@ -41,8 +53,8 @@ def read_json(path: Path, default=None):
         return {} if default is None else default
 
 
-def read_csv(name: str, **kwargs) -> pd.DataFrame:
-    path = DATA_DIR / name
+def read_csv(data_dir: Path, name: str, **kwargs) -> pd.DataFrame:
+    path = data_dir / name
     if not path.exists():
         return pd.DataFrame()
     try:
@@ -59,12 +71,13 @@ def parse_date_column(frame: pd.DataFrame, column: str = "date") -> pd.DataFrame
 
 
 @st.cache_data(show_spinner=False)
-def load_bundle(generation_id: str) -> dict:
+def load_bundle(period: str, horizon: int, generation_id: str) -> dict:
     del generation_id  # 캐시 무효화 키
-    manifest = read_json(DATA_DIR / "manifest.json")
+    data_dir = PUBLISHED_ROOT / period / f"{horizon}d"
+    manifest = read_json(data_dir / "manifest.json")
     prices = {}
     for ticker, relative in manifest.get("ticker_files", {}).items():
-        path = DATA_DIR / relative
+        path = data_dir / relative
         if not path.exists():
             continue
         try:
@@ -75,19 +88,25 @@ def load_bundle(generation_id: str) -> dict:
             continue
     return {
         "manifest": manifest,
-        "plans": read_json(DATA_DIR / "plans.json"),
-        "metrics": read_json(DATA_DIR / "metrics_summary.json"),
-        "reliability": read_json(DATA_DIR / "reliability.json"),
-        "model_info": read_json(DATA_DIR / "model_info.json"),
-        "spot_status": read_json(DATA_DIR / "spot_status.json"),
-        "board": read_csv("decision_board.csv"),
-        "scores": parse_date_column(read_csv("scores.csv")),
-        "oos": parse_date_column(read_csv("oos.csv.gz", compression="gzip")),
-        "spot": parse_date_column(read_csv("spot_prices.csv"), "날짜"),
-        "importance": read_csv("feature_importance.csv"),
-        "per_ticker": read_csv("metrics_per_ticker.csv"),
-        "calibration": read_csv("calibration.csv"),
-        "rolling": parse_date_column(read_csv("rolling_accuracy.csv")),
+        "plans": read_json(data_dir / "plans.json"),
+        "metrics": read_json(data_dir / "metrics_summary.json"),
+        "reliability": read_json(data_dir / "reliability.json"),
+        "model_info": read_json(data_dir / "model_info.json"),
+        "spot_status": read_json(data_dir / "spot_status.json"),
+        "board": read_csv(data_dir, "decision_board.csv"),
+        "scores": parse_date_column(read_csv(data_dir, "scores.csv")),
+        "oos": parse_date_column(
+            read_csv(data_dir, "oos.csv.gz", compression="gzip")
+        ),
+        "spot": parse_date_column(
+            read_csv(data_dir, "spot_prices.csv"), "날짜"
+        ),
+        "importance": read_csv(data_dir, "feature_importance.csv"),
+        "per_ticker": read_csv(data_dir, "metrics_per_ticker.csv"),
+        "calibration": read_csv(data_dir, "calibration.csv"),
+        "rolling": parse_date_column(
+            read_csv(data_dir, "rolling_accuracy.csv")
+        ),
         "prices": prices,
     }
 
@@ -329,14 +348,47 @@ def main():
     </style>
     """, unsafe_allow_html=True)
 
-    manifest = read_json(DATA_DIR / "manifest.json")
+    # 사용자가 Streamlit 화면에서 마우스로 학습기간/예측기간을 선택한다.
+    with st.sidebar:
+        st.header("분석 설정")
+        period = st.selectbox(
+            "학습 기간",
+            options=list(PERIOD_OPTIONS),
+            index=list(PERIOD_OPTIONS).index(DEFAULT_PERIOD),
+            format_func=lambda x: PERIOD_OPTIONS[x],
+        )
+        horizon = st.selectbox(
+            "거래일 전망",
+            options=HORIZON_OPTIONS,
+            index=HORIZON_OPTIONS.index(DEFAULT_HORIZON),
+            format_func=lambda x: f"{x}거래일",
+        )
+        st.divider()
+
+    data_dir = PUBLISHED_ROOT / period / f"{horizon}d"
+    manifest = read_json(data_dir / "manifest.json")
+
     if not manifest:
-        st.error("게시 데이터가 없습니다. 로컬에서 local_train_publish.py를 먼저 실행하세요.")
+        st.error(
+            f"{PERIOD_OPTIONS[period]} / {horizon}거래일 결과가 게시되어 있지 않습니다."
+        )
+        st.info(
+            "로컬 계산기가 "
+            f"published_data/{period}/{horizon}d/ "
+            "폴더에 해당 결과를 게시해야 합니다."
+        )
         st.stop()
+
     if manifest.get("schema_version") != EXPECTED_SCHEMA:
         st.error("Cloud 앱과 게시 데이터의 스키마 버전이 맞지 않습니다.")
         st.stop()
-    bundle = load_bundle(str(manifest.get("generation_id", "unknown")))
+
+    bundle = load_bundle(
+        period,
+        horizon,
+        str(manifest.get("generation_id", "unknown")),
+    )
+    manifest = bundle["manifest"]
     ticker_names = manifest.get("ticker_names", {})
     plans = bundle["plans"]
     metrics = bundle["metrics"]
@@ -360,8 +412,8 @@ def main():
                   if pd.notna(generated) else "-")
         st.metric("OOS 예측", f"{int(manifest.get('oos_rows', 0)):,}건")
         st.caption(
-            f"{str(manifest.get('period', '-')).upper()} 학습 · "
-            f"{manifest.get('horizon', '-')}거래일 전망 · "
+            f"{str(manifest.get('period', period)).upper()} 학습 · "
+            f"{manifest.get('horizon', horizon)}거래일 전망 · "
             f"엔진 v{manifest.get('engine_version', '-')}"
         )
         st.divider()
