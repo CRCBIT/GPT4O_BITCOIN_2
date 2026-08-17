@@ -324,111 +324,40 @@ def _retry(fn, tries: int = 2):
 
 
 def download_prices(period: str = DEFAULT_PERIOD) -> dict[str, pd.DataFrame]:
-    """Yahoo 가격을 티커별로 안전하게 내려받는다.
-
-    Streamlit Cloud에서는 한 종목의 짧거나 비정상적인 데이터가 yfinance 내부의
-    보정/윈도우 연산에서 예외를 내도 전체 앱이 죽지 않도록 개별 격리한다.
-    price repair는 명시적으로 끈다.
-    """
     import yfinance as yf
 
     symbols = list(TICKERS) + list(MACRO)
+    # yfinance는 3y·15y 문자열을 공식 period로 받지 않는다. 3y는 5y를 받아
+    # 절단해 불필요한 max 다운로드를 피하고, 15y만 max를 받아 절단한다.
     yf_period = "5y" if period == "3y" else (
         period if period in {"1y", "2y", "5y", "10y", "ytd", "max"} else "max")
-
-    def clean_frame(df: pd.DataFrame | None, sym: str) -> pd.DataFrame | None:
-        if df is None or not isinstance(df, pd.DataFrame) or df.empty:
-            return None
-
-        # yfinance 버전에 따라 단일 티커도 MultiIndex를 돌려줄 수 있다.
-        if isinstance(df.columns, pd.MultiIndex):
-            if sym in df.columns.get_level_values(0):
-                df = df[sym]
-            elif sym in df.columns.get_level_values(-1):
-                df = df.xs(sym, axis=1, level=-1)
-            else:
-                # OHLC 레벨만 남길 수 있으면 남긴다.
-                for level in range(df.columns.nlevels):
-                    vals = set(map(str, df.columns.get_level_values(level)))
-                    if "Close" in vals:
-                        df = df.droplevel(
-                            [i for i in range(df.columns.nlevels) if i != level],
-                            axis=1)
-                        break
-
-        df = df.dropna(how="all").copy()
-        if df.empty or "Close" not in df.columns:
-            return None
-
-        keep = pd.DataFrame(index=df.index)
-        keep["Close"] = pd.to_numeric(df["Close"], errors="coerce")
-        for col in ("Open", "High", "Low", "Volume"):
-            keep[col] = (pd.to_numeric(df[col], errors="coerce")
-                         if col in df.columns else np.nan)
-        keep = _naive_index(keep.dropna(subset=["Close"]))
-
-        if period.endswith("y") and period[:-1].isdigit():
-            cutoff = pd.Timestamp.today().normalize() - pd.DateOffset(
-                years=int(period[:-1]))
-            keep = keep[keep.index >= cutoff]
-
-        # 너무 짧은 시계열은 MA60/기술지표 및 학습에 실질적으로 도움이 없고
-        # 외부 라이브러리의 작은-window edge case를 유발할 수 있으므로 제외.
-        if len(keep) < 80:
-            return None
-        return keep
-
+    raw = _retry(lambda: yf.download(
+        symbols, period=yf_period, auto_adjust=True,
+        group_by="ticker", progress=False, threads=True,
+    ))
     out: dict[str, pd.DataFrame] = {}
-
-    # 멀티티커 threads=True 다운로드는 한 종목의 장애가 묶음 전체에 영향을 주기 쉽다.
-    # 캐시가 있으므로 안정성을 우선해 종목별로 받는다.
     for sym in symbols:
-        df = None
         try:
-            df = _retry(
-                lambda sym=sym: yf.Ticker(sym).history(
-                    period=yf_period,
-                    interval="1d",
-                    auto_adjust=True,
-                    actions=False,
-                    repair=False,       # 중요: SciPy/NumPy price-repair window 경로 차단
-                    keepna=False,
-                    timeout=20,
-                ),
-                tries=1,
-            )
+            if isinstance(raw.columns, pd.MultiIndex):
+                df = raw[sym]
+            else:  # 심볼 1개만 성공한 경우 등
+                df = raw
+            df = df.dropna(how="all")
+            if df.empty or "Close" not in df.columns:
+                continue
+            keep = df[["Close"]].copy()
+            for c in ("Open", "High", "Low", "Volume"):
+                keep[c] = df[c] if c in df.columns else np.nan
+            keep = _naive_index(keep.dropna(subset=["Close"]))
+            if period.endswith("y") and period[:-1].isdigit():
+                cutoff = pd.Timestamp.today().normalize() - pd.DateOffset(
+                    years=int(period[:-1]))
+                keep = keep[keep.index >= cutoff]
+            out[sym] = keep
         except Exception:
-            df = None
-
-        cleaned = clean_frame(df, sym)
-
-        # Ticker.history가 실패했을 때만 단일 ticker download로 한 번 더 시도.
-        if cleaned is None:
-            try:
-                df2 = yf.download(
-                    sym,
-                    period=yf_period,
-                    interval="1d",
-                    auto_adjust=True,
-                    actions=False,
-                    repair=False,
-                    progress=False,
-                    threads=False,
-                    timeout=20,
-                )
-                cleaned = clean_frame(df2, sym)
-            except Exception:
-                cleaned = None
-
-        if cleaned is not None:
-            out[sym] = cleaned
-
-    if not any(sym in out for sym in TICKERS):
-        raise RuntimeError(
-            "분석 대상 종목의 가격 데이터를 받지 못했습니다. "
-            "Yahoo Finance 응답 또는 yfinance 버전을 확인하세요."
-        )
+            continue
     return out
+
 
 # ──────────────────────────────
 # DRAM/NAND 현물가 자동 수집
@@ -1004,11 +933,8 @@ def assemble_dataset(prices: dict, horizon: int,
     peer = build_peer_features(prices, master)
 
     frames = []
-    min_history = max(220, int(horizon) + 30)
     for sym in tick_syms:
         df = prices[sym]
-        if len(df) < min_history:
-            continue
         X = build_ticker_features(df)
         X = pd.concat([X, macro.reindex(df.index)], axis=1)
         if spot is not None:
@@ -1039,12 +965,6 @@ def assemble_dataset(prices: dict, horizon: int,
         X["ticker"] = sym
         X.index.name = "date"
         frames.append(X.reset_index())
-
-    if not frames:
-        raise RuntimeError(
-            f"학습에 필요한 가격 이력이 부족합니다. 최소 {min_history}거래일 이상의 "
-            "정상 종목 데이터가 필요합니다."
-        )
 
     data = pd.concat(frames, ignore_index=True).sort_values("date")
     for sym in TICKERS:  # 종목 원핫 (풀링 학습용)
@@ -1386,29 +1306,14 @@ def equity_curve(oos: pd.DataFrame, ticker: str, horizon: int, thr: int = 55,
 
 def feature_importance(final_model, data: pd.DataFrame, feat_cols: list[str],
                        n_rows: int = 1000):
-    """순열 중요도는 설명용 부가기능이므로 실패해도 예측 파이프라인을 중단하지 않는다."""
     if final_model is None:
         return None
     from sklearn.inspection import permutation_importance
-
     lab = data.dropna(subset=["y"]).sort_values("date").tail(n_rows)
-    if len(lab) < 200 or not feat_cols:
+    if len(lab) < 200:
         return None
-
-    try:
-        r = permutation_importance(
-            final_model,
-            lab[feat_cols],
-            lab["y"],
-            n_repeats=3,
-            random_state=0,
-            scoring="accuracy",
-        )
-    except Exception:
-        # Streamlit Cloud/의존성 버전 조합에서 설명용 계산이 실패해도
-        # 핵심 예측·백테스트 결과는 정상 제공한다.
-        return None
-
+    r = permutation_importance(final_model, lab[feat_cols], lab["y"],
+                               n_repeats=3, random_state=0, scoring="accuracy")
     imp = pd.Series(r.importances_mean, index=feat_cols)
     imp.index = [feat_label(c) for c in imp.index]
     return imp.sort_values(ascending=False)
