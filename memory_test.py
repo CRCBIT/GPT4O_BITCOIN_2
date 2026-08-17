@@ -5,9 +5,10 @@
 대상 종목 : SK하이닉스 · 삼성전자 · 샌디스크 · 마이크론 · 키옥시아
 
 하는 일
-  1) RSI·MACD·볼린저밴드·스토캐스틱·ADX·CCI·MFI 등 기술적 지표와
-     관련 지표(SOX, NVDA, WDC, 환율, 금리 등)로 피처를 만들고
-  2) 국가별 장 마감 시차를 보수적으로 반영하고, 시간순 홀드아웃으로 보정한
+  1) RSI·MACD·볼린저밴드·스토캐스틱·ADX·CCI·MFI, 추세·유동성·꼬리위험과
+     관련 지표(SOX, AI/메모리 바스켓, 변동성, 환율, 금리, 원자재 등)로 피처를 만들고
+  2) 국가별 장 마감 시차를 보수적으로 반영하고, 서로 다른 편향을 가진
+     비선형·선형 모델을 시간순 검증 성과로 혼합한 뒤 확률을 보정한
      향후 N거래일 "상승 확률"을 종목별 0~100 점수로 표시하며
   3) 점수를 5단계 행동(지금 매수/조정 시 매수/관망/반등 시 축소/매도)으로 번역하고
      매수 추천가 · 목표가(범위) · 손절가를 변동폭(ATR) 기반 규칙으로 자동 계산하며
@@ -69,12 +70,27 @@ TICKERS = {
 
 MACRO = {
     "^SOX":  "필라델피아 반도체지수",
+    "SMH":   "반도체 ETF",
+    "DRAM":  "메모리 ETF",
     "NVDA":  "엔비디아 (HBM 수요 프록시)",
     "WDC":   "웨스턴디지털 (스토리지 사이클 프록시)",
+    "TSM":   "TSMC (파운드리/AI 수요 프록시)",
+    "AVGO":  "브로드컴 (AI 가속기 수요 프록시)",
+    "AMD":   "AMD (AI/서버 수요 프록시)",
+    "^GSPC": "S&P 500",
+    "^IXIC": "나스닥 종합",
+    "^VIX":  "VIX 변동성지수",
+    "^KS11": "코스피",
+    "^N225": "닛케이 225",
     "KRW=X": "달러/원",
     "JPY=X": "달러/엔",
+    "DX-Y.NYB": "달러인덱스",
     "^TNX":  "미 10년물 금리",
+    "^IRX":  "미 13주 단기금리",
+    "HG=F":  "구리 선물 (경기 프록시)",
+    "CL=F":  "WTI 원유 (인플레이션 프록시)",
 }
+CORE_MACRO_SYMBOLS = ("^SOX", "SMH", "NVDA", "KRW=X", "^TNX", "^VIX")
 
 DEFAULT_HORIZON = 20        # 예측 지평 (거래일)
 DEFAULT_PERIOD = "10y"      # 다운로드 기간 (UI에서 1y·3y 포함 선택)
@@ -86,7 +102,7 @@ MIN_CALIBRATION_ROWS = 150
 RECENCY_HALF_LIFE_DAYS = 756 # 최근 3년(약 756거래일)에 가중치 절반
 MACRO_RELEASE_LAG = 1        # 국가별 마감 시차 누수 방지용 보수적 1거래일 지연
 DEFAULT_COST_BPS = 25        # 왕복 수수료+슬리피지 기본값 0.25%
-VERSION = "4.1"
+VERSION = "5.0"
 ENTRY_ATR = 1.0             # 조정 시 매수가 = 현재가 − 1.0 × ATR(14)
 STOP_ATR = 2.0              # 손절가 = 기준가 − 2.0 × ATR(14)
 TRIM_ATR = 0.5              # 반등 시 축소가 = 현재가 + 0.5 × ATR(14)
@@ -103,23 +119,29 @@ SPOT_DEFAULT_COLS = [
 ]  # TrendForce Session Average, USD
 PORT_COLS = ["티커", "수량", "평단", "모델연동", "배수"]
 
+# 단일 모델의 특정 레짐 과적합을 줄이기 위한 이질적 모델군. 최종 가중치는
+# 매 재학습 시점의 과거→최근 시간순 홀드아웃 log-loss로 자동 결정한다.
+ENSEMBLE_TEMPERATURE = 0.020
+ENSEMBLE_WEIGHT_FLOOR = 0.04
+MIN_ENSEMBLE_CAL_ROWS = 120
+
 # 짧은 기간을 단순히 UI에만 추가하면 MIN_TRAIN_DAYS=500 때문에 1년 모델은
 # 단 한 번도 학습되지 않는다. 기간별로 첫 학습·확률 보정·최근가중 반감기를
 # 함께 줄여 실제로 작동하게 한다. 표본 수는 여러 종목을 풀링해 확보한다.
 PERIOD_PROFILES = {
-    "1y":  {"min_train_days": 90,  "calibration_days": 42,
+    "1y":  {"min_train_days": 90,  "calibration_days": 42, "wf_step": 21,
             "min_calibration_rows": 80,  "recency_half_life": 126,
             "label": "1년 · 최근 레짐 중심"},
-    "3y":  {"min_train_days": 189, "calibration_days": 126,
+    "3y":  {"min_train_days": 189, "calibration_days": 126, "wf_step": 21,
             "min_calibration_rows": 120, "recency_half_life": 378,
             "label": "3년 · 최근 사이클"},
-    "5y":  {"min_train_days": 315, "calibration_days": 189,
+    "5y":  {"min_train_days": 315, "calibration_days": 189, "wf_step": 31,
             "min_calibration_rows": 150, "recency_half_life": 504,
             "label": "5년 · 중기 사이클"},
-    "10y": {"min_train_days": 500, "calibration_days": 252,
+    "10y": {"min_train_days": 500, "calibration_days": 252, "wf_step": 42,
             "min_calibration_rows": 150, "recency_half_life": 756,
             "label": "10년 · 권장"},
-    "15y": {"min_train_days": 500, "calibration_days": 252,
+    "15y": {"min_train_days": 500, "calibration_days": 252, "wf_step": 63,
             "min_calibration_rows": 150, "recency_half_life": 756,
             "label": "15년 · 장기 스트레스"},
 }
@@ -133,6 +155,11 @@ FEATURE_LABELS = {
     "ret10":       "10일 수익률",
     "ret20":       "20일 수익률",
     "ret60":       "60일 수익률",
+    "log_ret1":    "1일 로그수익률",
+    "trend_slope20": "20일 로그가격 추세 기울기",
+    "trend_slope60": "60일 로그가격 추세 기울기",
+    "trend_r2_20": "20일 추세 일관성",
+    "ret_z20":     "일간 수익률 20일 Z점수",
     "mom_accel":   "모멘텀 가속도(5일-20일)",
     "ma20_gap":    "20일선 이격",
     "ma60_gap":    "60일선 이격",
@@ -167,12 +194,26 @@ FEATURE_LABELS = {
     "positive_days20": "최근 20일 상승일 비율",
     "skew20":      "20일 수익률 왜도",
     "vol_ratio":   "단기/중기 변동성 비율",
+    "ewm_vol20":   "지수가중 20일 변동성",
+    "parkinson_vol20": "Parkinson 20일 변동성",
+    "gk_vol20":    "Garman-Klass 20일 변동성",
+    "kurt60":      "60일 수익률 첨도",
+    "tail_loss60": "60일 최악 일간수익률",
+    "tail_gain60": "60일 최고 일간수익률",
     "vol20":       "20일 변동성(연율)",
     "vol60":       "60일 변동성(연율)",
     "down_vol20":  "20일 하방 변동성",
     "drawdown60":  "60일 고점 대비 낙폭",
     "atr_pct14":   "ATR(14)/주가",
     "volu_ratio":  "거래량 추세(5일/60일)",
+    "volu_z20":    "거래량 20일 Z점수",
+    "dollar_vol_chg20": "거래대금 20일 변화",
+    "amihud20":    "Amihud 비유동성(20일)",
+    "range_pos252": "52주 가격범위 내 위치",
+    "dow_sin":     "요일 계절성(sin)",
+    "dow_cos":     "요일 계절성(cos)",
+    "month_sin":   "월 계절성(sin)",
+    "month_cos":   "월 계절성(cos)",
     "rel_sox20":   "SOX 대비 20일 상대강도",
     "peer_rel20":  "동종 메모리주 대비 20일 초과수익률",
     "peer_rel60":  "동종 메모리주 대비 60일 초과수익률",
@@ -188,6 +229,28 @@ FEATURE_LABELS = {
     "krw_chg20":   "달러/원 20일 변화",
     "jpy_chg20":   "달러/엔 20일 변화",
     "tnx_chg20":   "미 10년물 20일 변화",
+    "tnx_level":   "미 10년물 금리 수준",
+    "yield_curve": "미 10년-3개월 금리차",
+    "vix_level":   "VIX 수준",
+    "vix_chg5":    "VIX 5일 변화",
+    "vix_chg20":   "VIX 20일 변화",
+    "market_ret20": "S&P500 20일 수익률",
+    "nasdaq_ret20": "나스닥 20일 수익률",
+    "smh_ret20":   "반도체 ETF 20일 수익률",
+    "dram_etf_ret20": "메모리 ETF 20일 수익률",
+    "ai_basket_ret20": "AI 반도체 바스켓 20일 수익률",
+    "kospi_ret20": "코스피 20일 수익률",
+    "nikkei_ret20": "닛케이 20일 수익률",
+    "dxy_chg20":   "달러인덱스 20일 변화",
+    "copper_ret20": "구리 20일 수익률",
+    "oil_ret20":   "WTI 20일 수익률",
+    "corr_sox60":  "SOX와 60일 상관",
+    "beta_sox60":  "SOX 대비 60일 베타",
+    "idiosyncratic_ret20": "SOX 베타조정 20일 수익률",
+    "regime_risk_off": "위험회피 레짐 점수",
+    "spot_dram_breadth20": "DRAM 현물가 공통 20일 모멘텀",
+    "spot_nand_breadth20": "NAND 현물가 공통 20일 모멘텀",
+    "spot_dram_nand_spread20": "DRAM-NAND 현물가 모멘텀 차이",
 }
 
 
@@ -197,10 +260,18 @@ FEATURE_LABELS = {
 def feat_label(c: str) -> str:
     if c in FEATURE_LABELS:
         return FEATURE_LABELS[c]
+    if c.startswith("xrank_"):
+        return f"동종주 횡단면 순위 · {feat_label(c[6:])}"
+    if c.startswith("spot_") and c.endswith("_chg5"):
+        return f"현물가 {c[5:-5]} 5일 변화"
     if c.startswith("spot_") and c.endswith("_chg20"):
         return f"현물가 {c[5:-6]} 20일 변화"
     if c.startswith("spot_") and c.endswith("_chg60"):
         return f"현물가 {c[5:-6]} 60일 변화"
+    if c.startswith("spot_") and c.endswith("_accel"):
+        return f"현물가 {c[5:-6]} 모멘텀 가속"
+    if c.startswith("spot_") and c.endswith("_z252"):
+        return f"현물가 {c[5:-5]} 1년 Z점수"
     return c
 
 
@@ -259,6 +330,46 @@ def safe_div(num: pd.Series, den: pd.Series) -> pd.Series:
 
 def ema(s: pd.Series, n: int) -> pd.Series:
     return s.ewm(span=n, adjust=False, min_periods=max(3, n // 2)).mean()
+
+
+def rolling_zscore(s: pd.Series, n: int,
+                   min_periods: int | None = None) -> pd.Series:
+    """과거 창만 사용하는 안정적 rolling Z-score."""
+    mp = min_periods or max(10, n // 3)
+    mu = s.rolling(n, min_periods=mp).mean()
+    sd = s.rolling(n, min_periods=mp).std()
+    return safe_div(s - mu, sd).clip(-8, 8)
+
+
+def rolling_log_trend(close: pd.Series, n: int) -> tuple[pd.Series, pd.Series]:
+    """로그가격 OLS 기울기(창 전체 변화율 환산)와 R².
+
+    이동평균 이격만으로 놓치는 추세의 속도와 일관성을 분리한다. 각 시점의
+    과거 n개 값만 사용하므로 미래값이 섞이지 않는다.
+    """
+    x = np.arange(n, dtype=float)
+    xc = x - x.mean()
+    xx = float(np.dot(xc, xc))
+    lp = np.log(close.where(close > 0))
+
+    def slope_fn(y):
+        if not np.isfinite(y).all():
+            return np.nan
+        return float(np.dot(xc, y - y.mean()) / xx)
+
+    def r2_fn(y):
+        if not np.isfinite(y).all():
+            return np.nan
+        yc = y - y.mean()
+        yy = float(np.dot(yc, yc))
+        if yy <= 1e-16:
+            return 0.0
+        cov = float(np.dot(xc, yc))
+        return float(np.clip(cov * cov / (xx * yy), 0.0, 1.0))
+
+    slope = lp.rolling(n).apply(slope_fn, raw=True)
+    r2 = lp.rolling(n).apply(r2_fn, raw=True)
+    return np.expm1((slope * n).clip(-2, 2)), r2
 
 
 def adx_components(df: pd.DataFrame, n: int = 14) -> tuple[pd.Series, ...]:
@@ -769,6 +880,12 @@ def build_peer_features(prices: dict, master: pd.DatetimeIndex) -> pd.DataFrame:
 
 
 def build_macro_features(prices: dict, master: pd.DatetimeIndex) -> pd.DataFrame:
+    """시장·금리·환율·AI/메모리 수요 프록시를 한 날짜축에 정렬한다.
+
+    여기서는 아직 지연하지 않는다. assemble_dataset에서 한국·일본 종목만
+    1거래일 지연해, 미국 종목은 같은 미국장 종가 정보를 버리지 않으면서도
+    아시아 장 마감 당시 미확정인 미국 종가가 섞이는 것을 막는다.
+    """
     f = pd.DataFrame(index=master)
 
     def closes(sym):
@@ -778,6 +895,8 @@ def build_macro_features(prices: dict, master: pd.DatetimeIndex) -> pd.DataFrame
 
     sox = closes("^SOX")
     if sox is not None:
+        f["sox_ret1"] = pchg(sox, 1)
+        f["sox_ret5"] = pchg(sox, 5)
         f["sox_ret20"] = pchg(sox, 20)
         f["sox_ret60"] = pchg(sox, 60)
         f["sox_ma60_gap"] = sox / sox.rolling(60).mean() - 1
@@ -786,27 +905,86 @@ def build_macro_features(prices: dict, master: pd.DatetimeIndex) -> pd.DataFrame
         f["sox_macd_hist"] = safe_div(sox_macd - ema(sox_macd, 9), sox)
         f["sox_vol20"] = sox.pct_change(fill_method=None).rolling(20).std() \
             * np.sqrt(252)
-    for sym, col in (("NVDA", "nvda_ret20"), ("WDC", "wdc_ret20")):
+
+    # 광범위 시장·지역시장·업종/메모리 ETF. 5/20/60일을 함께 두어
+    # 단기 충격과 메모리 사이클의 중기 방향을 분리한다.
+    for sym, prefix in (
+        ("^GSPC", "market"), ("^IXIC", "nasdaq"),
+        ("SMH", "smh"), ("DRAM", "dram_etf"),
+        ("^KS11", "kospi"), ("^N225", "nikkei"),
+    ):
         c = closes(sym)
         if c is not None:
-            f[col] = pchg(c, 20)
-    for sym, col in (("KRW=X", "krw_chg20"), ("JPY=X", "jpy_chg20")):
+            f[f"{prefix}_ret1"] = pchg(c, 1)
+            f[f"{prefix}_ret5"] = pchg(c, 5)
+            f[f"{prefix}_ret20"] = pchg(c, 20)
+            f[f"{prefix}_ret60"] = pchg(c, 60)
+
+    # 개별 기업 한 종목의 잡음은 줄이고 AI 서버/가속기 수요 공통 성분을 학습한다.
+    ai_closes = {s: closes(s) for s in ("NVDA", "TSM", "AVGO", "AMD")}
+    ai_closes = {s: c for s, c in ai_closes.items() if c is not None}
+    for h in (5, 20, 60):
+        if ai_closes:
+            f[f"ai_basket_ret{h}"] = pd.DataFrame(
+                {s: pchg(c, h) for s, c in ai_closes.items()}, index=master
+            ).median(axis=1, skipna=True)
+    for sym, prefix in (("NVDA", "nvda"), ("WDC", "wdc")):
         c = closes(sym)
         if c is not None:
-            f[col] = pchg(c, 20)
+            f[f"{prefix}_ret5"] = pchg(c, 5)
+            f[f"{prefix}_ret20"] = pchg(c, 20)
+            f[f"{prefix}_ret60"] = pchg(c, 60)
+
+    # 변동성·환율·금리·경기/인플레이션 프록시.
+    vix = closes("^VIX")
+    if vix is not None:
+        f["vix_level"] = vix
+        f["vix_chg5"] = pchg(vix, 5)
+        f["vix_chg20"] = pchg(vix, 20)
+        f["vix_z252"] = rolling_zscore(vix, 252, 60)
+    for sym, prefix in (("KRW=X", "krw"), ("JPY=X", "jpy"),
+                        ("DX-Y.NYB", "dxy")):
+        c = closes(sym)
+        if c is not None:
+            f[f"{prefix}_chg5"] = pchg(c, 5)
+            f[f"{prefix}_chg20"] = pchg(c, 20)
+            f[f"{prefix}_chg60"] = pchg(c, 60)
     tnx = closes("^TNX")
     if tnx is not None:
+        f["tnx_level"] = tnx
+        f["tnx_chg5"] = tnx.diff(5)
         f["tnx_chg20"] = tnx.diff(20)
-    # 날짜만 정규화한 글로벌 데이터는 한국 장 마감 시점에 아직 확정되지 않은
-    # 같은 날짜의 미국 종가를 포함할 수 있다. 모든 외생 변수는 1거래일 지연해
-    # 이 교차시장 시차 누수를 보수적으로 제거한다.
-    return f.shift(MACRO_RELEASE_LAG)
+    irx = closes("^IRX")
+    if irx is not None:
+        f["irx_level"] = irx
+        f["irx_chg20"] = irx.diff(20)
+    if tnx is not None and irx is not None:
+        f["yield_curve"] = tnx - irx
+    for sym, prefix in (("HG=F", "copper"), ("CL=F", "oil")):
+        c = closes(sym)
+        if c is not None:
+            f[f"{prefix}_ret5"] = pchg(c, 5)
+            f[f"{prefix}_ret20"] = pchg(c, 20)
+
+    # 명시적 레짐 피처는 선형 모델도 VIX·주가·달러의 결합 상태를 읽게 한다.
+    regime_parts = []
+    if vix is not None:
+        regime_parts.append(rolling_zscore(vix, 252, 60))
+    spx = closes("^GSPC")
+    if spx is not None:
+        regime_parts.append(-rolling_zscore(pchg(spx, 20), 252, 60))
+    dxy = closes("DX-Y.NYB")
+    if dxy is not None:
+        regime_parts.append(rolling_zscore(pchg(dxy, 20), 252, 60))
+    if regime_parts:
+        f["regime_risk_off"] = pd.concat(regime_parts, axis=1).mean(axis=1)
+    return f.replace([np.inf, -np.inf], np.nan)
 
 
 def load_spot_features(master: pd.DatetimeIndex,
                        spot_data: pd.DataFrame | None = None,
                        path: str = SPOT_CSV):
-    """DRAM/NAND 현물가를 20/60일 변화율 피처로 병합.
+    """DRAM/NAND 현물가를 단기·중기 변화, 가속도, 장기 위치로 병합.
 
     주간 공개 자료도 쓸 수 있게 70거래일까지 유지하고, 해당 일자의
     한국장이 닫힌 후 게시될 수 있으므로 1거래일 지연해 누수를 막는다.
@@ -827,8 +1005,24 @@ def load_spot_features(master: pd.DatetimeIndex,
     for c in df.columns:
         if df[c].notna().sum() < 3:
             continue
+        out[f"spot_{c}_chg5"] = pchg(df[c], 5)
         out[f"spot_{c}_chg20"] = pchg(df[c], 20)
         out[f"spot_{c}_chg60"] = pchg(df[c], 60)
+        out[f"spot_{c}_accel"] = (out[f"spot_{c}_chg20"]
+                                    - out[f"spot_{c}_chg60"] / 3.0)
+        out[f"spot_{c}_z252"] = rolling_zscore(df[c], 252, 12)
+
+    dram20 = [out[c] for c in out if c.startswith("spot_DRAM_")
+              and c.endswith("_chg20")]
+    nand20 = [out[c] for c in out if c.startswith("spot_NAND_")
+              and c.endswith("_chg20")]
+    if dram20:
+        out["spot_dram_breadth20"] = pd.concat(dram20, axis=1).mean(axis=1)
+    if nand20:
+        out["spot_nand_breadth20"] = pd.concat(nand20, axis=1).mean(axis=1)
+    if dram20 and nand20:
+        out["spot_dram_nand_spread20"] = (
+            out["spot_dram_breadth20"] - out["spot_nand_breadth20"])
     return out if len(out.columns) else None
 
 
@@ -845,14 +1039,22 @@ def build_ticker_features(df: pd.DataFrame) -> pd.DataFrame:
     v = df["Volume"].astype(float) if "Volume" in df.columns else None
     f = pd.DataFrame(index=df.index)
     r = c.pct_change(fill_method=None)
+    log_r = np.log(c.where(c > 0)).diff()
 
     # 수익률·추세
+    f["log_ret1"] = log_r
     f["ret1"] = pchg(c, 1)
     f["ret5"] = pchg(c, 5)
     f["ret10"] = pchg(c, 10)
     f["ret20"] = pchg(c, 20)
     f["ret60"] = pchg(c, 60)
     f["mom_accel"] = f["ret5"] - f["ret20"] / 4.0
+    f["ret_z20"] = rolling_zscore(r, 20, 10)
+    slope20, trend_r2 = rolling_log_trend(c, 20)
+    slope60, _ = rolling_log_trend(c, 60)
+    f["trend_slope20"] = slope20
+    f["trend_slope60"] = slope60
+    f["trend_r2_20"] = trend_r2
     for n in (20, 60, 120, 200):
         f[f"ma{n}_gap"] = c / c.rolling(n).mean() - 1
     e12, e26 = ema(c, 12), ema(c, 26)
@@ -895,26 +1097,55 @@ def build_ticker_features(df: pd.DataFrame) -> pd.DataFrame:
     f["range_pct"] = safe_div(h - l, c)
     f["vol20"] = r.rolling(20).std() * np.sqrt(252)
     f["vol60"] = r.rolling(60).std() * np.sqrt(252)
+    f["ewm_vol20"] = r.ewm(span=20, adjust=False, min_periods=10).std() \
+        * np.sqrt(252)
+    hl_log = np.log(safe_div(h, l).where(lambda x: x > 0))
+    co_log = np.log(safe_div(c, o).where(lambda x: x > 0))
+    parkinson_var = hl_log.pow(2) / (4.0 * np.log(2.0))
+    gk_var = 0.5 * hl_log.pow(2) - (2.0 * np.log(2.0) - 1.0) * co_log.pow(2)
+    f["parkinson_vol20"] = np.sqrt(
+        parkinson_var.rolling(20).mean().clip(lower=0) * 252)
+    f["gk_vol20"] = np.sqrt(gk_var.rolling(20).mean().clip(lower=0) * 252)
     f["vol_ratio"] = safe_div(r.rolling(5).std(), r.rolling(20).std())
     f["down_vol20"] = r.clip(upper=0).rolling(20).std() * np.sqrt(252)
     f["drawdown60"] = c / c.rolling(60).max() - 1.0
     f["atr_pct14"] = atr_series(df, 14) / c
     f["positive_days20"] = (r > 0).rolling(20).mean()
     f["skew20"] = r.rolling(20).skew()
-    for n in (20, 60):
+    f["kurt60"] = r.rolling(60).kurt()
+    f["tail_loss60"] = r.rolling(60).min()
+    f["tail_gain60"] = r.rolling(60).max()
+    for n in (20, 60, 252):
         low_n, high_n = l.rolling(n).min(), h.rolling(n).max()
         f[f"range_pos{n}"] = safe_div(c - low_n, high_n - low_n)
 
     # 거래량·자금흐름
     if v is not None and v.notna().sum() > 60:
         f["volu_ratio"] = safe_div(v.rolling(5).mean(), v.rolling(60).mean())
+        f["volu_z20"] = rolling_zscore(np.log1p(v.clip(lower=0)), 20, 10)
+        dollar_volume = (c * v).where(lambda x: x > 0)
+        f["dollar_vol_chg20"] = np.log(dollar_volume).diff(20)
+        amihud = safe_div(r.abs(), dollar_volume)
+        amihud_log = np.log(amihud.where(amihud > 0))
+        f["amihud20"] = rolling_zscore(amihud_log.rolling(20).mean(), 252, 60)
         f["mfi14"] = money_flow_index(df, 14) / 100.0
         obv = (np.sign(c.diff()).fillna(0.0) * v.fillna(0.0)).cumsum()
         f["obv_mom20"] = safe_div(obv.diff(20), obv.abs().rolling(60).mean())
     else:
         f["volu_ratio"] = np.nan
+        f["volu_z20"] = np.nan
+        f["dollar_vol_chg20"] = np.nan
+        f["amihud20"] = np.nan
         f["mfi14"] = np.nan
         f["obv_mom20"] = np.nan
+
+    # 일정 효과는 미래를 보지 않는 알려진 달력 변수다. sin/cos로 연말 경계를 연속화한다.
+    dow = pd.Series(f.index.dayofweek, index=f.index, dtype=float)
+    month = pd.Series(f.index.month, index=f.index, dtype=float)
+    f["dow_sin"] = np.sin(2 * np.pi * dow / 5.0)
+    f["dow_cos"] = np.cos(2 * np.pi * dow / 5.0)
+    f["month_sin"] = np.sin(2 * np.pi * (month - 1.0) / 12.0)
+    f["month_cos"] = np.cos(2 * np.pi * (month - 1.0) / 12.0)
     return f.replace([np.inf, -np.inf], np.nan)
 
 
@@ -936,11 +1167,33 @@ def assemble_dataset(prices: dict, horizon: int,
     for sym in tick_syms:
         df = prices[sym]
         X = build_ticker_features(df)
-        X = pd.concat([X, macro.reindex(df.index)], axis=1)
+        macro_view = macro.copy()
+        if sym.endswith((".KS", ".KQ", ".T")):
+            # 아시아 장 마감 때 아직 확정되지 않은 미국 종가 파생변수만 지연한다.
+            # 같은 날 이미 닫힌 KOSPI/Nikkei 및 현지 FX까지 불필요하게 버리지 않는다.
+            same_day_known = ("kospi_", "nikkei_", "krw_", "jpy_")
+            lag_cols = [c for c in macro_view if not c.startswith(same_day_known)]
+            macro_view.loc[:, lag_cols] = macro_view[lag_cols].shift(
+                MACRO_RELEASE_LAG)
+        X = pd.concat([X, macro_view.reindex(df.index)], axis=1)
         if spot is not None:
             X = pd.concat([X, spot.reindex(df.index)], axis=1)
         if "sox_ret20" in X.columns:
             X["rel_sox20"] = X["ret20"] - X["sox_ret20"]
+        if "sox_ret1" in X.columns:
+            stock_r = X["ret1"]
+            sox_r = X["sox_ret1"]
+            cov = stock_r.rolling(60).cov(sox_r)
+            var = sox_r.rolling(60).var()
+            X["corr_sox60"] = stock_r.rolling(60).corr(sox_r)
+            X["beta_sox60"] = safe_div(cov, var).clip(-3, 5)
+            if "sox_ret20" in X:
+                X["idiosyncratic_ret20"] = (
+                    X["ret20"] - X["beta_sox60"] * X["sox_ret20"])
+        if "regime_risk_off" in X:
+            X["momentum_x_risk_off"] = X["ret20"] * X["regime_risk_off"]
+        if "spot_dram_breadth20" in X:
+            X["spot_cycle_x_momentum"] = X["spot_dram_breadth20"] * X["ret20"]
         for h, tag in ((5, "5"), (20, "20"), (60, "60")):
             col = f"__peer{tag}__{sym}"
             if col in peer.columns:
@@ -962,6 +1215,7 @@ def assemble_dataset(prices: dict, horizon: int,
         # 이 행의 정답(라벨)이 '확정되는 날짜' = 해당 종목 달력 기준 horizon일 뒤.
         # 학습 시점 t에는 label_known_date <= t 인 행만 쓰면 미래 정보 누수가 없다.
         X["label_known_date"] = pd.Series(df.index, index=df.index).shift(-horizon)
+        X["listing_age_years"] = np.arange(len(X), dtype=float) / 252.0
         X["ticker"] = sym
         X.index.name = "date"
         frames.append(X.reset_index())
@@ -969,6 +1223,20 @@ def assemble_dataset(prices: dict, horizon: int,
     data = pd.concat(frames, ignore_index=True).sort_values("date")
     for sym in TICKERS:  # 종목 원핫 (풀링 학습용)
         data[f"tk_{sym}"] = (data["ticker"] == sym).astype(int)
+    data["region_kr"] = data["ticker"].str.endswith((".KS", ".KQ")).astype(int)
+    data["region_jp"] = data["ticker"].str.endswith(".T").astype(int)
+    data["is_daily_leveraged"] = (data["ticker"] == "RAM").astype(int)
+
+    # Gu·Kelly·Xiu(2020)가 강조한 횡단면 모멘텀·유동성·변동성 정보를
+    # 메모리주 내부 상대순위로 추가한다. 국제 장 마감 시차 때문에 순위는
+    # 반드시 한 날짜 늦춰 어느 시장에서도 같은 날 미래 종가를 보지 않게 한다.
+    rank_sources = ["ret20", "ret60", "ma60_gap", "rsi14", "vol20",
+                    "amihud20", "range_pos252"]
+    for col in rank_sources:
+        if col not in data:
+            continue
+        raw_rank = data.groupby("date")[col].rank(pct=True) - 0.5
+        data[f"xrank_{col}"] = raw_rank.groupby(data["ticker"]).shift(1)
 
     data = data[data["ret20"].notna()].reset_index(drop=True)
     candidate_cols = [c for c in data.columns if c not in META_COLS]
@@ -984,51 +1252,171 @@ def assemble_dataset(prices: dict, horizon: int,
 # ──────────────────────────────────────────────────────────────
 # 모델 · 워크포워드 백테스트
 # ──────────────────────────────────────────────────────────────
-def make_model():
-    from sklearn.ensemble import HistGradientBoostingClassifier
-    kwargs = dict(
-        max_iter=240, learning_rate=0.045, max_leaf_nodes=15,
-        min_samples_leaf=45, l2_regularization=2.0,
-        early_stopping=False, random_state=42,
-    )
-    try:
-        # 매 분할마다 후보 피처를 70%만 보게 해, 저잡음·고자기상관 매크로 지표
-        # (예: SOX 60일 수익률) 하나가 모든 트리 분기를 독식하는 것을 막는다.
-        # 이 독식은 실제 성능 저하의 대표 원인이라 사이킷런 버전이 지원하면 항상 켠다.
-        return HistGradientBoostingClassifier(max_features=0.7, **kwargs)
-    except TypeError:
-        return HistGradientBoostingClassifier(**kwargs)  # 구버전 sklearn 대비
+def make_model_family(seed: int = 42) -> dict[str, object]:
+    """서로 다른 오차 구조를 가진 모델군.
+
+    소표본 금융 일봉에서 거대한 Transformer 하나를 반복 학습하면 분산이 커진다.
+    대신 (1) 상호작용형 boosting, (2) 강규제 smooth boosting, (3) bagging tree,
+    (4) 선형 shrinkage를 함께 두고 최근 시간순 검증 log-loss로 가중한다.
+    """
+    from sklearn.ensemble import ExtraTreesClassifier, HistGradientBoostingClassifier
+    from sklearn.impute import SimpleImputer
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.pipeline import Pipeline
+    from sklearn.preprocessing import RobustScaler
+
+    common = dict(early_stopping=False, random_state=seed)
+
+    def hgb(**kwargs):
+        max_features = kwargs.pop("max_features")
+        try:
+            return HistGradientBoostingClassifier(
+                max_features=max_features, **kwargs)
+        except TypeError:
+            return HistGradientBoostingClassifier(**kwargs)
+
+    return {
+        "boost_interaction": hgb(
+            max_iter=260, learning_rate=0.035, max_leaf_nodes=15,
+            min_samples_leaf=35, l2_regularization=3.0,
+            max_features=0.72, **common),
+        "boost_smooth": hgb(
+            max_iter=220, learning_rate=0.030, max_leaf_nodes=7,
+            min_samples_leaf=70, l2_regularization=6.0,
+            max_features=0.90, **common),
+        "extra_trees": Pipeline([
+            ("imputer", SimpleImputer(strategy="median", add_indicator=True)),
+            ("model", ExtraTreesClassifier(
+                n_estimators=140, max_depth=10, min_samples_leaf=20,
+                max_features=0.65, bootstrap=False, n_jobs=-1,
+                random_state=seed)),
+        ]),
+        "linear_shrinkage": Pipeline([
+            ("imputer", SimpleImputer(strategy="median", add_indicator=True)),
+            ("scale", RobustScaler(quantile_range=(10, 90))),
+            ("model", LogisticRegression(
+                C=0.12, penalty="l2", solver="lbfgs", max_iter=800,
+                random_state=seed)),
+        ]),
+    }
 
 
-def training_weights(train: pd.DataFrame,
-                     half_life_days: int = RECENCY_HALF_LIFE_DAYS) -> np.ndarray:
-    """최근 레짐을 더 반영하되 특정 클래스가 압도하지 않도록 완만히 보정."""
+def _fit_estimator(model, X, y, sample_weight):
+    """Pipeline/일반 estimator에 같은 방식으로 표본가중치를 전달."""
+    if hasattr(model, "named_steps") and "model" in model.named_steps:
+        model.fit(X, y, model__sample_weight=sample_weight)
+    else:
+        model.fit(X, y, sample_weight=sample_weight)
+    return model
+
+
+def recency_weights(train: pd.DataFrame,
+                    half_life_days: int = RECENCY_HALF_LIFE_DAYS) -> np.ndarray:
+    """자연 발생확률을 보존한 최근가중치(확률 보정용)."""
     ordered_dates = pd.Series(pd.to_datetime(train["date"]).unique()).sort_values()
     date_rank = {d: i for i, d in enumerate(ordered_dates)}
     ranks = pd.to_datetime(train["date"]).map(date_rank).to_numpy(dtype=float)
     age = ranks.max() - ranks
     recency = np.power(0.5, age / max(20, int(half_life_days)))
+    return np.clip(recency, 0.10, 1.0)
+
+
+def training_weights(train: pd.DataFrame,
+                     half_life_days: int = RECENCY_HALF_LIFE_DAYS,
+                     horizon: int = DEFAULT_HORIZON) -> np.ndarray:
+    """최근 레짐·클래스·경제적으로 의미 있는 변동을 완만히 반영.
+
+    클래스/변동폭 보정은 base learner에만 쓴다. 확률 calibrator에는
+    recency_weights만 사용해야 실제 상승 빈도를 왜곡하지 않는다.
+    """
+    recency = recency_weights(train, half_life_days)
     y = train["y"].to_numpy(dtype=int)
     up = float(np.mean(y == 1))
     if 0.02 < up < 0.98:
         balance = np.where(y == 1, 0.5 / up, 0.5 / (1.0 - up))
     else:
         balance = np.ones(len(y))
-    return np.clip(recency * balance, 0.20, 4.0)
+    material = np.ones(len(train), dtype=float)
+    if "fwd_ret" in train and "vol20" in train:
+        scale = (pd.to_numeric(train["vol20"], errors="coerce").to_numpy()
+                 * np.sqrt(max(1, int(horizon)) / 252.0))
+        move = np.abs(pd.to_numeric(
+            train["fwd_ret"], errors="coerce").to_numpy())
+        valid = np.isfinite(move) & np.isfinite(scale)
+        signal = np.divide(move, np.maximum(scale, 0.015),
+                           out=np.zeros_like(move), where=valid)
+        material = 0.80 + 0.275 * np.clip(signal, 0.0, 2.0)
+    w = recency * balance * material
+    w = w / max(float(np.nanmean(w)), 1e-8)
+    return np.clip(w, 0.15, 4.0)
+
+
+def _fit_family(models: dict[str, object], X: pd.DataFrame, y: pd.Series,
+                sample_weight: np.ndarray) -> dict[str, object]:
+    """한 모델의 환경 호환 문제로 전체 예측이 중단되지 않게 독립 학습."""
+    fitted: dict[str, object] = {}
+    for name, model in models.items():
+        try:
+            fitted[name] = _fit_estimator(model, X, y, sample_weight)
+        except Exception:
+            continue
+    if not fitted:
+        raise RuntimeError("앙상블 기본 모델을 하나도 학습하지 못했습니다.")
+    return fitted
+
+
+def _probability_matrix(models: dict[str, object], X: pd.DataFrame,
+                        names: list[str] | None = None) -> tuple[list[str], np.ndarray]:
+    use_names = names or list(models)
+    kept, cols = [], []
+    for name in use_names:
+        if name not in models:
+            continue
+        try:
+            p = np.asarray(models[name].predict_proba(X), dtype=float)[:, 1]
+            if np.isfinite(p).all():
+                kept.append(name)
+                cols.append(np.clip(p, 1e-4, 1 - 1e-4))
+        except Exception:
+            continue
+    if not cols:
+        raise RuntimeError("앙상블 확률을 계산할 수 없습니다.")
+    return kept, np.column_stack(cols)
+
+
+def _validation_blend(names: list[str], matrix: np.ndarray, y: np.ndarray,
+                      sample_weight: np.ndarray) -> tuple[dict[str, float], dict[str, float]]:
+    """최근 홀드아웃 log-loss가 낮은 모델에 더 주되 한 모델 독식을 제한."""
+    from sklearn.metrics import log_loss
+
+    losses = np.array([
+        log_loss(y, matrix[:, j], labels=[0, 1], sample_weight=sample_weight)
+        for j in range(matrix.shape[1])
+    ], dtype=float)
+    rel = losses - np.nanmin(losses)
+    raw = np.exp(-np.clip(rel / ENSEMBLE_TEMPERATURE, 0, 50))
+    raw = raw / raw.sum() if raw.sum() > 0 else np.full(len(names), 1 / len(names))
+    floor = min(ENSEMBLE_WEIGHT_FLOOR, 0.8 / len(names))
+    weights = floor + (1.0 - floor * len(names)) * raw
+    weights = weights / weights.sum()
+    return ({name: float(weight) for name, weight in zip(names, weights)},
+            {name: float(loss) for name, loss in zip(names, losses)})
 
 
 @dataclass
 class ProbabilityModel(ClassifierMixin, BaseEstimator):
-    """시간순 홀드아웃으로 확률을 보정한 분류기 래퍼.
+    """시간순 성과가중 앙상블 + sigmoid 보정 분류기 래퍼.
 
     BaseEstimator·ClassifierMixin 상속으로 permutation_importance 등 sklearn
     도구의 estimator 인터페이스 검증(fit 존재, __sklearn_tags__/_estimator_type)을
     구버전·신버전 모두에서 통과한다."""
 
-    estimator: object
+    estimators: dict[str, object]
+    blend_weights: dict[str, float]
     calibrator: object | None
     base_rate: float
     calibration_rows: int = 0
+    validation_losses: dict[str, float] | None = None
 
     classes_ = np.array([0, 1])
 
@@ -1038,17 +1426,27 @@ class ProbabilityModel(ClassifierMixin, BaseEstimator):
         permutation_importance는 fit의 '존재'만 검사하고 실제로 재학습하지 않지만,
         만약 호출되더라도 안전하게 내부 estimator에 위임한다."""
         if y is not None:
-            self.estimator.fit(X, y, sample_weight=sample_weight)
+            sw = (np.ones(len(y), dtype=float) if sample_weight is None
+                  else np.asarray(sample_weight, dtype=float))
+            for model in self.estimators.values():
+                _fit_estimator(model, X, y, sw)
         return self
 
     def predict_proba(self, X: pd.DataFrame) -> np.ndarray:
-        raw = np.clip(self.estimator.predict_proba(X)[:, 1], 1e-4, 1 - 1e-4)
+        names, matrix = _probability_matrix(
+            self.estimators, X, list(self.blend_weights))
+        weights = np.array(
+            [self.blend_weights.get(n, 0.0) for n in names], dtype=float)
+        if weights.sum() <= 0:
+            weights = np.ones(len(names), dtype=float)
+        weights /= weights.sum()
+        raw = np.clip(matrix @ weights, 1e-4, 1 - 1e-4)
         if self.calibrator is not None:
             logit = np.log(raw / (1.0 - raw)).reshape(-1, 1)
             p = self.calibrator.predict_proba(logit)[:, 1]
         else:
             # 보정 표본이 없을 때 과도한 확신만 약하게 축소한다.
-            p = 0.90 * raw + 0.10 * self.base_rate
+            p = 0.85 * raw + 0.15 * self.base_rate
         p = np.clip(p, 0.01, 0.99)
         return np.column_stack([1.0 - p, p])
 
@@ -1062,17 +1460,21 @@ def fit_probability_model(train: pd.DataFrame,
                           min_calibration_rows: int = MIN_CALIBRATION_ROWS,
                           recency_half_life: int = RECENCY_HALF_LIFE_DAYS,
                           horizon: int = DEFAULT_HORIZON) -> ProbabilityModel:
-    """과거→최근 순서를 지킨 홀드아웃으로 sigmoid 확률 보정 후 전체 재학습.
+    """과거→최근 홀드아웃으로 모델 혼합·확률 보정 후 전체 재학습.
 
     일반 K-fold 보정은 시계열에서 미래 레짐을 과거 모델에 섞을 수 있으므로 쓰지 않는다.
     """
     from sklearn.linear_model import LogisticRegression
 
     tr = train.sort_values("date").copy()
-    base_rate = float(tr["y"].mean())
+    natural_w = recency_weights(tr, recency_half_life)
+    base_rate = float(np.average(
+        tr["y"].to_numpy(dtype=float), weights=natural_w))
     unique_dates = np.array(sorted(tr["date"].unique()))
     calibrator = None
     cal_rows = 0
+    blend_weights: dict[str, float] = {}
+    validation_losses: dict[str, float] = {}
 
     min_core_dates = max(50, int(horizon) * 3)
     if len(unique_dates) > int(calibration_days) + min_core_dates:
@@ -1081,24 +1483,96 @@ def fit_probability_model(train: pd.DataFrame,
         # feature date만 자르면 horizon만큼 뒤에 확정될 라벨이 섞일 수 있다.
         core = tr[(tr["date"] < cut) & (tr["label_known_date"] < cut)]
         cal = tr[tr["date"] >= cut]
-        if (len(core) >= MIN_TRAIN_ROWS and len(cal) >= min_calibration_rows
+        required_cal = max(MIN_ENSEMBLE_CAL_ROWS, int(min_calibration_rows))
+        if (len(core) >= MIN_TRAIN_ROWS and len(cal) >= required_cal
                 and core["y"].nunique() == 2 and cal["y"].nunique() == 2):
-            core_model = make_model()
-            core_model.fit(core[feat_cols], core["y"],
-                           sample_weight=training_weights(core, recency_half_life))
-            raw = np.clip(core_model.predict_proba(cal[feat_cols])[:, 1],
-                          1e-4, 1 - 1e-4)
+            core_models = _fit_family(
+                make_model_family(), core[feat_cols], core["y"],
+                training_weights(core, recency_half_life, horizon))
+            names, matrix = _probability_matrix(core_models, cal[feat_cols])
+            cal_w = recency_weights(cal, recency_half_life)
+            blend_weights, validation_losses = _validation_blend(
+                names, matrix, cal["y"].to_numpy(dtype=int), cal_w)
+            weights = np.array([blend_weights[n] for n in names], dtype=float)
+            raw = np.clip(matrix @ weights, 1e-4, 1 - 1e-4)
             logits = np.log(raw / (1 - raw)).reshape(-1, 1)
-            calibrator = LogisticRegression(C=0.5, max_iter=500,
+            calibrator = LogisticRegression(C=0.25, max_iter=500,
                                             random_state=42)
             calibrator.fit(logits, cal["y"],
-                           sample_weight=training_weights(cal, recency_half_life))
+                           sample_weight=cal_w)
             cal_rows = len(cal)
 
-    estimator = make_model()
-    estimator.fit(tr[feat_cols], tr["y"],
-                  sample_weight=training_weights(tr, recency_half_life))
-    return ProbabilityModel(estimator, calibrator, base_rate, cal_rows)
+    estimators = _fit_family(
+        make_model_family(), tr[feat_cols], tr["y"],
+        training_weights(tr, recency_half_life, horizon))
+    if not blend_weights:
+        blend_weights = {name: 1.0 / len(estimators) for name in estimators}
+    else:
+        blend_weights = {n: w for n, w in blend_weights.items()
+                         if n in estimators}
+        total = sum(blend_weights.values())
+        if total <= 0:
+            blend_weights = {name: 1.0 / len(estimators)
+                             for name in estimators}
+        else:
+            blend_weights = {n: w / total for n, w in blend_weights.items()}
+    return ProbabilityModel(estimators, blend_weights, calibrator, base_rate,
+                            cal_rows, validation_losses)
+
+
+def probability_model_from_oos_history(
+        estimators: dict[str, object], train: pd.DataFrame,
+        history: pd.DataFrame, asof_date,
+        calibration_days: int, min_calibration_rows: int,
+        recency_half_life: int) -> ProbabilityModel:
+    """과거에 실제로 냈던 OOS 예측만으로 현재 fold의 혼합/보정을 결정.
+
+    내부 홀드아웃용 모델을 매번 이중 학습하지 않아 계산량을 절반가량 줄이고,
+    모델 선택 자체도 미래를 전혀 보지 않는 prequential(예측→확정→갱신) 방식이다.
+    """
+    from sklearn.linear_model import LogisticRegression
+
+    natural_w = recency_weights(train, recency_half_life)
+    base_rate = float(np.average(
+        train["y"].to_numpy(dtype=float), weights=natural_w))
+    names = list(estimators)
+    weights = {name: 1.0 / len(names) for name in names}
+    losses: dict[str, float] = {}
+    calibrator = None
+    cal_rows = 0
+    if history is None or history.empty:
+        return ProbabilityModel(estimators, weights, None, base_rate, 0, losses)
+
+    cal = history[(history["label_known_date"].notna())
+                  & (history["label_known_date"] <= asof_date)
+                  & (history["y"].notna())].copy()
+    if cal.empty:
+        return ProbabilityModel(estimators, weights, None, base_rate, 0, losses)
+    unique_dates = np.array(sorted(cal["date"].unique()))
+    if len(unique_dates) > int(calibration_days):
+        cal = cal[cal["date"] >= unique_dates[-int(calibration_days)]]
+    pcols = [f"p__{name}" for name in names]
+    valid_names = [name for name, col in zip(names, pcols) if col in cal]
+    valid_cols = [f"p__{name}" for name in valid_names]
+    if not valid_cols:
+        return ProbabilityModel(estimators, weights, None, base_rate, 0, losses)
+    cal = cal.dropna(subset=valid_cols)
+    required = max(MIN_ENSEMBLE_CAL_ROWS, int(min_calibration_rows))
+    if len(cal) < required or cal["y"].nunique() < 2:
+        return ProbabilityModel(estimators, weights, None, base_rate, 0, losses)
+
+    matrix = cal[valid_cols].to_numpy(dtype=float)
+    cal_w = recency_weights(cal, recency_half_life)
+    weights, losses = _validation_blend(
+        valid_names, matrix, cal["y"].to_numpy(dtype=int), cal_w)
+    raw = np.clip(matrix @ np.array([weights[n] for n in valid_names]),
+                  1e-4, 1 - 1e-4)
+    logits = np.log(raw / (1 - raw)).reshape(-1, 1)
+    calibrator = LogisticRegression(C=0.25, max_iter=500, random_state=42)
+    calibrator.fit(logits, cal["y"], sample_weight=cal_w)
+    cal_rows = len(cal)
+    return ProbabilityModel(estimators, weights, calibrator, base_rate,
+                            cal_rows, losses)
 
 
 def walk_forward(data: pd.DataFrame, feat_cols: list[str], horizon: int,
@@ -1106,10 +1580,14 @@ def walk_forward(data: pd.DataFrame, feat_cols: list[str], horizon: int,
                  calibration_days: int = CALIBRATION_DAYS,
                  min_calibration_rows: int = MIN_CALIBRATION_ROWS,
                  recency_half_life: int = RECENCY_HALF_LIFE_DAYS):
-    """step 거래일마다 '그 시점까지 확정된 라벨'로만 재학습 → 다음 구간 예측.
-    반환되는 예측은 전부 아웃오브샘플(모델이 그 시점엔 정답을 몰랐던 구간)이다."""
+    """step 거래일마다 확정 라벨로 재학습 → 다음 구간 prequential 예측.
+
+    모델별 가중치와 확률 보정도 그 시점까지 정답이 확정된 과거 OOS 예측만
+    사용한다. 반환 예측은 모델 선택/보정까지 완전 아웃오브샘플이다.
+    """
     dates = np.array(sorted(data["date"].unique()))
     chunks = []
+    probability_history: list[pd.DataFrame] = []
     for i in range(min_train_days, len(dates) - 1, step):
         t = dates[i]
         t_next = dates[min(i + step, len(dates) - 1)]
@@ -1121,26 +1599,43 @@ def walk_forward(data: pd.DataFrame, feat_cols: list[str], horizon: int,
         test = data[(data["date"] > t) & (data["date"] <= t_next)]
         if test.empty:
             continue
-        mdl = fit_probability_model(
-            train, feat_cols, calibration_days=calibration_days,
-            min_calibration_rows=min_calibration_rows,
-            recency_half_life=recency_half_life, horizon=horizon)
+        estimators = _fit_family(
+            make_model_family(), train[feat_cols], train["y"],
+            training_weights(train, recency_half_life, horizon))
+        history = (pd.concat(probability_history, ignore_index=True)
+                   if probability_history else pd.DataFrame())
+        mdl = probability_model_from_oos_history(
+            estimators, train, history, t, calibration_days,
+            min_calibration_rows, recency_half_life)
         p = mdl.predict_proba(test[feat_cols])[:, 1]
         chunk = test[["date", "ticker", "entry_px", "exit_px",
-                      "fwd_ret", "y"]].copy()
+                      "fwd_ret", "y", "label_known_date"]].copy()
         chunk["score"] = p * 100.0
-        chunks.append(chunk)
+        names, matrix = _probability_matrix(estimators, test[feat_cols])
+        for j, name in enumerate(names):
+            chunk[f"p__{name}"] = matrix[:, j]
+        probability_history.append(chunk[[
+            "date", "ticker", "y", "label_known_date",
+            *[f"p__{name}" for name in names]]].copy())
+        chunks.append(chunk[["date", "ticker", "entry_px", "exit_px",
+                             "fwd_ret", "y", "score"]])
 
     oos = (pd.concat(chunks, ignore_index=True)
            if chunks else pd.DataFrame(columns=["date", "ticker", "fwd_ret", "y", "score"]))
 
-    # 최종 모델: 지금까지 확정된 모든 라벨로 학습 → 오늘의 점수 산출용
+    # 최종 모델: 모든 확정 라벨로 base learner를 재학습하되 혼합/보정은 위에서
+    # 누적한 실제 OOS 예측만 사용한다. 최종 점수와 검증 방법의 불일치를 없앤다.
     final_train = data[(data["label_known_date"].notna()) & (data["y"].notna())]
-    final_model = fit_probability_model(
-        final_train, feat_cols, calibration_days=calibration_days,
-        min_calibration_rows=min_calibration_rows,
-        recency_half_life=recency_half_life, horizon=horizon) \
-        if len(final_train) >= MIN_TRAIN_ROWS else None
+    final_model = None
+    if len(final_train) >= MIN_TRAIN_ROWS:
+        final_estimators = _fit_family(
+            make_model_family(), final_train[feat_cols], final_train["y"],
+            training_weights(final_train, recency_half_life, horizon))
+        final_history = (pd.concat(probability_history, ignore_index=True)
+                         if probability_history else pd.DataFrame())
+        final_model = probability_model_from_oos_history(
+            final_estimators, final_train, final_history, dates[-1],
+            calibration_days, min_calibration_rows, recency_half_life)
     return oos, final_model
 
 
@@ -1305,16 +1800,54 @@ def equity_curve(oos: pd.DataFrame, ticker: str, horizon: int, thr: int = 55,
 
 
 def feature_importance(final_model, data: pd.DataFrame, feat_cols: list[str],
-                       n_rows: int = 1000):
+                       n_rows: int = 800, max_candidates: int = 40):
     if final_model is None:
         return None
-    from sklearn.inspection import permutation_importance
+    from sklearn.metrics import log_loss
+
     lab = data.dropna(subset=["y"]).sort_values("date").tail(n_rows)
     if len(lab) < 200:
         return None
-    r = permutation_importance(final_model, lab[feat_cols], lab["y"],
-                               n_repeats=3, random_state=0, scoring="accuracy")
-    imp = pd.Series(r.importances_mean, index=feat_cols)
+
+    # 170개 안팎 전 피처×앙상블 순열은 대시보드 첫 실행을 지나치게 늦춘다.
+    # Extra Trees/선형 계수와 최근 표본 단변량 연관으로 후보만 좁힌 뒤, 최종
+    # 앙상블의 log-loss를 실제로 다시 계산하는 2단계 중요도를 쓴다.
+    screening = pd.Series(0.0, index=feat_cols)
+    for name, model in getattr(final_model, "estimators", {}).items():
+        inner = (model.named_steps.get("model")
+                 if hasattr(model, "named_steps") else model)
+        values = None
+        if hasattr(inner, "feature_importances_"):
+            values = np.asarray(inner.feature_importances_, dtype=float)
+        elif hasattr(inner, "coef_"):
+            values = np.abs(np.asarray(inner.coef_, dtype=float)).mean(axis=0)
+        if values is not None and len(values) >= len(feat_cols):
+            values = np.abs(values[:len(feat_cols)])
+            if values.sum() > 0:
+                screening += (float(final_model.blend_weights.get(name, 0.0))
+                              * values / values.sum())
+    numeric_lab = lab[feat_cols].apply(pd.to_numeric, errors="coerce")
+    corr = numeric_lab.corrwith(lab["y"].astype(float)).abs().fillna(0.0)
+    if corr.sum() > 0:
+        screening += 0.20 * corr / corr.sum()
+    candidates = screening.nlargest(min(max_candidates, len(feat_cols))).index.tolist()
+    if not candidates:
+        return None
+
+    y = lab["y"].to_numpy(dtype=int)
+    base = np.clip(final_model.predict_proba(lab[feat_cols])[:, 1], 1e-4, 1 - 1e-4)
+    base_loss = float(log_loss(y, base, labels=[0, 1]))
+    rng = np.random.default_rng(0)
+    result = {}
+    for col in candidates:
+        losses = []
+        for _ in range(2):
+            shuffled = lab[feat_cols].copy()
+            shuffled[col] = rng.permutation(shuffled[col].to_numpy())
+            p = np.clip(final_model.predict_proba(shuffled)[:, 1], 1e-4, 1 - 1e-4)
+            losses.append(float(log_loss(y, p, labels=[0, 1])) - base_loss)
+        result[col] = float(np.mean(losses))
+    imp = pd.Series(result)
     imp.index = [feat_label(c) for c in imp.index]
     return imp.sort_values(ascending=False)
 
@@ -1877,10 +2410,12 @@ def run_pipeline(horizon: int, period: str,
     del refresh_token  # 캐시 키만 바꾸기 위한 사용자 세션별 토큰
     profile = PERIOD_PROFILES.get(period, PERIOD_PROFILES[DEFAULT_PERIOD])
     prices = download_prices(period)
-    missing = [s for s in list(TICKERS) + list(MACRO) if s not in prices]
+    # 선택형 프록시 하나의 일시적 실패가 긴 경고 목록을 만들지 않게 핵심만 경고한다.
+    missing = [s for s in list(TICKERS) + list(CORE_MACRO_SYMBOLS)
+               if s not in prices]
     data, feat_cols = assemble_dataset(prices, horizon, spot_data=merged_spot)
     oos, final_model = walk_forward(
-        data, feat_cols, horizon,
+        data, feat_cols, horizon, step=profile["wf_step"],
         min_train_days=profile["min_train_days"],
         calibration_days=profile["calibration_days"],
         min_calibration_rows=profile["min_calibration_rows"],
@@ -1889,11 +2424,19 @@ def run_pipeline(horizon: int, period: str,
     imp = feature_importance(final_model, data, feat_cols)
     ret_stats = horizon_return_stats(data)
     spot_used = sorted(c for c in feat_cols if c.startswith("spot_"))
+    model_info = {
+        "weights": dict(getattr(final_model, "blend_weights", {}) or {}),
+        "validation_losses": dict(
+            getattr(final_model, "validation_losses", {}) or {}),
+        "calibration_rows": int(
+            getattr(final_model, "calibration_rows", 0) or 0),
+    }
     return {"prices": prices, "data": data, "feat_cols": feat_cols,
             "oos": oos, "scores": scores, "importance": imp,
             "missing": missing, "ret_stats": ret_stats,
             "spot_used": spot_used, "spot_data": merged_spot,
-            "spot_status": spot_status, "profile": profile}
+            "spot_status": spot_status, "profile": profile,
+            "model_info": model_info}
 
 
 # ──────────────────────────────────────────────────────────────
@@ -1977,8 +2520,8 @@ def main():
                 fetch_auto_spot_prices(force=True)
             st.session_state.refresh_token += 1
             st.rerun()
-        st.caption("첫 실행은 현물가 공개 이력 백필과 워크포워드 "
-                   "재학습으로 1~3분 걸릴 수 있습니다.")
+        st.caption("첫 실행은 현물가 공개 이력 백필과 다중 모델 워크포워드 "
+                   "재학습으로 환경에 따라 수 분 걸릴 수 있습니다.")
         st.divider()
         st.caption("공개 배포 안전 기본값: 사용자 입력은 세션 격리 · XSRF/CORS 보호 · "
                    "공개 현물가 캐시만 공유")
@@ -2026,7 +2569,8 @@ def main():
               f"{period.upper()} 학습 · {horizon}일 전망", delta_color="off")
     st.caption(f"기술·거시·상대강도 포함 {len(out['feat_cols'])}개 유효 피처 · "
                f"완전 OOS 예측 {len(oos):,}건 · "
-               f"최근가중 반감기 {out['profile']['recency_half_life']}거래일")
+               f"최근가중 반감기 {out['profile']['recency_half_life']}거래일 · "
+               f"워크포워드 재학습 {out['profile']['wf_step']}거래일 간격")
 
     if out["missing"]:
         names = {**TICKERS, **MACRO}
@@ -2311,16 +2855,29 @@ def main():
 
         spot_cols = [c for c in spot_loaded.columns if c != "날짜"]
         if spot_cols and len(spot_loaded) >= 2:
-            fig = go.Figure()
+            indexed_spot = spot_loaded.set_index("날짜")
+            plot_series = []
             for col in spot_cols:
-                s = pd.to_numeric(spot_loaded.set_index("날짜")[col], errors="coerce").dropna()
-                if len(s) >= 2 and s.iloc[0] != 0:
-                    fig.add_scatter(x=s.index, y=s / s.iloc[0] * 100,
-                                    name=col, mode="lines+markers")
-            fig.update_layout(title="현물가 상대 추이 (첫 수집값=100)", height=330,
-                              margin=dict(t=45, b=10),
-                              legend=dict(orientation="h", y=1.12))
-            st.plotly_chart(fig, use_container_width=True)
+                s = pd.to_numeric(indexed_spot[col], errors="coerce").dropna()
+                if len(s) >= 2:
+                    plot_series.append((col, s))
+            if plot_series:
+                # 요청한 1×N: 제품마다 독립 y축/그래프를 갖고 한 줄에 나란히 표시.
+                product_columns = st.columns(len(plot_series), gap="small")
+                for box, (col, s) in zip(product_columns, plot_series):
+                    label = spot_names.get(col, col.replace("_", " "))
+                    fig = go.Figure()
+                    fig.add_scatter(
+                        x=s.index, y=s.values, name=label, mode="lines+markers",
+                        line=dict(width=2.2, color="#2563eb"),
+                        marker=dict(size=5))
+                    fig.update_layout(
+                        title=dict(text=label, font=dict(size=14)), height=310,
+                        margin=dict(t=48, b=28, l=42, r=12), showlegend=False,
+                        hovermode="x unified", yaxis_title="USD",
+                        xaxis=dict(showgrid=False),
+                        yaxis=dict(tickformat=".3f"))
+                    box.plotly_chart(fig, use_container_width=True)
 
         st.download_button(
             "자동+수동 병합 현물가 CSV 다운로드",
@@ -2374,19 +2931,26 @@ def main():
                     unsafe_allow_html=True)
         st.subheader("모델이 무엇을 학습하는가")
         st.markdown(
-            f"- **기술적 지표 확장:** RSI(7/14/28), MACD·시그널·히스토그램, "
-            f"볼린저 %B·폭, 스토캐스틱, Williams %R, ADX·DI, CCI, MFI, OBV, "
-            f"갭·캔들 변동폭 등 총 {len(out['feat_cols'])}개 유효 피처를 사용합니다.\n"
+            f"- **가격·추세·위험·유동성:** RSI/MACD/ADX뿐 아니라 로그추세 기울기·R², "
+            f"Parkinson/Garman-Klass 변동성, 꼬리수익률, 거래대금·Amihud 유동성, "
+            f"52주 위치와 계절성까지 총 {len(out['feat_cols'])}개 유효 피처를 사용합니다.\n"
+            "- **시장·메모리 레짐:** SOX/SMH/메모리 ETF, AI 반도체 바스켓, VIX, "
+            "S&P500·Nasdaq·KOSPI·Nikkei, 달러·원/엔, 장단기금리, 구리·유가를 "
+            "함께 사용하고 SOX beta·상관·고유 모멘텀을 계산합니다.\n"
+            "- **시간순 성과가중 앙상블:** 상호작용형 boosting, 강규제 boosting, "
+            "Extra Trees, 선형 shrinkage를 최근 홀드아웃 log-loss로 혼합합니다. "
+            "최저 가중치를 남겨 한 레짐에서 한 모델이 독식하는 것을 막습니다.\n"
             "- **기간별 학습 프로파일:** 1년·3년·5년·10년·15년마다 첫 학습일, "
             "확률 보정 구간, 최근가중 반감기를 함께 바꿔 짧은 구간도 실제 학습됩니다.\n"
             "- **DRAM·NAND 자동 학습:** TrendForce 공개 표의 최신 Session Average와 "
             "공개 주간 업데이트의 DRAM DDR4 8Gb·NAND TLC 512Gb 이력을 "
-            "20/60일 변화율로 바꿔 학습합니다.\n"
-            "- **교차시장 시차 누수 차단:** 미국·환율·금리·현물가 피처를 "
-            "1거래일 늦춰 한국 장에서 같은 날짜의 미확정/장 마감 후 "
-            "게시 값을 보지 않게 했습니다.\n"
-            "- **확률 보정:** 매 재학습 시 최근 252거래일을 시간순 홀드아웃으로 두고 "
-            "sigmoid 보정을 한 뒤, Brier skill과 보정오차를 공개합니다.\n"
+            "5/20/60일 변화·가속도·1년 Z점수·DRAM/NAND 스프레드로 학습합니다.\n"
+            "- **교차시장 시차 누수 차단:** 아시아 종목에는 당일 미확정인 미국계 "
+            "피처만 1거래일 지연하고, 현물가는 모든 종목에서 게시 다음 날부터 "
+            "사용합니다. 종목 간 횡단면 순위도 1일 지연합니다.\n"
+            "- **확률 보정:** 매 재학습 시 최근 구간을 시간순 홀드아웃으로 두고 "
+            "자연 상승 빈도를 보존한 sigmoid 보정을 합니다. 클래스 가중치를 "
+            "calibrator에 재사용해 확률을 왜곡하던 문제를 차단했습니다.\n"
             f"- **레짐 적응:** 현재 {period.upper()} 설정에서는 최근 "
             f"{out['profile']['recency_half_life']}거래일을 가중 반감기로 사용하고 클래스 "
             "불균형을 완만히 보정합니다.\n"
@@ -2399,13 +2963,32 @@ def main():
             "- **동종그룹 상대강도:** 광범위 SOX 대비 강도 외에, 그날 다른 메모리 5종목 "
             "평균 대비 초과수익률(peer_rel20/60)을 추가했습니다. '어느 메모리주가 더 "
             "강한가'를 더 직접 겨냥합니다.\n"
-            "- **피처 독식 방지:** 트리 분기마다 후보 피처의 70%만 보게 해(max_features), "
-            "자기상관이 큰 매크로 지표 하나가 모든 분기를 독식해 다른 신호를 가리는 것을 "
-            "막습니다.\n"
-            "- **정직한 참고:** 가격·매크로만으로 20거래일 방향을 맞히는 문제는 원래 "
-            "AUC 0.52~0.56 정도가 현실적인 상한권입니다. '신뢰도 낮음'이 뜨는 건 버그가 "
-            "아니라 이 모델이 스스로의 한계를 숨기지 않는다는 뜻이며, 그 상태에서는 행동 "
-            "점수를 50점 쪽으로 자동 축소합니다.")
+            "- **논문 설계 반영:** Gu·Kelly·Xiu의 비선형 상호작용/모멘텀·유동성·변동성, "
+            "boosting의 규제·피처 서브샘플링, TFT/PatchTST의 다중 시간척도·외생변수 "
+            "선택 아이디어를 일봉 소표본에 맞는 형태로 적용했습니다.\n"
+            "- **정직한 참고:** 금융 방향 예측에서는 작은 표본 외 성과도 쉽게 사라집니다. "
+            "'신뢰도 낮음'이 뜨는 건 버그가 아니라 이 모델이 현재 검증 우위를 숨기지 "
+            "않는다는 뜻이며, 그 상태에서는 행동 점수를 50점 쪽으로 자동 축소합니다.")
+        model_labels = {
+            "boost_interaction": "비선형 Boosting",
+            "boost_smooth": "강규제 Boosting",
+            "extra_trees": "Extra Trees",
+            "linear_shrinkage": "선형 Shrinkage",
+        }
+        weights = out.get("model_info", {}).get("weights", {})
+        losses = out.get("model_info", {}).get("validation_losses", {})
+        if weights:
+            model_rows = pd.DataFrame([
+                {"모델": model_labels.get(name, name), "최종 가중치": weight,
+                 "최근 검증 Log-loss": losses.get(name, np.nan)}
+                for name, weight in weights.items()
+            ]).sort_values("최종 가중치", ascending=False)
+            st.markdown("**현재 최종 모델의 앙상블 구성**")
+            st.dataframe(fmt_table(
+                model_rows, {"최종 가중치": "{:.1%}",
+                             "최근 검증 Log-loss": "{:.4f}"}),
+                use_container_width=True, hide_index=True)
+            st.caption(f"확률 보정 표본: {out['model_info']['calibration_rows']:,}행")
         if out["importance"] is not None:
             imp = out["importance"].head(15).iloc[::-1]
             fig = go.Figure(go.Bar(x=imp.values, y=imp.index, orientation="h"))
