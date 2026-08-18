@@ -1,6 +1,6 @@
 {
   "schema_version": "1.2.0",
-  "generated_at": "2026-08-18T22:32:59.778373+00:00",
+  "generated_at": "2026-08-18T22:42:37.986301+00:00",
   "timezone": "UTC",
   "code_version": "1.2.0",
   "training_periods": [
@@ -35,7 +35,7 @@
   "memory_products": [],
   "memory_spot_final_date": null,
   "memory_spot_rows": 0,
-  "kcs_trade_status": "MISSING_KEY",
+  "kcs_trade_status": "FETCH_FAILED",
   "kcs_hs_codes": [
     "854232"
   ],
@@ -45,63 +45,63 @@
   "files": [
     {
       "path": "data_quality.json",
-      "bytes": 35904,
-      "sha256": "00a11ccd8e7ec1b06b2bf671c858a436d54e75a08907cab0579ca64493139ca5"
+      "bytes": 43647,
+      "sha256": "4bbf0bf2a7b570f401965ce9acdfa323d3ea5f0b1d4bcc9c937283696000ddb1"
     },
     {
       "path": "decision_levels.csv",
-      "bytes": 38409,
-      "sha256": "d31f771477b92bd62b102af4ed7c630e86d412662b27677187036f88782e2a45"
+      "bytes": 38531,
+      "sha256": "e0c1bb0e34d0ef52101b036079896ad65dc76f250d4804ef09f4c41e43c28fdb"
     },
     {
       "path": "feature_status.json",
-      "bytes": 1626326,
-      "sha256": "ed067e43c1b542e7b692647c7349ea25b381571d99c0671a40fb5f43b716cb3d"
+      "bytes": 1788073,
+      "sha256": "169366fb579e96466931270c33131c65bb2a6f7539690a41dcd93f91f9ba6161"
     },
     {
       "path": "model_metrics.json",
-      "bytes": 394523,
-      "sha256": "8ca7d53b102b11478d56cc02a063a2a9fdc4bcd699c5d89a6c47c5a8f89c5e1c"
+      "bytes": 401241,
+      "sha256": "aaa514292d6df79cc2ea93b92bd7058a068cc18fc810c463182ae548ba56016f"
     },
     {
       "path": "portfolio_components.csv",
-      "bytes": 25301,
-      "sha256": "a659928b2e78e5c79ba096aa2997ac595bb8f7ef29afa36bab639c80df6a5fc0"
+      "bytes": 25285,
+      "sha256": "3c296f8977d4dfe669035860d681716f5bf87fccd6ff0554bee74c69dc0a6e0e"
     },
     {
       "path": "portfolio_forecast.csv",
-      "bytes": 5873,
-      "sha256": "188eefbea398fc607eff664d8f03167d0ca0df85b4117168b6d2542ba775f3ad"
+      "bytes": 5892,
+      "sha256": "6e064e34feb7424b2f720ae49371d1265f03153e4e6bddc15defa8e2eea35229"
     },
     {
       "path": "portfolio_history.csv.gz",
-      "bytes": 3635,
-      "sha256": "1d7f65756ccb406dde63b099d96689b2862a1b1d7687f74299a300b5b4e4dc5a"
+      "bytes": 3628,
+      "sha256": "04ecb7afd00da2ce693915cd743589a76792c9816370da7696cdd380f48f97b5"
     },
     {
       "path": "portfolio_paths.csv.gz",
-      "bytes": 40221,
-      "sha256": "a9937142697a1e6b651cc9044a45f64f03a7f2d856be51787313b1cf495f72e1"
+      "bytes": 40192,
+      "sha256": "4be0f6537fd67a3ba188a6d4bd910f0eecdefcebd52faeaa0c6f1fd9be55b59d"
     },
     {
       "path": "run_summary.json",
-      "bytes": 12912,
-      "sha256": "9c84c9cacd3bea0e08ae689c660e7f4d54bfaf9c188e19e3bd1f8812bf02d192"
+      "bytes": 16768,
+      "sha256": "e1bdc4a98951f3f718c08c57d8542eceb76976850ccac94c1aa8b649e2fd79d4"
     },
     {
       "path": "stock_forecasts.csv",
-      "bytes": 44306,
-      "sha256": "0e66a460fea7dfac977b2e29574de030b5546820de25110fc5c06f6cd913b569"
+      "bytes": 44179,
+      "sha256": "51d2a0d3e2c06c8b13310dc51e632068044e190cc442940dff7bb31f288a8e7e"
     },
     {
       "path": "stock_history.csv.gz",
-      "bytes": 10860,
-      "sha256": "fa60fc1a2588d3ab0cbacc1a6a0d76107c434f002c813163ade8c1157b6cd10d"
+      "bytes": 10893,
+      "sha256": "cb79349ae1076c7070777170b7437c8dcb697b8de84228e0d73d11852e495f73"
     },
     {
       "path": "stock_paths.csv.gz",
-      "bytes": 155972,
-      "sha256": "fbd420ebfb478e554217a6dc09fa25d68f0781c7599fca233748e2844167e18c"
+      "bytes": 156010,
+      "sha256": "58b07c72ec737da6f90760b1296118606992fb16b34e1ec2b47e6dffb762c200"
     }
   ],
   "validation": {
@@ -118,7 +118,24 @@
   "warnings": [
     "assets.csv의 account 열은 보존 자산을 나누는 필터로 사용하지 않습니다. 모든 보유자산을 하나의 '전체' 포트폴리오로 통합 계산합니다.",
     "사용자가 명시적으로 허용한 대체지표 모드입니다. 실제 현물가격이 아닙니다.",
-    "KCS_SERVICE_KEY와 관세청 정상 캐시가 없어 반도체 수출입 단가 특징을 자동 제외했습니다.",
+    "관세청 HS 854232 2009-08~2010-07 요청 실패: 관세청 품목별 수출입실적 HTTP 오류 403: https://apis.data.go.kr/1220000/Itemtrade/getItemtradeList. API 권한·요청량·주소를 확인하세요.",
+    "관세청 HS 854232 2010-08~2011-07 요청 실패: 관세청 품목별 수출입실적 HTTP 오류 403: https://apis.data.go.kr/1220000/Itemtrade/getItemtradeList. API 권한·요청량·주소를 확인하세요.",
+    "관세청 HS 854232 2011-08~2012-07 요청 실패: 관세청 품목별 수출입실적 HTTP 오류 403: https://apis.data.go.kr/1220000/Itemtrade/getItemtradeList. API 권한·요청량·주소를 확인하세요.",
+    "관세청 HS 854232 2012-08~2013-07 요청 실패: 관세청 품목별 수출입실적 HTTP 오류 403: https://apis.data.go.kr/1220000/Itemtrade/getItemtradeList. API 권한·요청량·주소를 확인하세요.",
+    "관세청 HS 854232 2013-08~2014-07 요청 실패: 관세청 품목별 수출입실적 HTTP 오류 403: https://apis.data.go.kr/1220000/Itemtrade/getItemtradeList. API 권한·요청량·주소를 확인하세요.",
+    "관세청 HS 854232 2014-08~2015-07 요청 실패: 관세청 품목별 수출입실적 HTTP 오류 403: https://apis.data.go.kr/1220000/Itemtrade/getItemtradeList. API 권한·요청량·주소를 확인하세요.",
+    "관세청 HS 854232 2015-08~2016-07 요청 실패: 관세청 품목별 수출입실적 HTTP 오류 403: https://apis.data.go.kr/1220000/Itemtrade/getItemtradeList. API 권한·요청량·주소를 확인하세요.",
+    "관세청 HS 854232 2016-08~2017-07 요청 실패: 관세청 품목별 수출입실적 HTTP 오류 403: https://apis.data.go.kr/1220000/Itemtrade/getItemtradeList. API 권한·요청량·주소를 확인하세요.",
+    "관세청 HS 854232 2017-08~2018-07 요청 실패: 관세청 품목별 수출입실적 HTTP 오류 403: https://apis.data.go.kr/1220000/Itemtrade/getItemtradeList. API 권한·요청량·주소를 확인하세요.",
+    "관세청 HS 854232 2018-08~2019-07 요청 실패: 관세청 품목별 수출입실적 HTTP 오류 403: https://apis.data.go.kr/1220000/Itemtrade/getItemtradeList. API 권한·요청량·주소를 확인하세요.",
+    "관세청 HS 854232 2019-08~2020-07 요청 실패: 관세청 품목별 수출입실적 HTTP 오류 403: https://apis.data.go.kr/1220000/Itemtrade/getItemtradeList. API 권한·요청량·주소를 확인하세요.",
+    "관세청 HS 854232 2020-08~2021-07 요청 실패: 관세청 품목별 수출입실적 HTTP 오류 403: https://apis.data.go.kr/1220000/Itemtrade/getItemtradeList. API 권한·요청량·주소를 확인하세요.",
+    "관세청 HS 854232 2021-08~2022-07 요청 실패: 관세청 품목별 수출입실적 HTTP 오류 403: https://apis.data.go.kr/1220000/Itemtrade/getItemtradeList. API 권한·요청량·주소를 확인하세요.",
+    "관세청 HS 854232 2022-08~2023-07 요청 실패: 관세청 품목별 수출입실적 HTTP 오류 403: https://apis.data.go.kr/1220000/Itemtrade/getItemtradeList. API 권한·요청량·주소를 확인하세요.",
+    "관세청 HS 854232 2023-08~2024-07 요청 실패: 관세청 품목별 수출입실적 HTTP 오류 403: https://apis.data.go.kr/1220000/Itemtrade/getItemtradeList. API 권한·요청량·주소를 확인하세요.",
+    "관세청 HS 854232 2024-08~2025-07 요청 실패: 관세청 품목별 수출입실적 HTTP 오류 403: https://apis.data.go.kr/1220000/Itemtrade/getItemtradeList. API 권한·요청량·주소를 확인하세요.",
+    "관세청 HS 854232 2025-08~2026-07 요청 실패: 관세청 품목별 수출입실적 HTTP 오류 403: https://apis.data.go.kr/1220000/Itemtrade/getItemtradeList. API 권한·요청량·주소를 확인하세요.",
+    "관세청 HS 854232 2026-08~2026-08 요청 실패: 관세청 품목별 수출입실적 HTTP 오류 403: https://apis.data.go.kr/1220000/Itemtrade/getItemtradeList. API 권한·요청량·주소를 확인하세요.",
     "yfinance는 Yahoo 비공식 연구용 래퍼이며 데이터 라이선스를 사용자가 확인해야 합니다.",
     "RAM/1년/10일: 정상 모델 대신 단기이력 block-bootstrap 기준선 사용(신뢰도 최대 25점).",
     "RAM/1년/30일: 정상 모델 대신 단기이력 block-bootstrap 기준선 사용(신뢰도 최대 25점).",
