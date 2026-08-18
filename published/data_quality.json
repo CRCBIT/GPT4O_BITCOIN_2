@@ -1,0 +1,1099 @@
+{
+  "schema_version": "1.2.0",
+  "memory_spot": {
+    "status": "PROXY_OPT_IN",
+    "memory_spot_used": false,
+    "products": [],
+    "final_date": null,
+    "rows": 0,
+    "source_path": null,
+    "test_data": false,
+    "sources": [],
+    "currencies": [],
+    "units": [],
+    "collection_events": []
+  },
+  "kcs_semiconductor_trade": {
+    "status": "MISSING_KEY",
+    "hs_codes": [
+      "854232"
+    ],
+    "rows": 0,
+    "feature_rows": 0,
+    "latest_period": null,
+    "latest_available_date": null,
+    "source_path": null,
+    "unit_value_formula": "수출 FOB 신고금액(USD) / 수출 순중량(kg), 수입 CIF 과세가격(USD) / 수입 순중량(kg)",
+    "release_lag": "대상월 다음 달 15일 이후 첫 영업일부터 사용",
+    "release_date_check_passed": true,
+    "hs_scope_note": "기본 HS 854232는 메모리 집적회로 집계이며 DRAM/NAND 개별 제품 현물가격이 아닙니다.",
+    "revision_warning": "관세청 과거치는 정정·취하로 수정될 수 있으며 API는 현재 빈티지를 반환합니다.",
+    "warnings": [
+      "KCS_SERVICE_KEY와 관세청 정상 캐시가 없어 반도체 수출입 단가 특징을 자동 제외했습니다."
+    ]
+  },
+  "market_sources": {
+    "000660.KS": {
+      "source": "yfinance_download_research_only",
+      "rows": 4183,
+      "final_date": "2026-08-18",
+      "fetched_at": "2026-08-18T22:30:03.751292+00:00",
+      "currency": "KRW"
+    },
+    "005930.KS": {
+      "source": "yfinance_download_research_only",
+      "rows": 4183,
+      "final_date": "2026-08-18",
+      "fetched_at": "2026-08-18T22:30:04.525924+00:00",
+      "currency": "KRW"
+    },
+    "SNDK": {
+      "source": "yfinance_download_research_only",
+      "rows": 379,
+      "final_date": "2026-08-18",
+      "fetched_at": "2026-08-18T22:30:04.914706+00:00",
+      "currency": "USD"
+    },
+    "RAM": {
+      "source": "yfinance_download_research_only",
+      "rows": 39,
+      "final_date": "2026-08-18",
+      "fetched_at": "2026-08-18T22:30:05.302456+00:00",
+      "currency": "USD"
+    }
+  },
+  "benchmarks_used": {
+    "sox": {
+      "ticker": "^SOX",
+      "source": "yfinance_download_research_only",
+      "fetched_at": "2026-08-18T22:30:05.999667+00:00",
+      "final_date": "2026-08-18"
+    },
+    "sp500": {
+      "ticker": "^GSPC",
+      "source": "yfinance_download_research_only",
+      "fetched_at": "2026-08-18T22:30:06.628332+00:00",
+      "final_date": "2026-08-18"
+    },
+    "nasdaq": {
+      "ticker": "^IXIC",
+      "source": "yfinance_download_research_only",
+      "fetched_at": "2026-08-18T22:30:07.403986+00:00",
+      "final_date": "2026-08-18"
+    },
+    "vix": {
+      "ticker": "^VIX",
+      "source": "yfinance_download_research_only",
+      "fetched_at": "2026-08-18T22:30:08.035149+00:00",
+      "final_date": "2026-08-18"
+    },
+    "dollar": {
+      "ticker": "DX-Y.NYB",
+      "source": "yfinance_download_research_only",
+      "fetched_at": "2026-08-18T22:30:08.656087+00:00",
+      "final_date": "2026-08-18"
+    },
+    "us10y": {
+      "ticker": "^TNX",
+      "source": "yfinance_download_research_only",
+      "fetched_at": "2026-08-18T22:30:09.377275+00:00",
+      "final_date": "2026-08-18"
+    },
+    "soxx": {
+      "ticker": "SOXX",
+      "source": "yfinance_download_research_only",
+      "fetched_at": "2026-08-18T22:30:10.260056+00:00",
+      "final_date": "2026-08-18"
+    },
+    "smh": {
+      "ticker": "SMH",
+      "source": "yfinance_download_research_only",
+      "fetched_at": "2026-08-18T22:30:11.108361+00:00",
+      "final_date": "2026-08-18"
+    }
+  },
+  "fx_series": {
+    "USD": {
+      "ticker": "KRW=X",
+      "source": "yfinance_download_research_only",
+      "fetched_at": "2026-08-18T22:30:11.779113+00:00",
+      "unit": "KRW per USD"
+    }
+  },
+  "leakage_diagnostics": [
+    {
+      "ticker": "000660.KS",
+      "period_years": 1,
+      "horizon_days": 10,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "target_after_feature_time": true,
+        "target_horizon_positive": true,
+        "tail_target_is_missing": true,
+        "no_backward_fill_marker": true
+      },
+      "purge_rows": 10,
+      "embargo_rows": 2,
+      "note": "소스 자체의 사후 수정(vintage) 위험은 data_quality의 별도 경고를 확인하세요."
+    },
+    {
+      "ticker": "000660.KS",
+      "period_years": 1,
+      "horizon_days": 30,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "target_after_feature_time": true,
+        "target_horizon_positive": true,
+        "tail_target_is_missing": true,
+        "no_backward_fill_marker": true
+      },
+      "purge_rows": 30,
+      "embargo_rows": 6,
+      "note": "소스 자체의 사후 수정(vintage) 위험은 data_quality의 별도 경고를 확인하세요."
+    },
+    {
+      "ticker": "000660.KS",
+      "period_years": 1,
+      "horizon_days": 60,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "target_after_feature_time": true,
+        "target_horizon_positive": true,
+        "tail_target_is_missing": true,
+        "no_backward_fill_marker": true
+      },
+      "purge_rows": 60,
+      "embargo_rows": 12,
+      "note": "소스 자체의 사후 수정(vintage) 위험은 data_quality의 별도 경고를 확인하세요."
+    },
+    {
+      "ticker": "000660.KS",
+      "period_years": 3,
+      "horizon_days": 10,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "target_after_feature_time": true,
+        "target_horizon_positive": true,
+        "tail_target_is_missing": true,
+        "no_backward_fill_marker": true
+      },
+      "purge_rows": 10,
+      "embargo_rows": 2,
+      "note": "소스 자체의 사후 수정(vintage) 위험은 data_quality의 별도 경고를 확인하세요."
+    },
+    {
+      "ticker": "000660.KS",
+      "period_years": 3,
+      "horizon_days": 30,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "target_after_feature_time": true,
+        "target_horizon_positive": true,
+        "tail_target_is_missing": true,
+        "no_backward_fill_marker": true
+      },
+      "purge_rows": 30,
+      "embargo_rows": 6,
+      "note": "소스 자체의 사후 수정(vintage) 위험은 data_quality의 별도 경고를 확인하세요."
+    },
+    {
+      "ticker": "000660.KS",
+      "period_years": 3,
+      "horizon_days": 60,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "target_after_feature_time": true,
+        "target_horizon_positive": true,
+        "tail_target_is_missing": true,
+        "no_backward_fill_marker": true
+      },
+      "purge_rows": 60,
+      "embargo_rows": 12,
+      "note": "소스 자체의 사후 수정(vintage) 위험은 data_quality의 별도 경고를 확인하세요."
+    },
+    {
+      "ticker": "000660.KS",
+      "period_years": 5,
+      "horizon_days": 10,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "target_after_feature_time": true,
+        "target_horizon_positive": true,
+        "tail_target_is_missing": true,
+        "no_backward_fill_marker": true
+      },
+      "purge_rows": 10,
+      "embargo_rows": 2,
+      "note": "소스 자체의 사후 수정(vintage) 위험은 data_quality의 별도 경고를 확인하세요."
+    },
+    {
+      "ticker": "000660.KS",
+      "period_years": 5,
+      "horizon_days": 30,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "target_after_feature_time": true,
+        "target_horizon_positive": true,
+        "tail_target_is_missing": true,
+        "no_backward_fill_marker": true
+      },
+      "purge_rows": 30,
+      "embargo_rows": 6,
+      "note": "소스 자체의 사후 수정(vintage) 위험은 data_quality의 별도 경고를 확인하세요."
+    },
+    {
+      "ticker": "000660.KS",
+      "period_years": 5,
+      "horizon_days": 60,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "target_after_feature_time": true,
+        "target_horizon_positive": true,
+        "tail_target_is_missing": true,
+        "no_backward_fill_marker": true
+      },
+      "purge_rows": 60,
+      "embargo_rows": 12,
+      "note": "소스 자체의 사후 수정(vintage) 위험은 data_quality의 별도 경고를 확인하세요."
+    },
+    {
+      "ticker": "000660.KS",
+      "period_years": 10,
+      "horizon_days": 10,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "target_after_feature_time": true,
+        "target_horizon_positive": true,
+        "tail_target_is_missing": true,
+        "no_backward_fill_marker": true
+      },
+      "purge_rows": 10,
+      "embargo_rows": 2,
+      "note": "소스 자체의 사후 수정(vintage) 위험은 data_quality의 별도 경고를 확인하세요."
+    },
+    {
+      "ticker": "000660.KS",
+      "period_years": 10,
+      "horizon_days": 30,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "target_after_feature_time": true,
+        "target_horizon_positive": true,
+        "tail_target_is_missing": true,
+        "no_backward_fill_marker": true
+      },
+      "purge_rows": 30,
+      "embargo_rows": 6,
+      "note": "소스 자체의 사후 수정(vintage) 위험은 data_quality의 별도 경고를 확인하세요."
+    },
+    {
+      "ticker": "000660.KS",
+      "period_years": 10,
+      "horizon_days": 60,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "target_after_feature_time": true,
+        "target_horizon_positive": true,
+        "tail_target_is_missing": true,
+        "no_backward_fill_marker": true
+      },
+      "purge_rows": 60,
+      "embargo_rows": 12,
+      "note": "소스 자체의 사후 수정(vintage) 위험은 data_quality의 별도 경고를 확인하세요."
+    },
+    {
+      "ticker": "000660.KS",
+      "period_years": 15,
+      "horizon_days": 10,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "target_after_feature_time": true,
+        "target_horizon_positive": true,
+        "tail_target_is_missing": true,
+        "no_backward_fill_marker": true
+      },
+      "purge_rows": 10,
+      "embargo_rows": 2,
+      "note": "소스 자체의 사후 수정(vintage) 위험은 data_quality의 별도 경고를 확인하세요."
+    },
+    {
+      "ticker": "000660.KS",
+      "period_years": 15,
+      "horizon_days": 30,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "target_after_feature_time": true,
+        "target_horizon_positive": true,
+        "tail_target_is_missing": true,
+        "no_backward_fill_marker": true
+      },
+      "purge_rows": 30,
+      "embargo_rows": 6,
+      "note": "소스 자체의 사후 수정(vintage) 위험은 data_quality의 별도 경고를 확인하세요."
+    },
+    {
+      "ticker": "000660.KS",
+      "period_years": 15,
+      "horizon_days": 60,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "target_after_feature_time": true,
+        "target_horizon_positive": true,
+        "tail_target_is_missing": true,
+        "no_backward_fill_marker": true
+      },
+      "purge_rows": 60,
+      "embargo_rows": 12,
+      "note": "소스 자체의 사후 수정(vintage) 위험은 data_quality의 별도 경고를 확인하세요."
+    },
+    {
+      "ticker": "005930.KS",
+      "period_years": 1,
+      "horizon_days": 10,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "target_after_feature_time": true,
+        "target_horizon_positive": true,
+        "tail_target_is_missing": true,
+        "no_backward_fill_marker": true
+      },
+      "purge_rows": 10,
+      "embargo_rows": 2,
+      "note": "소스 자체의 사후 수정(vintage) 위험은 data_quality의 별도 경고를 확인하세요."
+    },
+    {
+      "ticker": "005930.KS",
+      "period_years": 1,
+      "horizon_days": 30,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "target_after_feature_time": true,
+        "target_horizon_positive": true,
+        "tail_target_is_missing": true,
+        "no_backward_fill_marker": true
+      },
+      "purge_rows": 30,
+      "embargo_rows": 6,
+      "note": "소스 자체의 사후 수정(vintage) 위험은 data_quality의 별도 경고를 확인하세요."
+    },
+    {
+      "ticker": "005930.KS",
+      "period_years": 1,
+      "horizon_days": 60,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "target_after_feature_time": true,
+        "target_horizon_positive": true,
+        "tail_target_is_missing": true,
+        "no_backward_fill_marker": true
+      },
+      "purge_rows": 60,
+      "embargo_rows": 12,
+      "note": "소스 자체의 사후 수정(vintage) 위험은 data_quality의 별도 경고를 확인하세요."
+    },
+    {
+      "ticker": "005930.KS",
+      "period_years": 3,
+      "horizon_days": 10,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "target_after_feature_time": true,
+        "target_horizon_positive": true,
+        "tail_target_is_missing": true,
+        "no_backward_fill_marker": true
+      },
+      "purge_rows": 10,
+      "embargo_rows": 2,
+      "note": "소스 자체의 사후 수정(vintage) 위험은 data_quality의 별도 경고를 확인하세요."
+    },
+    {
+      "ticker": "005930.KS",
+      "period_years": 3,
+      "horizon_days": 30,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "target_after_feature_time": true,
+        "target_horizon_positive": true,
+        "tail_target_is_missing": true,
+        "no_backward_fill_marker": true
+      },
+      "purge_rows": 30,
+      "embargo_rows": 6,
+      "note": "소스 자체의 사후 수정(vintage) 위험은 data_quality의 별도 경고를 확인하세요."
+    },
+    {
+      "ticker": "005930.KS",
+      "period_years": 3,
+      "horizon_days": 60,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "target_after_feature_time": true,
+        "target_horizon_positive": true,
+        "tail_target_is_missing": true,
+        "no_backward_fill_marker": true
+      },
+      "purge_rows": 60,
+      "embargo_rows": 12,
+      "note": "소스 자체의 사후 수정(vintage) 위험은 data_quality의 별도 경고를 확인하세요."
+    },
+    {
+      "ticker": "005930.KS",
+      "period_years": 5,
+      "horizon_days": 10,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "target_after_feature_time": true,
+        "target_horizon_positive": true,
+        "tail_target_is_missing": true,
+        "no_backward_fill_marker": true
+      },
+      "purge_rows": 10,
+      "embargo_rows": 2,
+      "note": "소스 자체의 사후 수정(vintage) 위험은 data_quality의 별도 경고를 확인하세요."
+    },
+    {
+      "ticker": "005930.KS",
+      "period_years": 5,
+      "horizon_days": 30,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "target_after_feature_time": true,
+        "target_horizon_positive": true,
+        "tail_target_is_missing": true,
+        "no_backward_fill_marker": true
+      },
+      "purge_rows": 30,
+      "embargo_rows": 6,
+      "note": "소스 자체의 사후 수정(vintage) 위험은 data_quality의 별도 경고를 확인하세요."
+    },
+    {
+      "ticker": "005930.KS",
+      "period_years": 5,
+      "horizon_days": 60,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "target_after_feature_time": true,
+        "target_horizon_positive": true,
+        "tail_target_is_missing": true,
+        "no_backward_fill_marker": true
+      },
+      "purge_rows": 60,
+      "embargo_rows": 12,
+      "note": "소스 자체의 사후 수정(vintage) 위험은 data_quality의 별도 경고를 확인하세요."
+    },
+    {
+      "ticker": "005930.KS",
+      "period_years": 10,
+      "horizon_days": 10,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "target_after_feature_time": true,
+        "target_horizon_positive": true,
+        "tail_target_is_missing": true,
+        "no_backward_fill_marker": true
+      },
+      "purge_rows": 10,
+      "embargo_rows": 2,
+      "note": "소스 자체의 사후 수정(vintage) 위험은 data_quality의 별도 경고를 확인하세요."
+    },
+    {
+      "ticker": "005930.KS",
+      "period_years": 10,
+      "horizon_days": 30,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "target_after_feature_time": true,
+        "target_horizon_positive": true,
+        "tail_target_is_missing": true,
+        "no_backward_fill_marker": true
+      },
+      "purge_rows": 30,
+      "embargo_rows": 6,
+      "note": "소스 자체의 사후 수정(vintage) 위험은 data_quality의 별도 경고를 확인하세요."
+    },
+    {
+      "ticker": "005930.KS",
+      "period_years": 10,
+      "horizon_days": 60,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "target_after_feature_time": true,
+        "target_horizon_positive": true,
+        "tail_target_is_missing": true,
+        "no_backward_fill_marker": true
+      },
+      "purge_rows": 60,
+      "embargo_rows": 12,
+      "note": "소스 자체의 사후 수정(vintage) 위험은 data_quality의 별도 경고를 확인하세요."
+    },
+    {
+      "ticker": "005930.KS",
+      "period_years": 15,
+      "horizon_days": 10,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "target_after_feature_time": true,
+        "target_horizon_positive": true,
+        "tail_target_is_missing": true,
+        "no_backward_fill_marker": true
+      },
+      "purge_rows": 10,
+      "embargo_rows": 2,
+      "note": "소스 자체의 사후 수정(vintage) 위험은 data_quality의 별도 경고를 확인하세요."
+    },
+    {
+      "ticker": "005930.KS",
+      "period_years": 15,
+      "horizon_days": 30,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "target_after_feature_time": true,
+        "target_horizon_positive": true,
+        "tail_target_is_missing": true,
+        "no_backward_fill_marker": true
+      },
+      "purge_rows": 30,
+      "embargo_rows": 6,
+      "note": "소스 자체의 사후 수정(vintage) 위험은 data_quality의 별도 경고를 확인하세요."
+    },
+    {
+      "ticker": "005930.KS",
+      "period_years": 15,
+      "horizon_days": 60,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "target_after_feature_time": true,
+        "target_horizon_positive": true,
+        "tail_target_is_missing": true,
+        "no_backward_fill_marker": true
+      },
+      "purge_rows": 60,
+      "embargo_rows": 12,
+      "note": "소스 자체의 사후 수정(vintage) 위험은 data_quality의 별도 경고를 확인하세요."
+    },
+    {
+      "ticker": "RAM",
+      "period_years": 1,
+      "horizon_days": 10,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "past_returns_only": true,
+        "no_future_fill": true
+      },
+      "purge_rows": 0,
+      "embargo_rows": 0,
+      "note": "학습/검증 모델이 아니라 과거 관측치만 재표본한 저신뢰 기준선입니다."
+    },
+    {
+      "ticker": "RAM",
+      "period_years": 1,
+      "horizon_days": 30,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "past_returns_only": true,
+        "no_future_fill": true
+      },
+      "purge_rows": 0,
+      "embargo_rows": 0,
+      "note": "학습/검증 모델이 아니라 과거 관측치만 재표본한 저신뢰 기준선입니다."
+    },
+    {
+      "ticker": "RAM",
+      "period_years": 1,
+      "horizon_days": 60,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "past_returns_only": true,
+        "no_future_fill": true
+      },
+      "purge_rows": 0,
+      "embargo_rows": 0,
+      "note": "학습/검증 모델이 아니라 과거 관측치만 재표본한 저신뢰 기준선입니다."
+    },
+    {
+      "ticker": "RAM",
+      "period_years": 3,
+      "horizon_days": 10,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "past_returns_only": true,
+        "no_future_fill": true
+      },
+      "purge_rows": 0,
+      "embargo_rows": 0,
+      "note": "학습/검증 모델이 아니라 과거 관측치만 재표본한 저신뢰 기준선입니다."
+    },
+    {
+      "ticker": "RAM",
+      "period_years": 3,
+      "horizon_days": 30,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "past_returns_only": true,
+        "no_future_fill": true
+      },
+      "purge_rows": 0,
+      "embargo_rows": 0,
+      "note": "학습/검증 모델이 아니라 과거 관측치만 재표본한 저신뢰 기준선입니다."
+    },
+    {
+      "ticker": "RAM",
+      "period_years": 3,
+      "horizon_days": 60,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "past_returns_only": true,
+        "no_future_fill": true
+      },
+      "purge_rows": 0,
+      "embargo_rows": 0,
+      "note": "학습/검증 모델이 아니라 과거 관측치만 재표본한 저신뢰 기준선입니다."
+    },
+    {
+      "ticker": "RAM",
+      "period_years": 5,
+      "horizon_days": 10,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "past_returns_only": true,
+        "no_future_fill": true
+      },
+      "purge_rows": 0,
+      "embargo_rows": 0,
+      "note": "학습/검증 모델이 아니라 과거 관측치만 재표본한 저신뢰 기준선입니다."
+    },
+    {
+      "ticker": "RAM",
+      "period_years": 5,
+      "horizon_days": 30,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "past_returns_only": true,
+        "no_future_fill": true
+      },
+      "purge_rows": 0,
+      "embargo_rows": 0,
+      "note": "학습/검증 모델이 아니라 과거 관측치만 재표본한 저신뢰 기준선입니다."
+    },
+    {
+      "ticker": "RAM",
+      "period_years": 5,
+      "horizon_days": 60,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "past_returns_only": true,
+        "no_future_fill": true
+      },
+      "purge_rows": 0,
+      "embargo_rows": 0,
+      "note": "학습/검증 모델이 아니라 과거 관측치만 재표본한 저신뢰 기준선입니다."
+    },
+    {
+      "ticker": "RAM",
+      "period_years": 10,
+      "horizon_days": 10,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "past_returns_only": true,
+        "no_future_fill": true
+      },
+      "purge_rows": 0,
+      "embargo_rows": 0,
+      "note": "학습/검증 모델이 아니라 과거 관측치만 재표본한 저신뢰 기준선입니다."
+    },
+    {
+      "ticker": "RAM",
+      "period_years": 10,
+      "horizon_days": 30,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "past_returns_only": true,
+        "no_future_fill": true
+      },
+      "purge_rows": 0,
+      "embargo_rows": 0,
+      "note": "학습/검증 모델이 아니라 과거 관측치만 재표본한 저신뢰 기준선입니다."
+    },
+    {
+      "ticker": "RAM",
+      "period_years": 10,
+      "horizon_days": 60,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "past_returns_only": true,
+        "no_future_fill": true
+      },
+      "purge_rows": 0,
+      "embargo_rows": 0,
+      "note": "학습/검증 모델이 아니라 과거 관측치만 재표본한 저신뢰 기준선입니다."
+    },
+    {
+      "ticker": "RAM",
+      "period_years": 15,
+      "horizon_days": 10,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "past_returns_only": true,
+        "no_future_fill": true
+      },
+      "purge_rows": 0,
+      "embargo_rows": 0,
+      "note": "학습/검증 모델이 아니라 과거 관측치만 재표본한 저신뢰 기준선입니다."
+    },
+    {
+      "ticker": "RAM",
+      "period_years": 15,
+      "horizon_days": 30,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "past_returns_only": true,
+        "no_future_fill": true
+      },
+      "purge_rows": 0,
+      "embargo_rows": 0,
+      "note": "학습/검증 모델이 아니라 과거 관측치만 재표본한 저신뢰 기준선입니다."
+    },
+    {
+      "ticker": "RAM",
+      "period_years": 15,
+      "horizon_days": 60,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "past_returns_only": true,
+        "no_future_fill": true
+      },
+      "purge_rows": 0,
+      "embargo_rows": 0,
+      "note": "학습/검증 모델이 아니라 과거 관측치만 재표본한 저신뢰 기준선입니다."
+    },
+    {
+      "ticker": "SNDK",
+      "period_years": 1,
+      "horizon_days": 10,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "target_after_feature_time": true,
+        "target_horizon_positive": true,
+        "tail_target_is_missing": true,
+        "no_backward_fill_marker": true
+      },
+      "purge_rows": 10,
+      "embargo_rows": 2,
+      "note": "소스 자체의 사후 수정(vintage) 위험은 data_quality의 별도 경고를 확인하세요."
+    },
+    {
+      "ticker": "SNDK",
+      "period_years": 1,
+      "horizon_days": 30,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "target_after_feature_time": true,
+        "target_horizon_positive": true,
+        "tail_target_is_missing": true,
+        "no_backward_fill_marker": true
+      },
+      "purge_rows": 30,
+      "embargo_rows": 6,
+      "note": "소스 자체의 사후 수정(vintage) 위험은 data_quality의 별도 경고를 확인하세요."
+    },
+    {
+      "ticker": "SNDK",
+      "period_years": 1,
+      "horizon_days": 60,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "target_after_feature_time": true,
+        "target_horizon_positive": true,
+        "tail_target_is_missing": true,
+        "no_backward_fill_marker": true
+      },
+      "purge_rows": 60,
+      "embargo_rows": 12,
+      "note": "소스 자체의 사후 수정(vintage) 위험은 data_quality의 별도 경고를 확인하세요."
+    },
+    {
+      "ticker": "SNDK",
+      "period_years": 3,
+      "horizon_days": 10,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "target_after_feature_time": true,
+        "target_horizon_positive": true,
+        "tail_target_is_missing": true,
+        "no_backward_fill_marker": true
+      },
+      "purge_rows": 10,
+      "embargo_rows": 2,
+      "note": "소스 자체의 사후 수정(vintage) 위험은 data_quality의 별도 경고를 확인하세요."
+    },
+    {
+      "ticker": "SNDK",
+      "period_years": 3,
+      "horizon_days": 30,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "target_after_feature_time": true,
+        "target_horizon_positive": true,
+        "tail_target_is_missing": true,
+        "no_backward_fill_marker": true
+      },
+      "purge_rows": 30,
+      "embargo_rows": 6,
+      "note": "소스 자체의 사후 수정(vintage) 위험은 data_quality의 별도 경고를 확인하세요."
+    },
+    {
+      "ticker": "SNDK",
+      "period_years": 3,
+      "horizon_days": 60,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "target_after_feature_time": true,
+        "target_horizon_positive": true,
+        "tail_target_is_missing": true,
+        "no_backward_fill_marker": true
+      },
+      "purge_rows": 60,
+      "embargo_rows": 12,
+      "note": "소스 자체의 사후 수정(vintage) 위험은 data_quality의 별도 경고를 확인하세요."
+    },
+    {
+      "ticker": "SNDK",
+      "period_years": 5,
+      "horizon_days": 10,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "target_after_feature_time": true,
+        "target_horizon_positive": true,
+        "tail_target_is_missing": true,
+        "no_backward_fill_marker": true
+      },
+      "purge_rows": 10,
+      "embargo_rows": 2,
+      "note": "소스 자체의 사후 수정(vintage) 위험은 data_quality의 별도 경고를 확인하세요."
+    },
+    {
+      "ticker": "SNDK",
+      "period_years": 5,
+      "horizon_days": 30,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "target_after_feature_time": true,
+        "target_horizon_positive": true,
+        "tail_target_is_missing": true,
+        "no_backward_fill_marker": true
+      },
+      "purge_rows": 30,
+      "embargo_rows": 6,
+      "note": "소스 자체의 사후 수정(vintage) 위험은 data_quality의 별도 경고를 확인하세요."
+    },
+    {
+      "ticker": "SNDK",
+      "period_years": 5,
+      "horizon_days": 60,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "target_after_feature_time": true,
+        "target_horizon_positive": true,
+        "tail_target_is_missing": true,
+        "no_backward_fill_marker": true
+      },
+      "purge_rows": 60,
+      "embargo_rows": 12,
+      "note": "소스 자체의 사후 수정(vintage) 위험은 data_quality의 별도 경고를 확인하세요."
+    },
+    {
+      "ticker": "SNDK",
+      "period_years": 10,
+      "horizon_days": 10,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "target_after_feature_time": true,
+        "target_horizon_positive": true,
+        "tail_target_is_missing": true,
+        "no_backward_fill_marker": true
+      },
+      "purge_rows": 10,
+      "embargo_rows": 2,
+      "note": "소스 자체의 사후 수정(vintage) 위험은 data_quality의 별도 경고를 확인하세요."
+    },
+    {
+      "ticker": "SNDK",
+      "period_years": 10,
+      "horizon_days": 30,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "target_after_feature_time": true,
+        "target_horizon_positive": true,
+        "tail_target_is_missing": true,
+        "no_backward_fill_marker": true
+      },
+      "purge_rows": 30,
+      "embargo_rows": 6,
+      "note": "소스 자체의 사후 수정(vintage) 위험은 data_quality의 별도 경고를 확인하세요."
+    },
+    {
+      "ticker": "SNDK",
+      "period_years": 10,
+      "horizon_days": 60,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "target_after_feature_time": true,
+        "target_horizon_positive": true,
+        "tail_target_is_missing": true,
+        "no_backward_fill_marker": true
+      },
+      "purge_rows": 60,
+      "embargo_rows": 12,
+      "note": "소스 자체의 사후 수정(vintage) 위험은 data_quality의 별도 경고를 확인하세요."
+    },
+    {
+      "ticker": "SNDK",
+      "period_years": 15,
+      "horizon_days": 10,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "target_after_feature_time": true,
+        "target_horizon_positive": true,
+        "tail_target_is_missing": true,
+        "no_backward_fill_marker": true
+      },
+      "purge_rows": 10,
+      "embargo_rows": 2,
+      "note": "소스 자체의 사후 수정(vintage) 위험은 data_quality의 별도 경고를 확인하세요."
+    },
+    {
+      "ticker": "SNDK",
+      "period_years": 15,
+      "horizon_days": 30,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "target_after_feature_time": true,
+        "target_horizon_positive": true,
+        "tail_target_is_missing": true,
+        "no_backward_fill_marker": true
+      },
+      "purge_rows": 30,
+      "embargo_rows": 6,
+      "note": "소스 자체의 사후 수정(vintage) 위험은 data_quality의 별도 경고를 확인하세요."
+    },
+    {
+      "ticker": "SNDK",
+      "period_years": 15,
+      "horizon_days": 60,
+      "passed": true,
+      "checks": {
+        "dates_strictly_increasing": true,
+        "target_after_feature_time": true,
+        "target_horizon_positive": true,
+        "tail_target_is_missing": true,
+        "no_backward_fill_marker": true
+      },
+      "purge_rows": 60,
+      "embargo_rows": 12,
+      "note": "소스 자체의 사후 수정(vintage) 위험은 data_quality의 별도 경고를 확인하세요."
+    }
+  ],
+  "asset_coverage": {
+    "input_stock_tickers": [
+      "000660.KS",
+      "005930.KS",
+      "RAM",
+      "SNDK"
+    ],
+    "market_data_tickers": [
+      "000660.KS",
+      "005930.KS",
+      "RAM",
+      "SNDK"
+    ],
+    "forecasted_tickers": [
+      "000660.KS",
+      "005930.KS",
+      "RAM",
+      "SNDK"
+    ],
+    "failed_market_tickers": {},
+    "all_holdings_in_portfolio_components": true
+  },
+  "source_revision_warning": "Yahoo/yfinance, 현재 FRED vintage 및 관세청 과거치는 사후 수정될 수 있습니다. 공식 point-in-time available_date 입력이 가장 안전합니다.",
+  "warnings": [
+    "assets.csv의 account 열은 보존 자산을 나누는 필터로 사용하지 않습니다. 모든 보유자산을 하나의 '전체' 포트폴리오로 통합 계산합니다.",
+    "사용자가 명시적으로 허용한 대체지표 모드입니다. 실제 현물가격이 아닙니다.",
+    "KCS_SERVICE_KEY와 관세청 정상 캐시가 없어 반도체 수출입 단가 특징을 자동 제외했습니다.",
+    "yfinance는 Yahoo 비공식 연구용 래퍼이며 데이터 라이선스를 사용자가 확인해야 합니다.",
+    "RAM/1년/10일: 정상 모델 대신 단기이력 block-bootstrap 기준선 사용(신뢰도 최대 25점).",
+    "RAM/1년/30일: 정상 모델 대신 단기이력 block-bootstrap 기준선 사용(신뢰도 최대 25점).",
+    "RAM/1년/60일: 정상 모델 대신 단기이력 block-bootstrap 기준선 사용(신뢰도 최대 25점).",
+    "RAM/3년/10일: 정상 모델 대신 단기이력 block-bootstrap 기준선 사용(신뢰도 최대 25점).",
+    "RAM/3년/30일: 정상 모델 대신 단기이력 block-bootstrap 기준선 사용(신뢰도 최대 25점).",
+    "RAM/3년/60일: 정상 모델 대신 단기이력 block-bootstrap 기준선 사용(신뢰도 최대 25점).",
+    "RAM/5년/10일: 정상 모델 대신 단기이력 block-bootstrap 기준선 사용(신뢰도 최대 25점).",
+    "RAM/5년/30일: 정상 모델 대신 단기이력 block-bootstrap 기준선 사용(신뢰도 최대 25점).",
+    "RAM/5년/60일: 정상 모델 대신 단기이력 block-bootstrap 기준선 사용(신뢰도 최대 25점).",
+    "RAM/10년/10일: 정상 모델 대신 단기이력 block-bootstrap 기준선 사용(신뢰도 최대 25점).",
+    "RAM/10년/30일: 정상 모델 대신 단기이력 block-bootstrap 기준선 사용(신뢰도 최대 25점).",
+    "RAM/10년/60일: 정상 모델 대신 단기이력 block-bootstrap 기준선 사용(신뢰도 최대 25점).",
+    "RAM/15년/10일: 정상 모델 대신 단기이력 block-bootstrap 기준선 사용(신뢰도 최대 25점).",
+    "RAM/15년/30일: 정상 모델 대신 단기이력 block-bootstrap 기준선 사용(신뢰도 최대 25점).",
+    "RAM/15년/60일: 정상 모델 대신 단기이력 block-bootstrap 기준선 사용(신뢰도 최대 25점)."
+  ]
+}

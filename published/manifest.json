@@ -1,0 +1,139 @@
+{
+  "schema_version": "1.2.0",
+  "generated_at": "2026-08-18T22:32:59.778373+00:00",
+  "timezone": "UTC",
+  "code_version": "1.2.0",
+  "training_periods": [
+    1,
+    3,
+    5,
+    10,
+    15
+  ],
+  "forecast_horizons": [
+    10,
+    30,
+    60
+  ],
+  "tickers": [
+    "000660.KS",
+    "005930.KS",
+    "RAM",
+    "SNDK"
+  ],
+  "forecasted_tickers": [
+    "000660.KS",
+    "005930.KS",
+    "RAM",
+    "SNDK"
+  ],
+  "unforecasted_tickers": [],
+  "base_currency": "KRW",
+  "last_data_time": "2026-08-18",
+  "memory_spot_status": "PROXY_OPT_IN",
+  "memory_spot_used": false,
+  "memory_products": [],
+  "memory_spot_final_date": null,
+  "memory_spot_rows": 0,
+  "kcs_trade_status": "MISSING_KEY",
+  "kcs_hs_codes": [
+    "854232"
+  ],
+  "kcs_latest_period": null,
+  "status": "partial_success",
+  "test_data": false,
+  "files": [
+    {
+      "path": "data_quality.json",
+      "bytes": 35904,
+      "sha256": "00a11ccd8e7ec1b06b2bf671c858a436d54e75a08907cab0579ca64493139ca5"
+    },
+    {
+      "path": "decision_levels.csv",
+      "bytes": 38409,
+      "sha256": "d31f771477b92bd62b102af4ed7c630e86d412662b27677187036f88782e2a45"
+    },
+    {
+      "path": "feature_status.json",
+      "bytes": 1626326,
+      "sha256": "ed067e43c1b542e7b692647c7349ea25b381571d99c0671a40fb5f43b716cb3d"
+    },
+    {
+      "path": "model_metrics.json",
+      "bytes": 394523,
+      "sha256": "8ca7d53b102b11478d56cc02a063a2a9fdc4bcd699c5d89a6c47c5a8f89c5e1c"
+    },
+    {
+      "path": "portfolio_components.csv",
+      "bytes": 25301,
+      "sha256": "a659928b2e78e5c79ba096aa2997ac595bb8f7ef29afa36bab639c80df6a5fc0"
+    },
+    {
+      "path": "portfolio_forecast.csv",
+      "bytes": 5873,
+      "sha256": "188eefbea398fc607eff664d8f03167d0ca0df85b4117168b6d2542ba775f3ad"
+    },
+    {
+      "path": "portfolio_history.csv.gz",
+      "bytes": 3635,
+      "sha256": "1d7f65756ccb406dde63b099d96689b2862a1b1d7687f74299a300b5b4e4dc5a"
+    },
+    {
+      "path": "portfolio_paths.csv.gz",
+      "bytes": 40221,
+      "sha256": "a9937142697a1e6b651cc9044a45f64f03a7f2d856be51787313b1cf495f72e1"
+    },
+    {
+      "path": "run_summary.json",
+      "bytes": 12912,
+      "sha256": "9c84c9cacd3bea0e08ae689c660e7f4d54bfaf9c188e19e3bd1f8812bf02d192"
+    },
+    {
+      "path": "stock_forecasts.csv",
+      "bytes": 44306,
+      "sha256": "0e66a460fea7dfac977b2e29574de030b5546820de25110fc5c06f6cd913b569"
+    },
+    {
+      "path": "stock_history.csv.gz",
+      "bytes": 10860,
+      "sha256": "fa60fc1a2588d3ab0cbacc1a6a0d76107c434f002c813163ade8c1157b6cd10d"
+    },
+    {
+      "path": "stock_paths.csv.gz",
+      "bytes": 155972,
+      "sha256": "fbd420ebfb478e554217a6dc09fa25d68f0781c7599fca233748e2844167e18c"
+    }
+  ],
+  "validation": {
+    "valid": true,
+    "row_counts": {
+      "stock_forecasts.csv": 60,
+      "stock_paths.csv.gz": 2060,
+      "portfolio_forecast.csv": 15,
+      "portfolio_paths.csv.gz": 515,
+      "decision_levels.csv": 60,
+      "portfolio_components.csv": 75
+    }
+  },
+  "warnings": [
+    "assets.csv의 account 열은 보존 자산을 나누는 필터로 사용하지 않습니다. 모든 보유자산을 하나의 '전체' 포트폴리오로 통합 계산합니다.",
+    "사용자가 명시적으로 허용한 대체지표 모드입니다. 실제 현물가격이 아닙니다.",
+    "KCS_SERVICE_KEY와 관세청 정상 캐시가 없어 반도체 수출입 단가 특징을 자동 제외했습니다.",
+    "yfinance는 Yahoo 비공식 연구용 래퍼이며 데이터 라이선스를 사용자가 확인해야 합니다.",
+    "RAM/1년/10일: 정상 모델 대신 단기이력 block-bootstrap 기준선 사용(신뢰도 최대 25점).",
+    "RAM/1년/30일: 정상 모델 대신 단기이력 block-bootstrap 기준선 사용(신뢰도 최대 25점).",
+    "RAM/1년/60일: 정상 모델 대신 단기이력 block-bootstrap 기준선 사용(신뢰도 최대 25점).",
+    "RAM/3년/10일: 정상 모델 대신 단기이력 block-bootstrap 기준선 사용(신뢰도 최대 25점).",
+    "RAM/3년/30일: 정상 모델 대신 단기이력 block-bootstrap 기준선 사용(신뢰도 최대 25점).",
+    "RAM/3년/60일: 정상 모델 대신 단기이력 block-bootstrap 기준선 사용(신뢰도 최대 25점).",
+    "RAM/5년/10일: 정상 모델 대신 단기이력 block-bootstrap 기준선 사용(신뢰도 최대 25점).",
+    "RAM/5년/30일: 정상 모델 대신 단기이력 block-bootstrap 기준선 사용(신뢰도 최대 25점).",
+    "RAM/5년/60일: 정상 모델 대신 단기이력 block-bootstrap 기준선 사용(신뢰도 최대 25점).",
+    "RAM/10년/10일: 정상 모델 대신 단기이력 block-bootstrap 기준선 사용(신뢰도 최대 25점).",
+    "RAM/10년/30일: 정상 모델 대신 단기이력 block-bootstrap 기준선 사용(신뢰도 최대 25점).",
+    "RAM/10년/60일: 정상 모델 대신 단기이력 block-bootstrap 기준선 사용(신뢰도 최대 25점).",
+    "RAM/15년/10일: 정상 모델 대신 단기이력 block-bootstrap 기준선 사용(신뢰도 최대 25점).",
+    "RAM/15년/30일: 정상 모델 대신 단기이력 block-bootstrap 기준선 사용(신뢰도 최대 25점).",
+    "RAM/15년/60일: 정상 모델 대신 단기이력 block-bootstrap 기준선 사용(신뢰도 최대 25점)."
+  ]
+}
