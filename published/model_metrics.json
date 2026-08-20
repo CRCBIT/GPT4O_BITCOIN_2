@@ -8,34 +8,34 @@
       "selected_model": "historical_mean_return",
       "selection_reason": "고급 모델이 기준선 historical_mean_return의 walk-forward RMSE를 개선하지 못해 기준 모델 선택",
       "validation": {
-        "mae": 0.13925517195897108,
-        "rmse": 0.1684229104938861,
-        "smape": 1.0026025051231604,
+        "mae": 0.1392551720896753,
+        "rmse": 0.168422910678426,
+        "smape": 1.0026025079336547,
         "direction_accuracy": 0.8,
         "brier_score": 0.15688502356661566,
         "calibration_error": 0.1255483297087325,
         "interval_coverage": 0.8,
-        "interval_average_width": 0.4028095173638961,
+        "interval_average_width": 0.4028095174127019,
         "interval_nominal_coverage": 0.8
       },
       "isolated_test": {
-        "mae": 0.23818222165594585,
-        "rmse": 0.27419990320541165,
-        "smape": 1.567294286071007,
+        "mae": 0.23818222126074526,
+        "rmse": 0.27419990275487827,
+        "smape": 1.5672942864535897,
         "direction_accuracy": 0.34782608695652173,
         "brier_score": 0.41747700622365774,
         "calibration_error": 0.4366164289563801,
         "interval_coverage": 0.08695652173913043,
-        "interval_average_width": 0.17584691718715217,
+        "interval_average_width": 0.1732119577424736,
         "interval_nominal_coverage": 0.8
       },
-      "baseline_rmse": 0.1684229104938861,
+      "baseline_rmse": 0.168422910678426,
       "baseline_model": "historical_mean_return",
       "baseline_improvement": 0.0,
-      "isolated_test_baseline_rmse": 0.27419990320541165,
+      "isolated_test_baseline_rmse": 0.27419990275487827,
       "isolated_test_improvement": 0.0,
-      "recent_rmse_ratio": 0.7848145793036299,
-      "fold_rmse_cv": 0.27241632352744694,
+      "recent_rmse_ratio": 0.784814580059026,
+      "fold_rmse_cv": 0.2724163234766217,
       "folds": [
         {
           "fold": 1,
@@ -45,8 +45,8 @@
           "validation_end": "2026-03-24",
           "rows_train": 115,
           "rows_validation": 15,
-          "rmse": 0.17826813764613428,
-          "mae": 0.14735196338567436,
+          "rmse": 0.17826813685707166,
+          "mae": 0.14735196247069088,
           "direction_accuracy": 0.5333333333333333
         },
         {
@@ -57,8 +57,8 @@
           "validation_end": "2026-04-14",
           "rows_train": 130,
           "rows_validation": 15,
-          "rmse": 0.13000784602949236,
-          "mae": 0.11274110154137257,
+          "rmse": 0.13000784674168922,
+          "mae": 0.11274110210173226,
           "direction_accuracy": 1.0
         },
         {
@@ -69,8 +69,8 @@
           "validation_end": "2026-05-07",
           "rows_train": 145,
           "rows_validation": 15,
-          "rmse": 0.2274077162002399,
-          "mae": 0.19521747566707204,
+          "rmse": 0.2274077169185497,
+          "mae": 0.1952174763927486,
           "direction_accuracy": 1.0
         },
         {
@@ -81,8 +81,8 @@
           "validation_end": "2026-05-29",
           "rows_train": 160,
           "rows_validation": 15,
-          "rmse": 0.11432090272766467,
-          "mae": 0.10171014724176544,
+          "rmse": 0.11432090280680439,
+          "mae": 0.10171014739352954,
           "direction_accuracy": 0.6666666666666666
         }
       ],
@@ -92,39 +92,39 @@
           "rmse": 0.21225050091238207,
           "mae": 0.17934646934684875,
           "direction_accuracy": 0.2,
-          "baseline_improvement": -0.2602234475700201,
+          "baseline_improvement": -0.2602234461892015,
           "failed_reason": null
         },
         {
           "name": "historical_mean_return",
-          "rmse": 0.1684229104938861,
-          "mae": 0.13925517195897108,
+          "rmse": 0.168422910678426,
+          "mae": 0.1392551720896753,
           "direction_accuracy": 0.8,
           "baseline_improvement": 0.0,
           "failed_reason": null
         },
         {
           "name": "ridge_regularized",
-          "rmse": 0.25858217631815783,
-          "mae": 0.2211106441016225,
+          "rmse": 0.2585820808518665,
+          "mae": 0.2211105670001472,
           "direction_accuracy": 0.5166666666666667,
-          "baseline_improvement": -0.5353147357440102,
+          "baseline_improvement": -0.5353141672369245,
           "failed_reason": null
         },
         {
           "name": "hist_gradient_boosting",
-          "rmse": 0.17766793894167324,
-          "mae": 0.14135526828499675,
+          "rmse": 0.17766794282527623,
+          "mae": 0.14135527205627493,
           "direction_accuracy": 0.7166666666666667,
-          "baseline_improvement": -0.054891750894678494,
+          "baseline_improvement": -0.05489177279747889,
           "failed_reason": null
         },
         {
           "name": "hist_quantile_median",
-          "rmse": 0.18233109657742327,
-          "mae": 0.14857742934126728,
+          "rmse": 0.18233110057555224,
+          "mae": 0.14857743134640058,
           "direction_accuracy": 0.7,
-          "baseline_improvement": -0.0825789439379273,
+          "baseline_improvement": -0.08257896649038146,
           "failed_reason": null
         }
       ],
@@ -135,7 +135,7 @@
         "data_completeness_10": 9.98425036833816,
         "memory_spot_quality_20": 0.0,
         "walk_forward_performance_15": 7.5,
-        "fold_stability_10": 7.275836764725531,
+        "fold_stability_10": 7.275836765233783,
         "probability_calibration_10": 0.0,
         "interval_coverage_5": 0.0,
         "recent_drift_5": 0.0,
@@ -266,34 +266,34 @@
       "selected_model": "hist_gradient_boosting",
       "selection_reason": "분리된 walk-forward RMSE 최저이며 기준선 대비 13.91% 개선",
       "validation": {
-        "mae": 0.22428032936257516,
-        "rmse": 0.2675726918450968,
-        "smape": 0.781868289844688,
+        "mae": 0.22428033161701774,
+        "rmse": 0.2675726954564919,
+        "smape": 0.7818682957375458,
         "direction_accuracy": 0.85,
         "brier_score": 0.08994250273819276,
         "calibration_error": 0.03726957595579202,
         "interval_coverage": 0.8,
-        "interval_average_width": 0.6228743678986748,
+        "interval_average_width": 0.6228743807995483,
         "interval_nominal_coverage": 0.8
       },
       "isolated_test": {
-        "mae": 0.4112917614411183,
-        "rmse": 0.4891925402794693,
-        "smape": 1.5652325983527828,
+        "mae": 0.41129176389944544,
+        "rmse": 0.48919254332971807,
+        "smape": 1.5652325987425701,
         "direction_accuracy": 0.30952380952380953,
         "brier_score": 0.34226474989822,
         "calibration_error": 0.3533537191917511,
         "interval_coverage": 0.2619047619047619,
-        "interval_average_width": 0.3707112836678218,
+        "interval_average_width": 0.3707113007032882,
         "interval_nominal_coverage": 0.8
       },
-      "baseline_rmse": 0.31081145152939016,
+      "baseline_rmse": 0.31081145195830845,
       "baseline_model": "historical_mean_return",
-      "baseline_improvement": 0.13911572263998365,
-      "isolated_test_baseline_rmse": 0.6070922392408529,
-      "isolated_test_improvement": 0.19420393037607092,
-      "recent_rmse_ratio": 1.324051062710686,
-      "fold_rmse_cv": 0.49316644891340417,
+      "baseline_improvement": 0.13911571220875243,
+      "isolated_test_baseline_rmse": 0.6070922377765344,
+      "isolated_test_improvement": 0.19420392340811685,
+      "recent_rmse_ratio": 1.3240510766112277,
+      "fold_rmse_cv": 0.4931664526168993,
       "folds": [
         {
           "fold": 1,
@@ -303,8 +303,8 @@
           "validation_end": "2026-02-27",
           "rows_train": 75,
           "rows_validation": 15,
-          "rmse": 0.19208038762039564,
-          "mae": 0.1760214318275571,
+          "rmse": 0.19208039094187795,
+          "mae": 0.1760214342514461,
           "direction_accuracy": 0.4
         },
         {
@@ -315,8 +315,8 @@
           "validation_end": "2026-03-23",
           "rows_train": 90,
           "rows_validation": 15,
-          "rmse": 0.06827060752670815,
-          "mae": 0.03815415229772814,
+          "rmse": 0.06827060602241822,
+          "mae": 0.038154149572069036,
           "direction_accuracy": 1.0
         },
         {
@@ -327,8 +327,8 @@
           "validation_end": "2026-04-13",
           "rows_train": 105,
           "rows_validation": 15,
-          "rmse": 0.3580180013173106,
-          "mae": 0.349901269998781,
+          "rmse": 0.3580180017640512,
+          "mae": 0.3499012699021555,
           "direction_accuracy": 1.0
         },
         {
@@ -339,8 +339,8 @@
           "validation_end": "2026-05-06",
           "rows_train": 120,
           "rows_validation": 15,
-          "rmse": 0.34153761323932613,
-          "mae": 0.3330444633262342,
+          "rmse": 0.3415376225209067,
+          "mae": 0.33304447274240057,
           "direction_accuracy": 1.0
         }
       ],
@@ -350,39 +350,39 @@
           "rmse": 0.49558896771216565,
           "mae": 0.41296757214260843,
           "direction_accuracy": 0.15,
-          "baseline_improvement": -0.5945003482772353,
+          "baseline_improvement": -0.5945003460768326,
           "failed_reason": null
         },
         {
           "name": "historical_mean_return",
-          "rmse": 0.31081145152939016,
-          "mae": 0.27689035583134897,
+          "rmse": 0.31081145195830845,
+          "mae": 0.2768903556651624,
           "direction_accuracy": 0.85,
           "baseline_improvement": 0.0,
           "failed_reason": null
         },
         {
           "name": "ridge_regularized",
-          "rmse": 0.4685179041223704,
-          "mae": 0.39087449313901806,
+          "rmse": 0.4685179263640759,
+          "mae": 0.3908744816831142,
           "direction_accuracy": 0.6,
-          "baseline_improvement": -0.5074023232315414,
+          "baseline_improvement": -0.507402392711456,
           "failed_reason": null
         },
         {
           "name": "hist_gradient_boosting",
-          "rmse": 0.2675726918450968,
-          "mae": 0.22428032936257516,
+          "rmse": 0.2675726954564919,
+          "mae": 0.22428033161701774,
           "direction_accuracy": 0.85,
-          "baseline_improvement": 0.13911572263998365,
+          "baseline_improvement": 0.13911571220875243,
           "failed_reason": null
         },
         {
           "name": "hist_quantile_median",
-          "rmse": 0.27129958619687666,
-          "mae": 0.23494377196042518,
+          "rmse": 0.2712996112056933,
+          "mae": 0.23494378609426703,
           "direction_accuracy": 0.85,
-          "baseline_improvement": 0.1271248698787962,
+          "baseline_improvement": 0.12712479062037646,
           "failed_reason": null
         }
       ],
@@ -393,11 +393,11 @@
         "data_completeness_10": 9.98425036833816,
         "memory_spot_quality_20": 0.0,
         "walk_forward_performance_15": 15.0,
-        "fold_stability_10": 5.068335510865958,
+        "fold_stability_10": 5.068335473831008,
         "probability_calibration_10": 0.0,
         "interval_coverage_5": 0.0,
         "recent_drift_5": 0.0,
-        "recent_performance_5": 3.3797446864465694,
+        "recent_performance_5": 3.379744616943862,
         "baseline_improvement_5": 5.0
       },
       "drift_score": 1.0,
@@ -507,34 +507,34 @@
       "selected_model": "historical_mean_return",
       "selection_reason": "고급 모델이 기준선 historical_mean_return의 walk-forward RMSE를 개선하지 못해 기준 모델 선택",
       "validation": {
-        "mae": 0.2398411804524957,
-        "rmse": 0.27865290859832526,
-        "smape": 0.3337142765779004,
+        "mae": 0.2398411935238058,
+        "rmse": 0.27865291896116406,
+        "smape": 0.33371429837027056,
         "direction_accuracy": 1.0,
         "brier_score": 1.0000000000000016e-06,
         "calibration_error": 0.001000000000000223,
         "interval_coverage": 0.8,
-        "interval_average_width": 0.32188970534697275,
+        "interval_average_width": 0.3218897008850922,
         "interval_nominal_coverage": 0.8
       },
       "isolated_test": {
-        "mae": 0.442379842669782,
-        "rmse": 0.5124876093940997,
-        "smape": 1.0109032192159155,
+        "mae": 0.4423798416310082,
+        "rmse": 0.5124876081245171,
+        "smape": 1.0109032195661096,
         "direction_accuracy": 0.675,
         "brier_score": 0.324351,
         "calibration_error": 0.32399999999999995,
         "interval_coverage": 0.175,
-        "interval_average_width": 0.24294595460759888,
+        "interval_average_width": 0.24294593407597134,
         "interval_nominal_coverage": 0.8
       },
-      "baseline_rmse": 0.27865290859832526,
+      "baseline_rmse": 0.27865291896116406,
       "baseline_model": "historical_mean_return",
       "baseline_improvement": 0.0,
-      "isolated_test_baseline_rmse": 0.5124876093940997,
+      "isolated_test_baseline_rmse": 0.5124876081245171,
       "isolated_test_improvement": 0.0,
-      "recent_rmse_ratio": 1.1725862479073892,
-      "fold_rmse_cv": 0.42155013214977893,
+      "recent_rmse_ratio": 1.1725862415329011,
+      "fold_rmse_cv": 0.4215501071093079,
       "folds": [
         {
           "fold": 1,
@@ -544,8 +544,8 @@
           "validation_end": "2026-03-03",
           "rows_train": 40,
           "rows_validation": 15,
-          "rmse": 0.14852895892643497,
-          "mae": 0.12894476319326395,
+          "rmse": 0.1485289722110168,
+          "mae": 0.12894477849551453,
           "direction_accuracy": 1.0
         },
         {
@@ -556,8 +556,8 @@
           "validation_end": "2026-03-25",
           "rows_train": 56,
           "rows_validation": 15,
-          "rmse": 0.3650123769145953,
-          "mae": 0.3507375977117275,
+          "rmse": 0.36501238733102354,
+          "mae": 0.3507376085520972,
           "direction_accuracy": 1.0
         }
       ],
@@ -567,39 +567,39 @@
           "rmse": 0.8243213173502997,
           "mae": 0.8159698081916513,
           "direction_accuracy": 0.0,
-          "baseline_improvement": -1.9582369030231395,
+          "baseline_improvement": -1.9582367930091038,
           "failed_reason": null
         },
         {
           "name": "historical_mean_return",
-          "rmse": 0.27865290859832526,
-          "mae": 0.2398411804524957,
+          "rmse": 0.27865291896116406,
+          "mae": 0.2398411935238058,
           "direction_accuracy": 1.0,
           "baseline_improvement": 0.0,
           "failed_reason": null
         },
         {
           "name": "ridge_regularized",
-          "rmse": 0.351450379977212,
-          "mae": 0.3185617328159292,
+          "rmse": 0.35145044590511987,
+          "mae": 0.31856180403519446,
           "direction_accuracy": 1.0,
-          "baseline_improvement": -0.26124784322213346,
+          "baseline_improvement": -0.26124803291259124,
           "failed_reason": null
         },
         {
           "name": "hist_gradient_boosting",
-          "rmse": 0.27865290859832526,
-          "mae": 0.2398411804524957,
+          "rmse": 0.27865291896116406,
+          "mae": 0.2398411935238058,
           "direction_accuracy": 1.0,
           "baseline_improvement": 0.0,
           "failed_reason": null
         },
         {
           "name": "hist_quantile_median",
-          "rmse": 0.29533205186603123,
-          "mae": 0.25012360641803655,
+          "rmse": 0.29533206415348096,
+          "mae": 0.250123630266794,
           "direction_accuracy": 1.0,
-          "baseline_improvement": -0.059856340102836525,
+          "baseline_improvement": -0.05985634478367502,
           "failed_reason": null
         }
       ],
@@ -610,11 +610,11 @@
         "data_completeness_10": 9.98425036833816,
         "memory_spot_quality_20": 0.0,
         "walk_forward_performance_15": 7.5,
-        "fold_stability_10": 5.78449867850221,
+        "fold_stability_10": 5.78449892890692,
         "probability_calibration_10": 0.0,
         "interval_coverage_5": 0.0,
         "recent_drift_5": 0.0,
-        "recent_performance_5": 4.137068760463054,
+        "recent_performance_5": 4.137068792335494,
         "baseline_improvement_5": 0.0
       },
       "drift_score": 1.0,
@@ -741,34 +741,34 @@
       "selected_model": "historical_mean_return",
       "selection_reason": "고급 모델이 기준선 historical_mean_return의 walk-forward RMSE를 개선하지 못해 기준 모델 선택",
       "validation": {
-        "mae": 0.11742592261595572,
-        "rmse": 0.14044479712112234,
-        "smape": 1.484178473911313,
+        "mae": 0.1174259215924291,
+        "rmse": 0.14044479032435409,
+        "smape": 1.4841789691840168,
         "direction_accuracy": 0.7333333333333333,
         "brier_score": 0.19346522976062458,
         "calibration_error": 2.4761035563813927e-05,
         "interval_coverage": 0.8,
-        "interval_average_width": 0.3046280237925101,
+        "interval_average_width": 0.3046280236507828,
         "interval_nominal_coverage": 0.8
       },
       "isolated_test": {
-        "mae": 0.1514601433034065,
-        "rmse": 0.1855444054774985,
-        "smape": 1.4702151686536518,
+        "mae": 0.15146014336367022,
+        "rmse": 0.18554440552159607,
+        "smape": 1.4702151725429684,
         "direction_accuracy": 0.6293706293706294,
         "brier_score": 0.2421962782447148,
         "calibration_error": 0.09451475011059118,
-        "interval_coverage": 0.40559440559440557,
-        "interval_average_width": 0.19652893359072382,
+        "interval_coverage": 0.36363636363636365,
+        "interval_average_width": 0.18735125249104587,
         "interval_nominal_coverage": 0.8
       },
-      "baseline_rmse": 0.14044479712112234,
+      "baseline_rmse": 0.14044479032435409,
       "baseline_model": "historical_mean_return",
       "baseline_improvement": 0.0,
-      "isolated_test_baseline_rmse": 0.1855444054774985,
+      "isolated_test_baseline_rmse": 0.18554440552159607,
       "isolated_test_improvement": 0.0,
-      "recent_rmse_ratio": 1.094450225552215,
-      "fold_rmse_cv": 0.41501921434624756,
+      "recent_rmse_ratio": 1.0944502810349765,
+      "fold_rmse_cv": 0.4150191982904863,
       "folds": [
         {
           "fold": 1,
@@ -778,8 +778,8 @@
           "validation_end": "2025-10-29",
           "rows_train": 503,
           "rows_validation": 15,
-          "rmse": 0.17924680436608056,
-          "mae": 0.17252684928131518,
+          "rmse": 0.17924678415357748,
+          "mae": 0.17252683767616103,
           "direction_accuracy": 1.0
         },
         {
@@ -790,8 +790,8 @@
           "validation_end": "2025-11-19",
           "rows_train": 518,
           "rows_validation": 15,
-          "rmse": 0.1144936632979756,
-          "mae": 0.09800284099288545,
+          "rmse": 0.11449366092703653,
+          "mae": 0.09800284807464019,
           "direction_accuracy": 0.13333333333333333
         },
         {
@@ -802,8 +802,8 @@
           "validation_end": "2025-12-10",
           "rows_train": 533,
           "rows_validation": 15,
-          "rmse": 0.048067982805448474,
-          "mae": 0.03796129253599052,
+          "rmse": 0.04806798279459165,
+          "mae": 0.0379612924893725,
           "direction_accuracy": 0.8
         },
         {
@@ -814,50 +814,50 @@
           "validation_end": "2026-01-05",
           "rows_train": 548,
           "rows_validation": 15,
-          "rmse": 0.17705992593397807,
-          "mae": 0.16121270765363177,
+          "rmse": 0.17705992636729403,
+          "mae": 0.16121270812954275,
           "direction_accuracy": 1.0
         }
       ],
       "candidates": [
         {
           "name": "last_value_zero_return",
-          "rmse": 0.15285244053892647,
-          "mae": 0.1256132381013132,
+          "rmse": 0.15285243315952984,
+          "mae": 0.12561322933966615,
           "direction_accuracy": 0.26666666666666666,
-          "baseline_improvement": -0.088345340462157,
+          "baseline_improvement": -0.08834534058914244,
           "failed_reason": null
         },
         {
           "name": "historical_mean_return",
-          "rmse": 0.14044479712112234,
-          "mae": 0.11742592261595572,
+          "rmse": 0.14044479032435409,
+          "mae": 0.1174259215924291,
           "direction_accuracy": 0.7333333333333333,
           "baseline_improvement": 0.0,
           "failed_reason": null
         },
         {
           "name": "ridge_regularized",
-          "rmse": 0.22956993842741893,
-          "mae": 0.1946512255444866,
+          "rmse": 0.2295698908809312,
+          "mae": 0.19465116711500804,
           "direction_accuracy": 0.6,
-          "baseline_improvement": -0.6345919758738611,
+          "baseline_improvement": -0.634591716437076,
           "failed_reason": null
         },
         {
           "name": "hist_gradient_boosting",
-          "rmse": 0.19236958148961583,
-          "mae": 0.17027556119335036,
+          "rmse": 0.19279194004334793,
+          "mae": 0.17065943583971319,
           "direction_accuracy": 0.4,
-          "baseline_improvement": -0.3697166818056815,
+          "baseline_improvement": -0.3727240405151325,
           "failed_reason": null
         },
         {
           "name": "hist_quantile_median",
-          "rmse": 0.15989088212306699,
-          "mae": 0.13958894184232323,
-          "direction_accuracy": 0.55,
-          "baseline_improvement": -0.13846070057813503,
+          "rmse": 0.15969977645852293,
+          "mae": 0.1393050698705174,
+          "direction_accuracy": 0.5666666666666667,
+          "baseline_improvement": -0.13710003831185114,
           "failed_reason": null
         }
       ],
@@ -868,11 +868,11 @@
         "data_completeness_10": 9.973884140550807,
         "memory_spot_quality_20": 0.0,
         "walk_forward_performance_15": 7.5,
-        "fold_stability_10": 5.849807856537525,
+        "fold_stability_10": 5.849808017095137,
         "probability_calibration_10": 5.274262494470441,
         "interval_coverage_5": 0.0,
         "recent_drift_5": 0.0,
-        "recent_performance_5": 4.5277488722389245,
+        "recent_performance_5": 4.527748594825117,
         "baseline_improvement_5": 0.0
       },
       "drift_score": 1.0,
@@ -999,34 +999,34 @@
       "selected_model": "historical_mean_return",
       "selection_reason": "고급 모델이 기준선 historical_mean_return의 walk-forward RMSE를 개선하지 못해 기준 모델 선택",
       "validation": {
-        "mae": 0.2405924851300009,
-        "rmse": 0.29697447823519796,
-        "smape": 1.311657409274708,
+        "mae": 0.2405924845756904,
+        "rmse": 0.29697447212833594,
+        "smape": 1.311657504911365,
         "direction_accuracy": 0.8333333333333334,
         "brier_score": 0.1386690927794939,
         "calibration_error": 7.823941298368275e-05,
         "interval_coverage": 0.8,
-        "interval_average_width": 0.6142692030623651,
+        "interval_average_width": 0.6142692956205763,
         "interval_nominal_coverage": 0.8
       },
       "isolated_test": {
-        "mae": 0.3184699891344343,
-        "rmse": 0.3837753269069933,
-        "smape": 1.3528764858479616,
+        "mae": 0.3184699894428291,
+        "rmse": 0.38377532714895046,
+        "smape": 1.3528764896017544,
         "direction_accuracy": 0.7266187050359713,
         "brier_score": 0.2111102862881965,
         "calibration_error": 0.11165269258005817,
-        "interval_coverage": 0.2302158273381295,
-        "interval_average_width": 0.24079712192809033,
+        "interval_coverage": 0.2589928057553957,
+        "interval_average_width": 0.24462894085331255,
         "interval_nominal_coverage": 0.8
       },
-      "baseline_rmse": 0.29697447823519796,
+      "baseline_rmse": 0.29697447212833594,
       "baseline_model": "historical_mean_return",
       "baseline_improvement": 0.0,
-      "isolated_test_baseline_rmse": 0.3837753269069933,
+      "isolated_test_baseline_rmse": 0.38377532714895046,
       "isolated_test_improvement": 0.0,
-      "recent_rmse_ratio": 0.7010822060476812,
-      "fold_rmse_cv": 0.6048157142151006,
+      "recent_rmse_ratio": 0.70108222855114,
+      "fold_rmse_cv": 0.60481574668231,
       "folds": [
         {
           "fold": 1,
@@ -1036,8 +1036,8 @@
           "validation_end": "2025-09-30",
           "rows_train": 463,
           "rows_validation": 15,
-          "rmse": 0.5087335126068201,
-          "mae": 0.5062553667032069,
+          "rmse": 0.5087335095018648,
+          "mae": 0.5062553661532442,
           "direction_accuracy": 1.0
         },
         {
@@ -1048,8 +1048,8 @@
           "validation_end": "2025-10-28",
           "rows_train": 478,
           "rows_validation": 15,
-          "rmse": 0.16354879219137775,
-          "mae": 0.12713567951563384,
+          "rmse": 0.16354875137305902,
+          "mae": 0.1271356621982168,
           "direction_accuracy": 1.0
         },
         {
@@ -1060,8 +1060,8 @@
           "validation_end": "2025-11-18",
           "rows_train": 493,
           "rows_validation": 15,
-          "rmse": 0.10886783971777438,
-          "mae": 0.09767759910631174,
+          "rmse": 0.10886784744719777,
+          "mae": 0.09767761406658555,
           "direction_accuracy": 0.3333333333333333
         },
         {
@@ -1072,50 +1072,50 @@
           "validation_end": "2025-12-09",
           "rows_train": 508,
           "rows_validation": 15,
-          "rmse": 0.23529802823424867,
-          "mae": 0.2313012951948511,
+          "rmse": 0.23529802891239476,
+          "mae": 0.23130129588471504,
           "direction_accuracy": 1.0
         }
       ],
       "candidates": [
         {
           "name": "last_value_zero_return",
-          "rmse": 0.34139602335766767,
-          "mae": 0.2808609505440281,
+          "rmse": 0.341396016172339,
+          "mae": 0.2808609453131778,
           "direction_accuracy": 0.16666666666666666,
-          "baseline_improvement": -0.14958034571337378,
+          "baseline_improvement": -0.14958034515777008,
           "failed_reason": null
         },
         {
           "name": "historical_mean_return",
-          "rmse": 0.29697447823519796,
-          "mae": 0.2405924851300009,
+          "rmse": 0.29697447212833594,
+          "mae": 0.2405924845756904,
           "direction_accuracy": 0.8333333333333334,
           "baseline_improvement": 0.0,
           "failed_reason": null
         },
         {
           "name": "ridge_regularized",
-          "rmse": 0.5344187960510518,
-          "mae": 0.5213770131674313,
+          "rmse": 0.5344181475785136,
+          "mae": 0.5213763299228668,
           "direction_accuracy": 0.23333333333333334,
-          "baseline_improvement": -0.799544523916303,
+          "baseline_improvement": -0.7995423773244982,
           "failed_reason": null
         },
         {
           "name": "hist_gradient_boosting",
-          "rmse": 0.42170405813045786,
-          "mae": 0.3479854044981387,
+          "rmse": 0.42171083238748747,
+          "mae": 0.34790132403401125,
           "direction_accuracy": 0.36666666666666664,
-          "baseline_improvement": -0.42000100694335263,
+          "baseline_improvement": -0.4200238470505551,
           "failed_reason": null
         },
         {
           "name": "hist_quantile_median",
-          "rmse": 0.3457188182051935,
-          "mae": 0.2652330409343368,
+          "rmse": 0.3467698759074975,
+          "mae": 0.2656450460768846,
           "direction_accuracy": 0.4,
-          "baseline_improvement": -0.16413646135406623,
+          "baseline_improvement": -0.16767570431994155,
           "failed_reason": null
         }
       ],
@@ -1126,7 +1126,7 @@
         "data_completeness_10": 9.973884140550807,
         "memory_spot_quality_20": 0.0,
         "walk_forward_performance_15": 7.5,
-        "fold_stability_10": 3.9518428578489937,
+        "fold_stability_10": 3.9518425331769,
         "probability_calibration_10": 4.417365370997092,
         "interval_coverage_5": 0.0,
         "recent_drift_5": 0.0,
@@ -1255,36 +1255,36 @@
       "period_years": 3,
       "horizon_days": 60,
       "selected_model": "hist_quantile_median",
-      "selection_reason": "분리된 walk-forward RMSE 최저이며 기준선 대비 2.22% 개선",
+      "selection_reason": "분리된 walk-forward RMSE 최저이며 기준선 대비 2.26% 개선",
       "validation": {
-        "mae": 0.48541647655605796,
-        "rmse": 0.5108261352093416,
-        "smape": 1.3378484678302696,
+        "mae": 0.48505436838964455,
+        "rmse": 0.5106251460831015,
+        "smape": 1.3367467197353355,
         "direction_accuracy": 0.9666666666666667,
         "brier_score": 1.000000000000002e-06,
         "calibration_error": 0.0009999999999998899,
         "interval_coverage": 0.8,
-        "interval_average_width": 0.43924287207021234,
+        "interval_average_width": 0.44098390660866205,
         "interval_nominal_coverage": 0.8
       },
       "isolated_test": {
-        "mae": 0.2567833753922226,
-        "rmse": 0.32467792051105887,
-        "smape": 0.5980058667121784,
+        "mae": 0.25750980366831616,
+        "rmse": 0.3252389831757339,
+        "smape": 0.5994697929732191,
         "direction_accuracy": 0.9022556390977443,
         "brier_score": 0.09754987218045114,
         "calibration_error": 0.09674436090225536,
         "interval_coverage": 0.3233082706766917,
-        "interval_average_width": 0.22948024436697037,
+        "interval_average_width": 0.22687841378106582,
         "interval_nominal_coverage": 0.8
       },
-      "baseline_rmse": 0.5224096938422972,
+      "baseline_rmse": 0.5224096854171061,
       "baseline_model": "historical_mean_return",
-      "baseline_improvement": 0.022173322527304338,
-      "isolated_test_baseline_rmse": 0.46824897418307826,
-      "isolated_test_improvement": 0.3066126389758737,
-      "recent_rmse_ratio": 0.6564498812255971,
-      "fold_rmse_cv": 0.3013336294927203,
+      "baseline_improvement": 0.022558041443269738,
+      "isolated_test_baseline_rmse": 0.46824897482329064,
+      "isolated_test_improvement": 0.30541442552335824,
+      "recent_rmse_ratio": 0.6556836364056543,
+      "fold_rmse_cv": 0.30245568088591984,
       "folds": [
         {
           "fold": 1,
@@ -1294,8 +1294,8 @@
           "validation_end": "2025-08-26",
           "rows_train": 403,
           "rows_validation": 15,
-          "rmse": 0.6448782186693032,
-          "mae": 0.6409797244881822,
+          "rmse": 0.6453383250994642,
+          "mae": 0.6414268168968523,
           "direction_accuracy": 1.0
         },
         {
@@ -1306,9 +1306,9 @@
           "validation_end": "2025-09-16",
           "rows_train": 418,
           "rows_validation": 15,
-          "rmse": 0.5606969741241193,
-          "mae": 0.5585009133762954,
-          "direction_accuracy": 0.8666666666666667
+          "rmse": 0.5597928596886952,
+          "mae": 0.5575509413863045,
+          "direction_accuracy": 0.9333333333333333
         },
         {
           "fold": 3,
@@ -1318,9 +1318,9 @@
           "validation_end": "2025-10-15",
           "rows_train": 433,
           "rows_validation": 15,
-          "rmse": 0.5012094586498416,
-          "mae": 0.49848711448600597,
-          "direction_accuracy": 1.0
+          "rmse": 0.5013342191628795,
+          "mae": 0.4987154472949434,
+          "direction_accuracy": 0.9333333333333333
         },
         {
           "fold": 4,
@@ -1330,50 +1330,50 @@
           "validation_end": "2025-11-05",
           "rows_train": 448,
           "rows_validation": 15,
-          "rmse": 0.2496265741173119,
-          "mae": 0.2436981538737488,
+          "rmse": 0.24856902531343747,
+          "mae": 0.2425242679804777,
           "direction_accuracy": 1.0
         }
       ],
       "candidates": [
         {
           "name": "last_value_zero_return",
-          "rmse": 0.6223842072915236,
-          "mae": 0.6022529082745943,
+          "rmse": 0.622384198257156,
+          "mae": 0.6022528999732387,
           "direction_accuracy": 0.0,
-          "baseline_improvement": -0.19137185742844628,
+          "baseline_improvement": -0.19137185934871692,
           "failed_reason": null
         },
         {
           "name": "historical_mean_return",
-          "rmse": 0.5224096938422972,
-          "mae": 0.4964554318385009,
+          "rmse": 0.5224096854171061,
+          "mae": 0.49645542431977424,
           "direction_accuracy": 1.0,
           "baseline_improvement": 0.0,
           "failed_reason": null
         },
         {
           "name": "ridge_regularized",
-          "rmse": 0.8825061432707224,
-          "mae": 0.8615304515974784,
+          "rmse": 0.8825058570366174,
+          "mae": 0.8615301596927404,
           "direction_accuracy": 0.21666666666666667,
-          "baseline_improvement": -0.6892989423299821,
+          "baseline_improvement": -0.6892984216630685,
           "failed_reason": null
         },
         {
           "name": "hist_gradient_boosting",
-          "rmse": 0.6260713648109357,
-          "mae": 0.6143643296807281,
+          "rmse": 0.6274642974762555,
+          "mae": 0.6159117224583963,
           "direction_accuracy": 0.43333333333333335,
-          "baseline_improvement": -0.19842983809548428,
+          "baseline_improvement": -0.20109621814394768,
           "failed_reason": null
         },
         {
           "name": "hist_quantile_median",
-          "rmse": 0.5108261352093416,
-          "mae": 0.48541647655605796,
+          "rmse": 0.5106251460831015,
+          "mae": 0.48505436838964455,
           "direction_accuracy": 0.9666666666666667,
-          "baseline_improvement": 0.022173322527304338,
+          "baseline_improvement": 0.022558041443269738,
           "failed_reason": null
         }
       ],
@@ -1383,8 +1383,8 @@
         "data_freshness_15": 15.0,
         "data_completeness_10": 9.973884140550807,
         "memory_spot_quality_20": 0.0,
-        "walk_forward_performance_15": 8.83039935163826,
-        "fold_stability_10": 6.9866637050727975,
+        "walk_forward_performance_15": 8.853482486596183,
+        "fold_stability_10": 6.975443191140802,
         "probability_calibration_10": 5.162781954887232,
         "interval_coverage_5": 0.0,
         "recent_drift_5": 0.0,
@@ -1498,34 +1498,34 @@
       "selected_model": "historical_mean_return",
       "selection_reason": "고급 모델이 기준선 historical_mean_return의 walk-forward RMSE를 개선하지 못해 기준 모델 선택",
       "validation": {
-        "mae": 0.07203319297195473,
-        "rmse": 0.09043498832291925,
-        "smape": 1.7102417653595854,
+        "mae": 0.07203319120234915,
+        "rmse": 0.09043498959350935,
+        "smape": 1.7102414897120142,
         "direction_accuracy": 0.6158730158730159,
         "brier_score": 0.23625120317504872,
         "calibration_error": 9.777584018344498e-05,
         "interval_coverage": 0.7968253968253968,
-        "interval_average_width": 0.22604389954833554,
+        "interval_average_width": 0.2260438780433325,
         "interval_nominal_coverage": 0.8
       },
       "isolated_test": {
-        "mae": 0.14494405971033994,
-        "rmse": 0.1768620634410559,
-        "smape": 1.7325934629648339,
+        "mae": 0.1449440581816106,
+        "rmse": 0.17686206180546513,
+        "smape": 1.7325937346175702,
         "direction_accuracy": 0.6846473029045643,
         "brier_score": 0.22134878121424806,
         "calibration_error": 0.07377945299457034,
         "interval_coverage": 0.33195020746887965,
-        "interval_average_width": 0.18452589891227478,
+        "interval_average_width": 0.18013743177014904,
         "interval_nominal_coverage": 0.8
       },
-      "baseline_rmse": 0.09043498832291925,
+      "baseline_rmse": 0.09043498959350935,
       "baseline_model": "historical_mean_return",
       "baseline_improvement": 0.0,
-      "isolated_test_baseline_rmse": 0.1768620634410559,
+      "isolated_test_baseline_rmse": 0.17686206180546513,
       "isolated_test_improvement": 0.0,
-      "recent_rmse_ratio": 0.9751960287756324,
-      "fold_rmse_cv": 0.27106905447762214,
+      "recent_rmse_ratio": 0.9751959615649907,
+      "fold_rmse_cv": 0.2710690692763018,
       "folds": [
         {
           "fold": 1,
@@ -1535,8 +1535,8 @@
           "validation_end": "2023-12-28",
           "rows_train": 504,
           "rows_validation": 63,
-          "rmse": 0.05870314261960502,
-          "mae": 0.04758789960691566,
+          "rmse": 0.05870315266490783,
+          "mae": 0.04758790221462104,
           "direction_accuracy": 0.5714285714285714
         },
         {
@@ -1547,8 +1547,8 @@
           "validation_end": "2024-05-24",
           "rows_train": 601,
           "rows_validation": 63,
-          "rmse": 0.06780610522964398,
-          "mae": 0.05705940736381121,
+          "rmse": 0.06780610314622103,
+          "mae": 0.05705939550534747,
           "direction_accuracy": 0.7142857142857143
         },
         {
@@ -1559,8 +1559,8 @@
           "validation_end": "2024-10-18",
           "rows_train": 698,
           "rows_validation": 63,
-          "rmse": 0.12637746064298847,
-          "mae": 0.1067934250313748,
+          "rmse": 0.12637747330581897,
+          "mae": 0.10679343594435964,
           "direction_accuracy": 0.49206349206349204
         },
         {
@@ -1571,8 +1571,8 @@
           "validation_end": "2025-03-14",
           "rows_train": 795,
           "rows_validation": 63,
-          "rmse": 0.08763068934065028,
-          "mae": 0.07321374067276568,
+          "rmse": 0.08763068061547483,
+          "mae": 0.07321373423777244,
           "direction_accuracy": 0.5873015873015873
         },
         {
@@ -1583,50 +1583,50 @@
           "validation_end": "2025-08-06",
           "rows_train": 893,
           "rows_validation": 63,
-          "rmse": 0.09590781215372303,
-          "mae": 0.07551149218490633,
+          "rmse": 0.09590780475498825,
+          "mae": 0.07551148810964514,
           "direction_accuracy": 0.7142857142857143
         }
       ],
       "candidates": [
         {
           "name": "last_value_zero_return",
-          "rmse": 0.09140411286059406,
-          "mae": 0.07317744791969152,
+          "rmse": 0.09140411423217122,
+          "mae": 0.07317744597755432,
           "direction_accuracy": 0.38412698412698415,
-          "baseline_improvement": -0.010716256568910294,
+          "baseline_improvement": -0.010716257535030785,
           "failed_reason": null
         },
         {
           "name": "historical_mean_return",
-          "rmse": 0.09043498832291925,
-          "mae": 0.07203319297195473,
+          "rmse": 0.09043498959350935,
+          "mae": 0.07203319120234915,
           "direction_accuracy": 0.6158730158730159,
           "baseline_improvement": 0.0,
           "failed_reason": null
         },
         {
           "name": "ridge_regularized",
-          "rmse": 0.11380596820665359,
-          "mae": 0.08938862689390108,
+          "rmse": 0.11380590902936716,
+          "mae": 0.08938857033713661,
           "direction_accuracy": 0.5206349206349207,
-          "baseline_improvement": -0.25842851662989985,
+          "baseline_improvement": -0.2584278445865512,
           "failed_reason": null
         },
         {
           "name": "hist_gradient_boosting",
-          "rmse": 0.09716717056189218,
-          "mae": 0.07614532027253035,
-          "direction_accuracy": 0.5047619047619047,
-          "baseline_improvement": -0.0744422304223018,
+          "rmse": 0.09674166475835037,
+          "mae": 0.07577487195645853,
+          "direction_accuracy": 0.5142857142857142,
+          "baseline_improvement": -0.06973711384485709,
           "failed_reason": null
         },
         {
           "name": "hist_quantile_median",
-          "rmse": 0.09488472052537066,
-          "mae": 0.07591244309643594,
-          "direction_accuracy": 0.49206349206349204,
-          "baseline_improvement": -0.049203657621567795,
+          "rmse": 0.09545707436923254,
+          "mae": 0.07627378196523327,
+          "direction_accuracy": 0.5111111111111111,
+          "baseline_improvement": -0.05553254109163554,
           "failed_reason": null
         }
       ],
@@ -1637,7 +1637,7 @@
         "data_completeness_10": 9.94287971318324,
         "memory_spot_quality_20": 0.0,
         "walk_forward_performance_15": 7.5,
-        "fold_stability_10": 7.289309455223778,
+        "fold_stability_10": 7.289309307236982,
         "probability_calibration_10": 6.311027350271483,
         "interval_coverage_5": 0.0,
         "recent_drift_5": 0.0,
@@ -1765,37 +1765,37 @@
       "ticker": "000660.KS",
       "period_years": 5,
       "horizon_days": 30,
-      "selected_model": "historical_mean_return",
-      "selection_reason": "고급 모델이 기준선 historical_mean_return의 walk-forward RMSE를 개선하지 못해 기준 모델 선택",
+      "selected_model": "hist_quantile_median",
+      "selection_reason": "분리된 walk-forward RMSE 최저이며 기준선 대비 0.31% 개선",
       "validation": {
-        "mae": 0.12849636384545948,
-        "rmse": 0.15635956834396567,
-        "smape": 1.5510742230183017,
-        "direction_accuracy": 0.7047619047619048,
-        "brier_score": 0.19913370288740015,
-        "calibration_error": 0.08806066921769945,
+        "mae": 0.12609756089549673,
+        "rmse": 0.15588258224373486,
+        "smape": 1.4075178868581903,
+        "direction_accuracy": 0.6634920634920635,
+        "brier_score": 0.20132477159614579,
+        "calibration_error": 3.1746031747973756e-06,
         "interval_coverage": 0.7968253968253968,
-        "interval_average_width": 0.39462268852560906,
+        "interval_average_width": 0.3866091253442501,
         "interval_nominal_coverage": 0.8
       },
       "isolated_test": {
-        "mae": 0.31477197816054026,
-        "rmse": 0.37841829108423114,
-        "smape": 1.657704036299824,
-        "direction_accuracy": 0.7721518987341772,
-        "brier_score": 0.18561792364710114,
-        "calibration_error": 0.09841026182120971,
-        "interval_coverage": 0.33755274261603374,
-        "interval_average_width": 0.3606422115726741,
+        "mae": 0.33998070898705773,
+        "rmse": 0.4003169584836219,
+        "smape": 1.695490282185132,
+        "direction_accuracy": 0.37130801687763715,
+        "brier_score": 0.4662728320115681,
+        "calibration_error": 0.4938469938255565,
+        "interval_coverage": 0.29957805907172996,
+        "interval_average_width": 0.3512987135500909,
         "interval_nominal_coverage": 0.8
       },
-      "baseline_rmse": 0.15635956834396567,
+      "baseline_rmse": 0.1563595626560353,
       "baseline_model": "historical_mean_return",
-      "baseline_improvement": 0.0,
-      "isolated_test_baseline_rmse": 0.37841829108423114,
-      "isolated_test_improvement": 0.0,
-      "recent_rmse_ratio": 1.197736406658301,
-      "fold_rmse_cv": 0.26186797649566673,
+      "baseline_improvement": 0.00305053560011362,
+      "isolated_test_baseline_rmse": 0.3784182895958766,
+      "isolated_test_improvement": -0.05786894949272016,
+      "recent_rmse_ratio": 1.183184304517975,
+      "fold_rmse_cv": 0.2877262521865056,
       "folds": [
         {
           "fold": 1,
@@ -1805,9 +1805,9 @@
           "validation_end": "2024-02-02",
           "rows_train": 504,
           "rows_validation": 63,
-          "rmse": 0.10295102712042487,
-          "mae": 0.0846861530921214,
-          "direction_accuracy": 0.873015873015873
+          "rmse": 0.09285726758262385,
+          "mae": 0.08139402809080211,
+          "direction_accuracy": 0.746031746031746
         },
         {
           "fold": 2,
@@ -1817,9 +1817,9 @@
           "validation_end": "2024-06-14",
           "rows_train": 591,
           "rows_validation": 63,
-          "rmse": 0.14151604231454298,
-          "mae": 0.11587822541698839,
-          "direction_accuracy": 0.9206349206349206
+          "rmse": 0.1370344635519606,
+          "mae": 0.11175285335766304,
+          "direction_accuracy": 0.8888888888888888
         },
         {
           "fold": 3,
@@ -1829,8 +1829,8 @@
           "validation_end": "2024-10-24",
           "rows_train": 678,
           "rows_validation": 63,
-          "rmse": 0.1513878609647651,
-          "mae": 0.12935360334512871,
+          "rmse": 0.17304829092133128,
+          "mae": 0.1416739110062354,
           "direction_accuracy": 0.42857142857142855
         },
         {
@@ -1841,8 +1841,8 @@
           "validation_end": "2025-03-06",
           "rows_train": 765,
           "rows_validation": 63,
-          "rmse": 0.13698540704053372,
-          "mae": 0.11670182808524829,
+          "rmse": 0.12687459262861447,
+          "mae": 0.10517687042760039,
           "direction_accuracy": 0.5714285714285714
         },
         {
@@ -1853,50 +1853,50 @@
           "validation_end": "2025-07-15",
           "rows_train": 853,
           "rows_validation": 63,
-          "rmse": 0.2234559971369903,
-          "mae": 0.19586200928781053,
-          "direction_accuracy": 0.7301587301587301
+          "rmse": 0.21921019056038105,
+          "mae": 0.19049014159518268,
+          "direction_accuracy": 0.6825396825396826
         }
       ],
       "candidates": [
         {
           "name": "last_value_zero_return",
-          "rmse": 0.1643094676363754,
-          "mae": 0.13441628212379367,
+          "rmse": 0.16430946254042472,
+          "mae": 0.13441628427428917,
           "direction_accuracy": 0.29523809523809524,
-          "baseline_improvement": -0.0508437019659792,
+          "baseline_improvement": -0.05084370760154833,
           "failed_reason": null
         },
         {
           "name": "historical_mean_return",
-          "rmse": 0.15635956834396567,
-          "mae": 0.12849636384545948,
+          "rmse": 0.1563595626560353,
+          "mae": 0.12849636111183796,
           "direction_accuracy": 0.7047619047619048,
           "baseline_improvement": 0.0,
           "failed_reason": null
         },
         {
           "name": "ridge_regularized",
-          "rmse": 0.21591815251469348,
-          "mae": 0.18312095254500488,
+          "rmse": 0.21591829505468568,
+          "mae": 0.18312110079047175,
           "direction_accuracy": 0.43492063492063493,
-          "baseline_improvement": -0.38090783187446897,
+          "baseline_improvement": -0.3809087937248173,
           "failed_reason": null
         },
         {
           "name": "hist_gradient_boosting",
-          "rmse": 0.1596943998383951,
-          "mae": 0.12908826824732564,
-          "direction_accuracy": 0.6507936507936508,
-          "baseline_improvement": -0.021327965597176226,
+          "rmse": 0.15992570526948838,
+          "mae": 0.12934894201623562,
+          "direction_accuracy": 0.6476190476190476,
+          "baseline_improvement": -0.022807320210392258,
           "failed_reason": null
         },
         {
           "name": "hist_quantile_median",
-          "rmse": 0.15660634480473978,
-          "mae": 0.12666374247234322,
-          "direction_accuracy": 0.6730158730158731,
-          "baseline_improvement": -0.0015782626121814897,
+          "rmse": 0.15588258224373486,
+          "mae": 0.12609756089549673,
+          "direction_accuracy": 0.6634920634920635,
+          "baseline_improvement": 0.00305053560011362,
           "failed_reason": null
         }
       ],
@@ -1906,12 +1906,12 @@
         "data_freshness_15": 15.0,
         "data_completeness_10": 9.94287971318324,
         "memory_spot_quality_20": 0.0,
-        "walk_forward_performance_15": 7.5,
-        "fold_stability_10": 7.381320235043333,
-        "probability_calibration_10": 5.079486908939515,
+        "walk_forward_performance_15": 4.027863030436791,
+        "fold_stability_10": 7.122737478134944,
+        "probability_calibration_10": 0.0,
         "interval_coverage_5": 0.0,
         "recent_drift_5": 0.0,
-        "recent_performance_5": 4.0113179667084955,
+        "recent_performance_5": 4.084078477410125,
         "baseline_improvement_5": 0.0
       },
       "drift_score": 1.0,
@@ -1927,7 +1927,7 @@
         "realized_vol_20": 3.747069132498658,
         "macd_pct": 3.111289558717916
       },
-      "probability_calibration": "platt",
+      "probability_calibration": "isotonic",
       "leakage_diagnostics": {
         "passed": true,
         "checks": {
@@ -1943,7 +1943,6 @@
       },
       "selected_features": [
         "log_ret_1",
-        "ret_1",
         "realized_vol_5",
         "realized_vol_20",
         "gap",
@@ -1951,7 +1950,6 @@
         "close_location",
         "volume_log",
         "volume_chg_1",
-        "volume_z_20",
         "turnover_momentum_5",
         "dist_sma_5",
         "momentum_5",
@@ -1960,16 +1958,13 @@
         "dist_sma_20",
         "momentum_20",
         "dist_sma_60",
-        "momentum_60",
         "dist_sma_120",
         "momentum_120",
         "dist_sma_252",
         "momentum_252",
         "dist_ema_12",
         "dist_ema_26",
-        "dist_ema_50",
         "rsi_14",
-        "macd_pct",
         "macd_signal_pct",
         "macd_hist_pct",
         "bb_position_20",
@@ -1977,18 +1972,13 @@
         "atr_pct_14",
         "adx_14",
         "stoch_rsi_14",
-        "cci_20",
-        "roc_10",
         "obv_momentum_20",
         "mfi_14",
         "cmf_20",
-        "dist_vwap_20",
         "support_distance_20",
         "resistance_distance_20",
         "support_distance_60",
         "resistance_distance_60",
-        "dividend_event",
-        "split_event",
         "market_sox_ret_1",
         "market_sox_momentum_20",
         "market_sox_vol_20",
@@ -2007,12 +1997,6 @@
         "market_us10y_ret_1",
         "market_us10y_momentum_20",
         "market_us10y_vol_20",
-        "market_soxx_ret_1",
-        "market_soxx_momentum_20",
-        "market_soxx_vol_20",
-        "market_smh_ret_1",
-        "market_smh_momentum_20",
-        "market_smh_vol_20",
         "fred_broad_usd",
         "fred_us10y",
         "fred_vix",
@@ -2021,7 +2005,6 @@
         "fund_operating_cashflow",
         "fund_operating_income",
         "fund_revenue",
-        "memory_proxy_opt_in_ret_1",
         "memory_proxy_opt_in_momentum_20"
       ],
       "feature_count_input": 81,
@@ -2036,36 +2019,36 @@
       "period_years": 5,
       "horizon_days": 60,
       "selected_model": "hist_quantile_median",
-      "selection_reason": "분리된 walk-forward RMSE 최저이며 기준선 대비 5.81% 개선",
+      "selection_reason": "분리된 walk-forward RMSE 최저이며 기준선 대비 5.70% 개선",
       "validation": {
-        "mae": 0.1626326535068028,
-        "rmse": 0.20214687080957403,
-        "smape": 1.2552255305239648,
-        "direction_accuracy": 0.6730158730158731,
-        "brier_score": 0.17425102482243643,
-        "calibration_error": 0.00012063492063507159,
+        "mae": 0.16284497157988967,
+        "rmse": 0.20237596670129718,
+        "smape": 1.2544171862166407,
+        "direction_accuracy": 0.6666666666666666,
+        "brier_score": 0.1730991468840997,
+        "calibration_error": 7.936507936510551e-05,
         "interval_coverage": 0.7968253968253968,
-        "interval_average_width": 0.5261811777999431,
+        "interval_average_width": 0.5263152499575287,
         "interval_nominal_coverage": 0.8
       },
       "isolated_test": {
-        "mae": 0.5034737800350921,
-        "rmse": 0.5457961770733077,
-        "smape": 1.608551872052316,
+        "mae": 0.5048919526680301,
+        "rmse": 0.5471841443029397,
+        "smape": 1.614369625195989,
         "direction_accuracy": 0.6103896103896104,
-        "brier_score": 0.30392380862156204,
-        "calibration_error": 0.3558374592361077,
+        "brier_score": 0.3088042278768974,
+        "calibration_error": 0.3587993602424341,
         "interval_coverage": 0.09523809523809523,
-        "interval_average_width": 0.43707728945335783,
+        "interval_average_width": 0.43910454333629184,
         "interval_nominal_coverage": 0.8
       },
-      "baseline_rmse": 0.21461450283079264,
+      "baseline_rmse": 0.2146144904386381,
       "baseline_model": "historical_mean_return",
-      "baseline_improvement": 0.05809314774523139,
-      "isolated_test_baseline_rmse": 0.5397512913161197,
-      "isolated_test_improvement": -0.0111993910055284,
-      "recent_rmse_ratio": 1.2187219288505424,
-      "fold_rmse_cv": 0.4133965595029604,
+      "baseline_improvement": 0.05702561701368488,
+      "isolated_test_baseline_rmse": 0.5397512922834965,
+      "isolated_test_improvement": -0.013770883230306778,
+      "recent_rmse_ratio": 1.220130075843153,
+      "fold_rmse_cv": 0.41595819098549686,
       "folds": [
         {
           "fold": 1,
@@ -2075,8 +2058,8 @@
           "validation_end": "2024-03-28",
           "rows_train": 504,
           "rows_validation": 63,
-          "rmse": 0.17719663550792075,
-          "mae": 0.16364341600530774,
+          "rmse": 0.17743358648397536,
+          "mae": 0.16379725639661027,
           "direction_accuracy": 0.9841269841269841
         },
         {
@@ -2087,8 +2070,8 @@
           "validation_end": "2024-07-15",
           "rows_train": 576,
           "rows_validation": 63,
-          "rmse": 0.2475540803980854,
-          "mae": 0.21337583013288197,
+          "rmse": 0.2474501906162397,
+          "mae": 0.2132631484400327,
           "direction_accuracy": 0.2857142857142857
         },
         {
@@ -2099,9 +2082,9 @@
           "validation_end": "2024-11-01",
           "rows_train": 648,
           "rows_validation": 63,
-          "rmse": 0.09994396477881212,
-          "mae": 0.08490409363105117,
-          "direction_accuracy": 0.7619047619047619
+          "rmse": 0.0998510531870805,
+          "mae": 0.08508013863774078,
+          "direction_accuracy": 0.746031746031746
         },
         {
           "fold": 4,
@@ -2111,8 +2094,8 @@
           "validation_end": "2025-02-20",
           "rows_train": 720,
           "rows_validation": 63,
-          "rmse": 0.11020374617327212,
-          "mae": 0.08373009549730517,
+          "rmse": 0.10929122717117776,
+          "mae": 0.08287286263436655,
           "direction_accuracy": 0.6666666666666666
         },
         {
@@ -2123,50 +2106,50 @@
           "validation_end": "2025-06-11",
           "rows_train": 793,
           "rows_validation": 63,
-          "rmse": 0.2991679373982329,
-          "mae": 0.26750983226746783,
-          "direction_accuracy": 0.6666666666666666
+          "rmse": 0.30025169422285,
+          "mae": 0.26921145179069805,
+          "direction_accuracy": 0.6507936507936508
         }
       ],
       "candidates": [
         {
           "name": "last_value_zero_return",
-          "rmse": 0.2286798198723858,
-          "mae": 0.19476307675046728,
+          "rmse": 0.22867980922080205,
+          "mae": 0.1947630674215377,
           "direction_accuracy": 0.3111111111111111,
-          "baseline_improvement": -0.06553758882121126,
+          "baseline_improvement": -0.06553760071566779,
           "failed_reason": null
         },
         {
           "name": "historical_mean_return",
-          "rmse": 0.21461450283079264,
-          "mae": 0.18338541804734776,
+          "rmse": 0.2146144904386381,
+          "mae": 0.18338540741815362,
           "direction_accuracy": 0.6888888888888889,
           "baseline_improvement": 0.0,
           "failed_reason": null
         },
         {
           "name": "ridge_regularized",
-          "rmse": 0.24691928168418764,
-          "mae": 0.2098292377972339,
+          "rmse": 0.24691939892611606,
+          "mae": 0.209829328078685,
           "direction_accuracy": 0.6190476190476191,
-          "baseline_improvement": -0.1505246776303132,
+          "baseline_improvement": -0.15052529035412213,
           "failed_reason": null
         },
         {
           "name": "hist_gradient_boosting",
-          "rmse": 0.21090240827317636,
-          "mae": 0.17589412829699397,
-          "direction_accuracy": 0.6285714285714286,
-          "baseline_improvement": 0.017296569004672496,
+          "rmse": 0.21233101248205144,
+          "mae": 0.1774931357542763,
+          "direction_accuracy": 0.6031746031746031,
+          "baseline_improvement": 0.010639905776723562,
           "failed_reason": null
         },
         {
           "name": "hist_quantile_median",
-          "rmse": 0.20214687080957403,
-          "mae": 0.1626326535068028,
-          "direction_accuracy": 0.6730158730158731,
-          "baseline_improvement": 0.05809314774523139,
+          "rmse": 0.20237596670129718,
+          "mae": 0.16284497157988967,
+          "direction_accuracy": 0.6666666666666666,
+          "baseline_improvement": 0.05702561701368488,
           "failed_reason": null
         }
       ],
@@ -2176,12 +2159,12 @@
         "data_freshness_15": 15.0,
         "data_completeness_10": 9.94287971318324,
         "memory_spot_quality_20": 0.0,
-        "walk_forward_performance_15": 6.828036539668296,
-        "fold_stability_10": 5.866034404970396,
+        "walk_forward_performance_15": 6.673747006181593,
+        "fold_stability_10": 5.840418090145032,
         "probability_calibration_10": 0.0,
         "interval_coverage_5": 0.0,
         "recent_drift_5": 0.0,
-        "recent_performance_5": 3.9063903557472877,
+        "recent_performance_5": 3.8993496207842346,
         "baseline_improvement_5": 0.0
       },
       "drift_score": 1.0,
@@ -2291,34 +2274,34 @@
       "selected_model": "last_value_zero_return",
       "selection_reason": "고급 모델이 기준선 last_value_zero_return의 walk-forward RMSE를 개선하지 못해 기준 모델 선택",
       "validation": {
-        "mae": 0.05442240437548254,
-        "rmse": 0.06985923714033868,
+        "mae": 0.05442239298038408,
+        "rmse": 0.06985921794604949,
         "smape": 1.9746031746031747,
         "direction_accuracy": 0.5428571428571428,
         "brier_score": 0.24816326595998545,
         "calibration_error": 2.5570745266545458e-05,
         "interval_coverage": 0.7968253968253968,
-        "interval_average_width": 0.18628888212608874,
+        "interval_average_width": 0.18628879735655196,
         "interval_nominal_coverage": 0.8
       },
       "isolated_test": {
-        "mae": 0.1432913865903249,
-        "rmse": 0.17685835719764476,
+        "mae": 0.14329138156545254,
+        "rmse": 0.1768583552785802,
         "smape": 2.0,
         "direction_accuracy": 0.32142857142857145,
         "brier_score": 0.26715418198390967,
         "calibration_error": 0.22145414217383808,
         "interval_coverage": 0.34523809523809523,
-        "interval_average_width": 0.17013583306027946,
+        "interval_average_width": 0.16762740935984355,
         "interval_nominal_coverage": 0.8
       },
-      "baseline_rmse": 0.06985923714033868,
+      "baseline_rmse": 0.06985921794604949,
       "baseline_model": "last_value_zero_return",
       "baseline_improvement": 0.0,
-      "isolated_test_baseline_rmse": 0.17685835719764476,
+      "isolated_test_baseline_rmse": 0.1768583552785802,
       "isolated_test_improvement": 0.0,
-      "recent_rmse_ratio": 1.2873293733967668,
-      "fold_rmse_cv": 0.3168105694350994,
+      "recent_rmse_ratio": 1.287329481738676,
+      "fold_rmse_cv": 0.3168107214495322,
       "folds": [
         {
           "fold": 1,
@@ -2328,8 +2311,8 @@
           "validation_end": "2019-01-07",
           "rows_train": 504,
           "rows_validation": 63,
-          "rmse": 0.06816889047707558,
-          "mae": 0.056069008223435905,
+          "rmse": 0.06816888407268659,
+          "mae": 0.05606898392432383,
           "direction_accuracy": 0.6031746031746031
         },
         {
@@ -2340,8 +2323,8 @@
           "validation_end": "2020-08-20",
           "rows_train": 905,
           "rows_validation": 63,
-          "rmse": 0.04537689223080495,
-          "mae": 0.03474828779661029,
+          "rmse": 0.045376860917834654,
+          "mae": 0.03474829462392055,
           "direction_accuracy": 0.7619047619047619
         },
         {
@@ -2352,8 +2335,8 @@
           "validation_end": "2022-04-08",
           "rows_train": 1306,
           "rows_validation": 63,
-          "rmse": 0.06387766519218259,
-          "mae": 0.055429774879919555,
+          "rmse": 0.06387762759729528,
+          "mae": 0.055429760282863026,
           "direction_accuracy": 0.6984126984126984
         },
         {
@@ -2364,8 +2347,8 @@
           "validation_end": "2023-11-23",
           "rows_train": 1707,
           "rows_validation": 63,
-          "rmse": 0.050253981843649,
-          "mae": 0.037272123684297186,
+          "rmse": 0.05025396744323883,
+          "mae": 0.03727211519228246,
           "direction_accuracy": 0.4444444444444444
         },
         {
@@ -2376,50 +2359,50 @@
           "validation_end": "2025-07-22",
           "rows_train": 2109,
           "rows_validation": 63,
-          "rmse": 0.10530757945277434,
-          "mae": 0.08859282729314971,
+          "rmse": 0.10530756310185642,
+          "mae": 0.08859281087853053,
           "direction_accuracy": 0.20634920634920634
         }
       ],
       "candidates": [
         {
           "name": "last_value_zero_return",
-          "rmse": 0.06985923714033868,
-          "mae": 0.05442240437548254,
+          "rmse": 0.06985921794604949,
+          "mae": 0.05442239298038408,
           "direction_accuracy": 0.5428571428571428,
           "baseline_improvement": 0.0,
           "failed_reason": null
         },
         {
           "name": "historical_mean_return",
-          "rmse": 0.07040545217157942,
-          "mae": 0.05632877048604828,
+          "rmse": 0.07040543355107956,
+          "mae": 0.056328764612467885,
           "direction_accuracy": 0.45714285714285713,
-          "baseline_improvement": -0.007818794673401163,
+          "baseline_improvement": -0.007818805035176587,
           "failed_reason": null
         },
         {
           "name": "ridge_regularized",
-          "rmse": 0.09807016416831608,
-          "mae": 0.07766074291128286,
+          "rmse": 0.09807013714917062,
+          "mae": 0.07766072914161996,
           "direction_accuracy": 0.49523809523809526,
-          "baseline_improvement": -0.4038252947323931,
+          "baseline_improvement": -0.4038252936771739,
           "failed_reason": null
         },
         {
           "name": "hist_gradient_boosting",
-          "rmse": 0.08565550332136936,
-          "mae": 0.06920634804118714,
-          "direction_accuracy": 0.49523809523809526,
-          "baseline_improvement": -0.22611564093232095,
+          "rmse": 0.08476823436839312,
+          "mae": 0.06848354905269231,
+          "direction_accuracy": 0.5079365079365079,
+          "baseline_improvement": -0.2134151635344313,
           "failed_reason": null
         },
         {
           "name": "hist_quantile_median",
-          "rmse": 0.0808968428538096,
-          "mae": 0.06297353251238665,
-          "direction_accuracy": 0.4095238095238095,
-          "baseline_improvement": -0.15799779907842001,
+          "rmse": 0.07994088066482097,
+          "mae": 0.06188759929405884,
+          "direction_accuracy": 0.43174603174603177,
+          "baseline_improvement": -0.14431399341683573,
           "failed_reason": null
         }
       ],
@@ -2430,11 +2413,11 @@
         "data_completeness_10": 9.772669917123446,
         "memory_spot_quality_20": 0.0,
         "walk_forward_performance_15": 7.5,
-        "fold_stability_10": 6.831894305649007,
+        "fold_stability_10": 6.831892785504678,
         "probability_calibration_10": 0.0,
         "interval_coverage_5": 0.0,
         "recent_drift_5": 0.0,
-        "recent_performance_5": 3.5633531330161663,
+        "recent_performance_5": 3.5633525913066197,
         "baseline_improvement_5": 0.0
       },
       "drift_score": 1.0,
@@ -2559,36 +2542,36 @@
       "period_years": 10,
       "horizon_days": 30,
       "selected_model": "hist_quantile_median",
-      "selection_reason": "분리된 walk-forward RMSE 최저이며 기준선 대비 2.33% 개선",
+      "selection_reason": "분리된 walk-forward RMSE 최저이며 기준선 대비 3.03% 개선",
       "validation": {
-        "mae": 0.10485864264157536,
-        "rmse": 0.13003542608520208,
-        "smape": 1.3080461615647327,
+        "mae": 0.10363399427226375,
+        "rmse": 0.12909917998388776,
+        "smape": 1.2864911783649362,
         "direction_accuracy": 0.6349206349206349,
-        "brier_score": 0.21262761413500958,
-        "calibration_error": 5.0793650793672675e-05,
+        "brier_score": 0.21613659045684788,
+        "calibration_error": 3.1746031746120575e-05,
         "interval_coverage": 0.7968253968253968,
-        "interval_average_width": 0.3337097327328893,
+        "interval_average_width": 0.3362275227367468,
         "interval_nominal_coverage": 0.8
       },
       "isolated_test": {
-        "mae": 0.3462746514649348,
-        "rmse": 0.4096224079864622,
-        "smape": 1.7550672185268648,
-        "direction_accuracy": 0.3412698412698413,
-        "brier_score": 0.5102521816441389,
-        "calibration_error": 0.4838388022790905,
-        "interval_coverage": 0.17063492063492064,
-        "interval_average_width": 0.25599622037697045,
+        "mae": 0.34647464769709746,
+        "rmse": 0.4090413405571483,
+        "smape": 1.7387329122234645,
+        "direction_accuracy": 0.3611111111111111,
+        "brier_score": 0.5408771078069706,
+        "calibration_error": 0.5089624201278492,
+        "interval_coverage": 0.16666666666666666,
+        "interval_average_width": 0.2546867667608763,
         "interval_nominal_coverage": 0.8
       },
-      "baseline_rmse": 0.13313963012184837,
+      "baseline_rmse": 0.13313961598942184,
       "baseline_model": "historical_mean_return",
-      "baseline_improvement": 0.023315402287097782,
-      "isolated_test_baseline_rmse": 0.3692947802692606,
-      "isolated_test_improvement": -0.10920172683675054,
-      "recent_rmse_ratio": 1.2225834068945542,
-      "fold_rmse_cv": 0.4472903547310021,
+      "baseline_improvement": 0.03034736111793428,
+      "isolated_test_baseline_rmse": 0.3692947789531804,
+      "isolated_test_improvement": -0.10762827927498807,
+      "recent_rmse_ratio": 1.1976005340892835,
+      "fold_rmse_cv": 0.4562430119853751,
       "folds": [
         {
           "fold": 1,
@@ -2598,8 +2581,8 @@
           "validation_end": "2019-02-13",
           "rows_train": 504,
           "rows_validation": 63,
-          "rmse": 0.10902991741630079,
-          "mae": 0.0939912082404018,
+          "rmse": 0.10967128018006732,
+          "mae": 0.09448547230493118,
           "direction_accuracy": 0.7619047619047619
         },
         {
@@ -2610,9 +2593,9 @@
           "validation_end": "2020-09-08",
           "rows_train": 894,
           "rows_validation": 63,
-          "rmse": 0.07797725332087412,
-          "mae": 0.06500553995363806,
-          "direction_accuracy": 0.5873015873015873
+          "rmse": 0.07859659443638017,
+          "mae": 0.06599111429647776,
+          "direction_accuracy": 0.5555555555555556
         },
         {
           "fold": 3,
@@ -2622,8 +2605,8 @@
           "validation_end": "2022-04-12",
           "rows_train": 1284,
           "rows_validation": 63,
-          "rmse": 0.15174242521478923,
-          "mae": 0.14503555443144703,
+          "rmse": 0.1556184843635215,
+          "mae": 0.14897226968075394,
           "direction_accuracy": 0.09523809523809523
         },
         {
@@ -2634,8 +2617,8 @@
           "validation_end": "2023-11-10",
           "rows_train": 1674,
           "rows_validation": 63,
-          "rmse": 0.05288000693388807,
-          "mae": 0.04251042572214002,
+          "rmse": 0.04653819851543213,
+          "mae": 0.03698107437963403,
           "direction_accuracy": 0.8888888888888888
         },
         {
@@ -2646,65 +2629,65 @@
           "validation_end": "2025-06-24",
           "rows_train": 2065,
           "rows_validation": 63,
-          "rmse": 0.20188121882714394,
-          "mae": 0.17775048486024989,
-          "direction_accuracy": 0.8412698412698413
+          "rmse": 0.19683714185226375,
+          "mae": 0.17174004069952187,
+          "direction_accuracy": 0.873015873015873
         }
       ],
       "candidates": [
         {
           "name": "last_value_zero_return",
-          "rmse": 0.13843428939906963,
-          "mae": 0.10305677076780495,
+          "rmse": 0.1384342732236154,
+          "mae": 0.10305676200965212,
           "direction_accuracy": 0.44761904761904764,
-          "baseline_improvement": -0.03976771808946458,
+          "baseline_improvement": -0.03976770696570306,
           "failed_reason": null
         },
         {
           "name": "historical_mean_return",
-          "rmse": 0.13313963012184837,
-          "mae": 0.10354290666480868,
+          "rmse": 0.13313961598942184,
+          "mae": 0.10354289821567951,
           "direction_accuracy": 0.5523809523809524,
           "baseline_improvement": 0.0,
           "failed_reason": null
         },
         {
           "name": "ridge_regularized",
-          "rmse": 0.22385965458555343,
-          "mae": 0.18100771694837797,
+          "rmse": 0.22385965237039696,
+          "mae": 0.18100771694364065,
           "direction_accuracy": 0.44126984126984126,
-          "baseline_improvement": -0.6813900893421349,
+          "baseline_improvement": -0.681390251179506,
           "failed_reason": null
         },
         {
           "name": "hist_gradient_boosting",
-          "rmse": 0.1398405204504087,
-          "mae": 0.11431047979128424,
-          "direction_accuracy": 0.6603174603174603,
-          "baseline_improvement": -0.050329795286555394,
+          "rmse": 0.13977326972300347,
+          "mae": 0.11423612392237682,
+          "direction_accuracy": 0.6634920634920635,
+          "baseline_improvement": -0.04982479245027028,
           "failed_reason": null
         },
         {
           "name": "hist_quantile_median",
-          "rmse": 0.13003542608520208,
-          "mae": 0.10485864264157536,
+          "rmse": 0.12909917998388776,
+          "mae": 0.10363399427226375,
           "direction_accuracy": 0.6349206349206349,
-          "baseline_improvement": 0.023315402287097782,
+          "baseline_improvement": 0.03034736111793428,
           "failed_reason": null
         }
       ],
-      "confidence_score": 35.1,
+      "confidence_score": 35.3,
       "confidence_grade": "사용 주의",
       "confidence_formula": {
         "data_freshness_15": 15.0,
         "data_completeness_10": 9.772669917123446,
         "memory_spot_quality_20": 0.0,
-        "walk_forward_performance_15": 0.9478963897949675,
-        "fold_stability_10": 5.527096452689979,
+        "walk_forward_performance_15": 1.042303243500716,
+        "fold_stability_10": 5.437569880146249,
         "probability_calibration_10": 0.0,
         "interval_coverage_5": 0.0,
         "recent_drift_5": 0.0,
-        "recent_performance_5": 3.8870829655272288,
+        "recent_performance_5": 4.011997329553583,
         "baseline_improvement_5": 0.0
       },
       "drift_score": 1.0,
@@ -2814,34 +2797,34 @@
       "selected_model": "historical_mean_return",
       "selection_reason": "고급 모델이 기준선 historical_mean_return의 walk-forward RMSE를 개선하지 못해 기준 모델 선택",
       "validation": {
-        "mae": 0.16176288458213758,
-        "rmse": 0.1964440111733979,
-        "smape": 1.439562809953389,
+        "mae": 0.16176288457646298,
+        "rmse": 0.19644401163513378,
+        "smape": 1.4395629571000215,
         "direction_accuracy": 0.6095238095238096,
         "brier_score": 0.23142343894730785,
         "calibration_error": 0.054021403270213986,
         "interval_coverage": 0.7968253968253968,
-        "interval_average_width": 0.5189018099011928,
+        "interval_average_width": 0.5189019412181981,
         "interval_nominal_coverage": 0.8
       },
       "isolated_test": {
-        "mae": 0.46726567898557547,
-        "rmse": 0.5277115939835119,
-        "smape": 1.5670428576725468,
+        "mae": 0.467265681761596,
+        "rmse": 0.5277115955559891,
+        "smape": 1.5670428625033193,
         "direction_accuracy": 0.9484126984126984,
         "brier_score": 0.1707512971523382,
         "calibration_error": 0.34903473358692516,
-        "interval_coverage": 0.07539682539682539,
-        "interval_average_width": 0.3648488699509468,
+        "interval_coverage": 0.07142857142857142,
+        "interval_average_width": 0.3583297259002865,
         "interval_nominal_coverage": 0.8
       },
-      "baseline_rmse": 0.1964440111733979,
+      "baseline_rmse": 0.19644401163513378,
       "baseline_model": "historical_mean_return",
       "baseline_improvement": 0.0,
-      "isolated_test_baseline_rmse": 0.5277115939835119,
+      "isolated_test_baseline_rmse": 0.5277115955559891,
       "isolated_test_improvement": 0.0,
-      "recent_rmse_ratio": 1.0929644211762592,
-      "fold_rmse_cv": 0.3492972284787021,
+      "recent_rmse_ratio": 1.0929643441552992,
+      "fold_rmse_cv": 0.34929724070580404,
       "folds": [
         {
           "fold": 1,
@@ -2851,8 +2834,8 @@
           "validation_end": "2019-04-05",
           "rows_train": 504,
           "rows_validation": 63,
-          "rmse": 0.13879215217233595,
-          "mae": 0.12524586648347272,
+          "rmse": 0.13879212289027332,
+          "mae": 0.12524584558510068,
           "direction_accuracy": 0.4126984126984127
         },
         {
@@ -2863,8 +2846,8 @@
           "validation_end": "2020-10-08",
           "rows_train": 877,
           "rows_validation": 63,
-          "rmse": 0.2150517706047422,
-          "mae": 0.17137362693519062,
+          "rmse": 0.2150518392638445,
+          "mae": 0.1713736827204301,
           "direction_accuracy": 0.8888888888888888
         },
         {
@@ -2875,8 +2858,8 @@
           "validation_end": "2022-04-15",
           "rows_train": 1251,
           "rows_validation": 63,
-          "rmse": 0.221184077309961,
-          "mae": 0.21358356115179933,
+          "rmse": 0.22118405427148988,
+          "mae": 0.21358353809600877,
           "direction_accuracy": 0.0
         },
         {
@@ -2887,8 +2870,8 @@
           "validation_end": "2023-10-24",
           "rows_train": 1625,
           "rows_validation": 63,
-          "rmse": 0.08535762892089674,
-          "mae": 0.07435834894903603,
+          "rmse": 0.08535763129436388,
+          "mae": 0.07435835817186515,
           "direction_accuracy": 0.9365079365079365
         },
         {
@@ -2899,50 +2882,50 @@
           "validation_end": "2025-05-09",
           "rows_train": 1999,
           "rows_validation": 63,
-          "rmse": 0.26689398871864944,
-          "mae": 0.22425301939118922,
+          "rmse": 0.26689396865649434,
+          "mae": 0.22425299830891016,
           "direction_accuracy": 0.8095238095238095
         }
       ],
       "candidates": [
         {
           "name": "last_value_zero_return",
-          "rmse": 0.20844298544439677,
-          "mae": 0.16528370640290213,
+          "rmse": 0.20844299166086488,
+          "mae": 0.16528370545717183,
           "direction_accuracy": 0.3904761904761905,
-          "baseline_improvement": -0.06108088609740085,
+          "baseline_improvement": -0.06108091524834805,
           "failed_reason": null
         },
         {
           "name": "historical_mean_return",
-          "rmse": 0.1964440111733979,
-          "mae": 0.16176288458213758,
+          "rmse": 0.19644401163513378,
+          "mae": 0.16176288457646298,
           "direction_accuracy": 0.6095238095238096,
           "baseline_improvement": 0.0,
           "failed_reason": null
         },
         {
           "name": "ridge_regularized",
-          "rmse": 0.3032278156354018,
-          "mae": 0.23878131970080696,
+          "rmse": 0.3032275891911446,
+          "mae": 0.2387810927953732,
           "direction_accuracy": 0.5079365079365079,
-          "baseline_improvement": -0.5435839139313215,
+          "baseline_improvement": -0.5435827575866544,
           "failed_reason": null
         },
         {
           "name": "hist_gradient_boosting",
-          "rmse": 0.21186526023873542,
-          "mae": 0.1734857373707454,
-          "direction_accuracy": 0.546031746031746,
-          "baseline_improvement": -0.0785020066186972,
+          "rmse": 0.211736322173456,
+          "mae": 0.1733662316490279,
+          "direction_accuracy": 0.5492063492063493,
+          "baseline_improvement": -0.07784564370801728,
           "failed_reason": null
         },
         {
           "name": "hist_quantile_median",
-          "rmse": 0.21637903515310322,
-          "mae": 0.17421367638046134,
-          "direction_accuracy": 0.5079365079365079,
-          "baseline_improvement": -0.10147941828630751,
+          "rmse": 0.22164125443338767,
+          "mae": 0.17934246734856615,
+          "direction_accuracy": 0.4888888888888889,
+          "baseline_improvement": -0.12826679005646713,
           "failed_reason": null
         }
       ],
@@ -2953,11 +2936,11 @@
         "data_completeness_10": 9.772669917123446,
         "memory_spot_quality_20": 0.0,
         "walk_forward_performance_15": 7.5,
-        "fold_stability_10": 6.5070277152129785,
+        "fold_stability_10": 6.507027592941959,
         "probability_calibration_10": 0.0,
         "interval_coverage_5": 0.0,
         "recent_drift_5": 0.0,
-        "recent_performance_5": 4.5351778941187035,
+        "recent_performance_5": 4.535178279223504,
         "baseline_improvement_5": 0.0
       },
       "drift_score": 1.0,
@@ -3084,34 +3067,34 @@
       "selected_model": "historical_mean_return",
       "selection_reason": "고급 모델이 기준선 historical_mean_return의 walk-forward RMSE를 개선하지 못해 기준 모델 선택",
       "validation": {
-        "mae": 0.053283822490188995,
-        "rmse": 0.06748556762396997,
-        "smape": 1.640007975595991,
+        "mae": 0.0532838313403384,
+        "rmse": 0.06748557224678532,
+        "smape": 1.6400082564587801,
         "direction_accuracy": 0.5968253968253968,
         "brier_score": 0.2405927835795097,
         "calibration_error": 4.3848271349622436e-05,
         "interval_coverage": 0.7968253968253968,
-        "interval_average_width": 0.168164842231873,
+        "interval_average_width": 0.1681649025603336,
         "interval_nominal_coverage": 0.8
       },
       "isolated_test": {
-        "mae": 0.14052495505118548,
-        "rmse": 0.17375108364236144,
-        "smape": 1.7498628645659122,
+        "mae": 0.14052495179569316,
+        "rmse": 0.17375108163508204,
+        "smape": 1.7498631563620437,
         "direction_accuracy": 0.6785714285714286,
         "brier_score": 0.22486223710379252,
         "calibration_error": 0.08215833619197321,
-        "interval_coverage": 0.3253968253968254,
-        "interval_average_width": 0.16734264926891435,
+        "interval_coverage": 0.3412698412698413,
+        "interval_average_width": 0.1694203637930111,
         "interval_nominal_coverage": 0.8
       },
-      "baseline_rmse": 0.06748556762396997,
+      "baseline_rmse": 0.06748557224678532,
       "baseline_model": "historical_mean_return",
       "baseline_improvement": 0.0,
-      "isolated_test_baseline_rmse": 0.17375108364236144,
+      "isolated_test_baseline_rmse": 0.17375108163508204,
       "isolated_test_improvement": 0.0,
-      "recent_rmse_ratio": 1.2608615831500132,
-      "fold_rmse_cv": 0.3013187571906928,
+      "recent_rmse_ratio": 1.2608613290173964,
+      "fold_rmse_cv": 0.30131843799518654,
       "folds": [
         {
           "fold": 1,
@@ -3121,8 +3104,8 @@
           "validation_end": "2013-12-18",
           "rows_train": 504,
           "rows_validation": 63,
-          "rmse": 0.05086450959637549,
-          "mae": 0.04111727324696053,
+          "rmse": 0.05086455494436194,
+          "mae": 0.04111729696839102,
           "direction_accuracy": 0.6349206349206349
         },
         {
@@ -3133,8 +3116,8 @@
           "validation_end": "2016-11-08",
           "rows_train": 1214,
           "rows_validation": 63,
-          "rmse": 0.04699454524821378,
-          "mae": 0.0409496626703813,
+          "rmse": 0.046994575767954044,
+          "mae": 0.04094970995442082,
           "direction_accuracy": 0.7619047619047619
         },
         {
@@ -3145,8 +3128,8 @@
           "validation_end": "2019-10-07",
           "rows_train": 1924,
           "rows_validation": 63,
-          "rmse": 0.057292102615187766,
-          "mae": 0.04395252049022531,
+          "rmse": 0.057292097414454714,
+          "mae": 0.04395251113863044,
           "direction_accuracy": 0.5238095238095238
         },
         {
@@ -3157,8 +3140,8 @@
           "validation_end": "2022-08-23",
           "rows_train": 2634,
           "rows_validation": 63,
-          "rmse": 0.06673884665767844,
-          "mae": 0.05586779574595717,
+          "rmse": 0.06673884242938122,
+          "mae": 0.055867792298368545,
           "direction_accuracy": 0.2698412698412698
         },
         {
@@ -3169,50 +3152,50 @@
           "validation_end": "2025-07-22",
           "rows_train": 3345,
           "rows_validation": 63,
-          "rmse": 0.10118974697475341,
-          "mae": 0.08453186029742066,
+          "rmse": 0.10118973115450637,
+          "mae": 0.0845318463418812,
           "direction_accuracy": 0.7936507936507936
         }
       ],
       "candidates": [
         {
           "name": "last_value_zero_return",
-          "rmse": 0.06943513993385818,
-          "mae": 0.05433015018054785,
+          "rmse": 0.06943514487038384,
+          "mae": 0.054330154041458245,
           "direction_accuracy": 0.4031746031746032,
-          "baseline_improvement": -0.028888729524381256,
+          "baseline_improvement": -0.028888732194034032,
           "failed_reason": null
         },
         {
           "name": "historical_mean_return",
-          "rmse": 0.06748556762396997,
-          "mae": 0.053283822490188995,
+          "rmse": 0.06748557224678532,
+          "mae": 0.0532838313403384,
           "direction_accuracy": 0.5968253968253968,
           "baseline_improvement": 0.0,
           "failed_reason": null
         },
         {
           "name": "ridge_regularized",
-          "rmse": 0.0954767607785534,
-          "mae": 0.07690603889764093,
+          "rmse": 0.09547685594485784,
+          "mae": 0.0769061420854106,
           "direction_accuracy": 0.38412698412698415,
-          "baseline_improvement": -0.4147730268870307,
+          "baseline_improvement": -0.41477434014654724,
           "failed_reason": null
         },
         {
           "name": "hist_gradient_boosting",
-          "rmse": 0.07233055621643544,
-          "mae": 0.05600957401542811,
-          "direction_accuracy": 0.5111111111111111,
-          "baseline_improvement": -0.07179295904365482,
+          "rmse": 0.07257945956341325,
+          "mae": 0.05606600595920676,
+          "direction_accuracy": 0.5047619047619047,
+          "baseline_improvement": -0.07548113095937438,
           "failed_reason": null
         },
         {
           "name": "hist_quantile_median",
-          "rmse": 0.06962776111039859,
-          "mae": 0.05559761459452209,
-          "direction_accuracy": 0.5238095238095238,
-          "baseline_improvement": -0.03174298686150106,
+          "rmse": 0.06916036912773732,
+          "mae": 0.05520723965182085,
+          "direction_accuracy": 0.546031746031746,
+          "baseline_improvement": -0.02481711016434001,
           "failed_reason": null
         }
       ],
@@ -3223,11 +3206,11 @@
         "data_completeness_10": 9.677476680011534,
         "memory_spot_quality_20": 0.0,
         "walk_forward_performance_15": 7.5,
-        "fold_stability_10": 6.986812428093073,
+        "fold_stability_10": 6.986815620048135,
         "probability_calibration_10": 5.8920831904013395,
         "interval_coverage_5": 0.0,
         "recent_drift_5": 0.0,
-        "recent_performance_5": 3.6956920842499343,
+        "recent_performance_5": 3.6956933549130175,
         "baseline_improvement_5": 0.0
       },
       "drift_score": 1.0,
@@ -3354,34 +3337,34 @@
       "selected_model": "historical_mean_return",
       "selection_reason": "고급 모델이 기준선 historical_mean_return의 walk-forward RMSE를 개선하지 못해 기준 모델 선택",
       "validation": {
-        "mae": 0.08919853719226029,
-        "rmse": 0.123372766523923,
-        "smape": 1.33998674240786,
+        "mae": 0.08919852579184853,
+        "rmse": 0.12337275890918037,
+        "smape": 1.339986771453581,
         "direction_accuracy": 0.7587301587301587,
         "brier_score": 0.18305853576642023,
         "calibration_error": 3.464105111872229e-06,
         "interval_coverage": 0.7968253968253968,
-        "interval_average_width": 0.2688398897509244,
+        "interval_average_width": 0.2688399552597321,
         "interval_nominal_coverage": 0.8
       },
       "isolated_test": {
-        "mae": 0.30575124553511,
-        "rmse": 0.3715480948418802,
-        "smape": 1.7269621101945247,
+        "mae": 0.30575124623510436,
+        "rmse": 0.3715480931972613,
+        "smape": 1.7269621501337737,
         "direction_accuracy": 0.7261904761904762,
         "brier_score": 0.19988354664259922,
         "calibration_error": 0.032336947318409415,
         "interval_coverage": 0.17063492063492064,
-        "interval_average_width": 0.2591167214983158,
+        "interval_average_width": 0.2583680050671746,
         "interval_nominal_coverage": 0.8
       },
-      "baseline_rmse": 0.123372766523923,
+      "baseline_rmse": 0.12337275890918037,
       "baseline_model": "historical_mean_return",
       "baseline_improvement": 0.0,
-      "isolated_test_baseline_rmse": 0.3715480948418802,
+      "isolated_test_baseline_rmse": 0.3715480931972613,
       "isolated_test_improvement": 0.0,
-      "recent_rmse_ratio": 1.4498803720215734,
-      "fold_rmse_cv": 0.5746898101858229,
+      "recent_rmse_ratio": 1.4498803701696406,
+      "fold_rmse_cv": 0.5746898745640522,
       "folds": [
         {
           "fold": 1,
@@ -3391,8 +3374,8 @@
           "validation_end": "2014-01-24",
           "rows_train": 504,
           "rows_validation": 63,
-          "rmse": 0.06699952384385509,
-          "mae": 0.05443551476112712,
+          "rmse": 0.06699950003102681,
+          "mae": 0.05443552308610547,
           "direction_accuracy": 0.9206349206349206
         },
         {
@@ -3403,8 +3386,8 @@
           "validation_end": "2016-11-25",
           "rows_train": 1203,
           "rows_validation": 63,
-          "rmse": 0.08122335797035299,
-          "mae": 0.07160425374773055,
+          "rmse": 0.08122337543129526,
+          "mae": 0.07160424831357749,
           "direction_accuracy": 0.8571428571428571
         },
         {
@@ -3415,8 +3398,8 @@
           "validation_end": "2019-10-10",
           "rows_train": 1902,
           "rows_validation": 63,
-          "rmse": 0.05029939330974894,
-          "mae": 0.039846417762509384,
+          "rmse": 0.05029936222065825,
+          "mae": 0.039846378173674896,
           "direction_accuracy": 0.7936507936507936
         },
         {
@@ -3427,8 +3410,8 @@
           "validation_end": "2022-08-09",
           "rows_train": 2601,
           "rows_validation": 63,
-          "rmse": 0.11368180806917445,
-          "mae": 0.08921754519456085,
+          "rmse": 0.11368181386074991,
+          "mae": 0.08921754523005491,
           "direction_accuracy": 0.3333333333333333
         },
         {
@@ -3439,50 +3422,50 @@
           "validation_end": "2025-06-24",
           "rows_train": 3301,
           "rows_validation": 63,
-          "rmse": 0.22263073702960076,
-          "mae": 0.1908889544953735,
+          "rmse": 0.22263072079337534,
+          "mae": 0.1908889341558299,
           "direction_accuracy": 0.8888888888888888
         }
       ],
       "candidates": [
         {
           "name": "last_value_zero_return",
-          "rmse": 0.1321167766142656,
-          "mae": 0.09800964087362968,
+          "rmse": 0.1321167685015301,
+          "mae": 0.0980096256935383,
           "direction_accuracy": 0.24126984126984127,
-          "baseline_improvement": -0.07087471843834409,
+          "baseline_improvement": -0.07087471877634298,
           "failed_reason": null
         },
         {
           "name": "historical_mean_return",
-          "rmse": 0.123372766523923,
-          "mae": 0.08919853719226029,
+          "rmse": 0.12337275890918037,
+          "mae": 0.08919852579184853,
           "direction_accuracy": 0.7587301587301587,
           "baseline_improvement": 0.0,
           "failed_reason": null
         },
         {
           "name": "ridge_regularized",
-          "rmse": 0.2606847553374311,
-          "mae": 0.20469241527782905,
+          "rmse": 0.26068459285768864,
+          "mae": 0.20469234261338376,
           "direction_accuracy": 0.4666666666666667,
-          "baseline_improvement": -1.1129845968630538,
+          "baseline_improvement": -1.112983410297155,
           "failed_reason": null
         },
         {
           "name": "hist_gradient_boosting",
-          "rmse": 0.1500549191974851,
-          "mae": 0.11652997444833385,
-          "direction_accuracy": 0.4031746031746032,
-          "baseline_improvement": -0.21627262989509283,
+          "rmse": 0.15085836715012094,
+          "mae": 0.1169258250755528,
+          "direction_accuracy": 0.39365079365079364,
+          "baseline_improvement": -0.22278506603855577,
           "failed_reason": null
         },
         {
           "name": "hist_quantile_median",
-          "rmse": 0.14942548165082054,
-          "mae": 0.11558037478794636,
-          "direction_accuracy": 0.3619047619047619,
-          "baseline_improvement": -0.21117071344789615,
+          "rmse": 0.1502378224421265,
+          "mae": 0.11624199309191328,
+          "direction_accuracy": 0.36507936507936506,
+          "baseline_improvement": -0.21775523033186422,
           "failed_reason": null
         }
       ],
@@ -3493,11 +3476,11 @@
         "data_completeness_10": 9.677476680011534,
         "memory_spot_quality_20": 0.0,
         "walk_forward_performance_15": 7.5,
-        "fold_stability_10": 4.253101898141772,
+        "fold_stability_10": 4.253101254359478,
         "probability_calibration_10": 8.38315263407953,
         "interval_coverage_5": 0.0,
         "recent_drift_5": 0.0,
-        "recent_performance_5": 2.750598139892133,
+        "recent_performance_5": 2.7505981491517972,
         "baseline_improvement_5": 0.0
       },
       "drift_score": 1.0,
@@ -3624,34 +3607,34 @@
       "selected_model": "historical_mean_return",
       "selection_reason": "고급 모델이 기준선 historical_mean_return의 walk-forward RMSE를 개선하지 못해 기준 모델 선택",
       "validation": {
-        "mae": 0.1260870268120101,
-        "rmse": 0.1630321090824711,
-        "smape": 1.349128578097181,
+        "mae": 0.12608703623672626,
+        "rmse": 0.1630321238316343,
+        "smape": 1.3491284566008241,
         "direction_accuracy": 0.7174603174603175,
         "brier_score": 0.19563893053257994,
         "calibration_error": 0.06341046883052853,
         "interval_coverage": 0.7968253968253968,
-        "interval_average_width": 0.4029678216906035,
+        "interval_average_width": 0.40296787314552174,
         "interval_nominal_coverage": 0.8
       },
       "isolated_test": {
-        "mae": 0.47468000433837226,
-        "rmse": 0.5347657764916806,
-        "smape": 1.623415967849229,
+        "mae": 0.47468000691107937,
+        "rmse": 0.5347657778931361,
+        "smape": 1.623415970681641,
         "direction_accuracy": 0.9484126984126984,
         "brier_score": 0.10870352689517376,
         "calibration_error": 0.24449432507306035,
         "interval_coverage": 0.06349206349206349,
-        "interval_average_width": 0.3079001637828124,
+        "interval_average_width": 0.30286898280617086,
         "interval_nominal_coverage": 0.8
       },
-      "baseline_rmse": 0.1630321090824711,
+      "baseline_rmse": 0.1630321238316343,
       "baseline_model": "historical_mean_return",
       "baseline_improvement": 0.0,
-      "isolated_test_baseline_rmse": 0.5347657764916806,
+      "isolated_test_baseline_rmse": 0.5347657778931361,
       "isolated_test_improvement": 0.0,
-      "recent_rmse_ratio": 1.38699592301279,
-      "fold_rmse_cv": 0.46691565354226056,
+      "recent_rmse_ratio": 1.3869957128501196,
+      "fold_rmse_cv": 0.46691553106449074,
       "folds": [
         {
           "fold": 1,
@@ -3661,8 +3644,8 @@
           "validation_end": "2014-03-19",
           "rows_train": 504,
           "rows_validation": 63,
-          "rmse": 0.08512376967837358,
-          "mae": 0.060312719482683685,
+          "rmse": 0.08512377067047333,
+          "mae": 0.06031272374300641,
           "direction_accuracy": 0.8571428571428571
         },
         {
@@ -3673,8 +3656,8 @@
           "validation_end": "2016-12-22",
           "rows_train": 1186,
           "rows_validation": 63,
-          "rmse": 0.15604737263335108,
-          "mae": 0.136691440643037,
+          "rmse": 0.1560474531995217,
+          "mae": 0.13669147698438988,
           "direction_accuracy": 1.0
         },
         {
@@ -3685,8 +3668,8 @@
           "validation_end": "2019-10-15",
           "rows_train": 1869,
           "rows_validation": 63,
-          "rmse": 0.08073357574098601,
-          "mae": 0.06847660573654601,
+          "rmse": 0.0807335911400651,
+          "mae": 0.06847661000891571,
           "direction_accuracy": 0.8888888888888888
         },
         {
@@ -3697,8 +3680,8 @@
           "validation_end": "2022-07-21",
           "rows_train": 2552,
           "rows_validation": 63,
-          "rmse": 0.14527079163026974,
-          "mae": 0.13750091707893747,
+          "rmse": 0.14527081627836078,
+          "mae": 0.1375009403393463,
           "direction_accuracy": 0.031746031746031744
         },
         {
@@ -3709,50 +3692,50 @@
           "validation_end": "2025-05-09",
           "rows_train": 3235,
           "rows_validation": 63,
-          "rmse": 0.27143874288051495,
-          "mae": 0.22745345111884638,
+          "rmse": 0.271438722774585,
+          "mae": 0.22745343010797306,
           "direction_accuracy": 0.8095238095238095
         }
       ],
       "candidates": [
         {
           "name": "last_value_zero_return",
-          "rmse": 0.17815915814127573,
-          "mae": 0.1370023247217677,
+          "rmse": 0.17815917344202187,
+          "mae": 0.1370023438532693,
           "direction_accuracy": 0.28253968253968254,
-          "baseline_improvement": -0.09278570426364596,
+          "baseline_improvement": -0.0927856992528019,
           "failed_reason": null
         },
         {
           "name": "historical_mean_return",
-          "rmse": 0.1630321090824711,
-          "mae": 0.1260870268120101,
+          "rmse": 0.1630321238316343,
+          "mae": 0.12608703623672626,
           "direction_accuracy": 0.7174603174603175,
           "baseline_improvement": 0.0,
           "failed_reason": null
         },
         {
           "name": "ridge_regularized",
-          "rmse": 0.4205345725039266,
-          "mae": 0.33284325761100647,
+          "rmse": 0.42053488366003844,
+          "mae": 0.3328433507914441,
           "direction_accuracy": 0.580952380952381,
-          "baseline_improvement": -1.5794585794826212,
+          "baseline_improvement": -1.5794602546816545,
           "failed_reason": null
         },
         {
           "name": "hist_gradient_boosting",
-          "rmse": 0.25849602429102914,
-          "mae": 0.2225113791119141,
+          "rmse": 0.25892417802863693,
+          "mae": 0.22300952600917887,
           "direction_accuracy": 0.22857142857142856,
-          "baseline_improvement": -0.5855528444416238,
+          "baseline_improvement": -0.5881788934801082,
           "failed_reason": null
         },
         {
           "name": "hist_quantile_median",
-          "rmse": 0.2348532335003807,
-          "mae": 0.19117540667364835,
-          "direction_accuracy": 0.3523809523809524,
-          "baseline_improvement": -0.44053361526212187,
+          "rmse": 0.23616034206228734,
+          "mae": 0.19316481558657175,
+          "direction_accuracy": 0.35555555555555557,
+          "baseline_improvement": -0.44855097579525893,
           "failed_reason": null
         }
       ],
@@ -3763,11 +3746,11 @@
         "data_completeness_10": 9.677476680011534,
         "memory_spot_quality_20": 0.0,
         "walk_forward_performance_15": 7.5,
-        "fold_stability_10": 5.330843464577395,
+        "fold_stability_10": 5.330844689355092,
         "probability_calibration_10": 0.0,
         "interval_coverage_5": 0.0,
         "recent_drift_5": 0.0,
-        "recent_performance_5": 3.0650203849360502,
+        "recent_performance_5": 3.065021435749402,
         "baseline_improvement_5": 0.0
       },
       "drift_score": 1.0,
@@ -3894,34 +3877,34 @@
       "selected_model": "historical_mean_return",
       "selection_reason": "고급 모델이 기준선 historical_mean_return의 walk-forward RMSE를 개선하지 못해 기준 모델 선택",
       "validation": {
-        "mae": 0.08319896609639424,
-        "rmse": 0.10543702114984103,
-        "smape": 0.8676193998446574,
+        "mae": 0.08319896605104567,
+        "rmse": 0.10543702106301274,
+        "smape": 0.8676193974301356,
         "direction_accuracy": 0.8333333333333334,
         "brier_score": 0.13651786112395295,
         "calibration_error": 5.742613437109689e-06,
         "interval_coverage": 0.8,
-        "interval_average_width": 0.27800020562158634,
+        "interval_average_width": 0.27800020582133933,
         "interval_nominal_coverage": 0.8
       },
       "isolated_test": {
-        "mae": 0.1644586436981905,
-        "rmse": 0.19287541573395314,
-        "smape": 1.5693481711453838,
+        "mae": 0.16445864408541222,
+        "rmse": 0.19287541616340065,
+        "smape": 1.569348170830557,
         "direction_accuracy": 0.30434782608695654,
         "brier_score": 0.4897344521272229,
         "calibration_error": 0.5272705427805753,
         "interval_coverage": 0.2391304347826087,
-        "interval_average_width": 0.15725948502687134,
+        "interval_average_width": 0.1572954056040813,
         "interval_nominal_coverage": 0.8
       },
-      "baseline_rmse": 0.10543702114984103,
+      "baseline_rmse": 0.10543702106301274,
       "baseline_model": "historical_mean_return",
       "baseline_improvement": 0.0,
-      "isolated_test_baseline_rmse": 0.19287541573395314,
+      "isolated_test_baseline_rmse": 0.19287541616340065,
       "isolated_test_improvement": 0.0,
-      "recent_rmse_ratio": 0.9031234956008555,
-      "fold_rmse_cv": 0.2784560821978273,
+      "recent_rmse_ratio": 0.9031234935747738,
+      "fold_rmse_cv": 0.2784560848914651,
       "folds": [
         {
           "fold": 1,
@@ -3931,8 +3914,8 @@
           "validation_end": "2026-03-24",
           "rows_train": 115,
           "rows_validation": 15,
-          "rmse": 0.1250076515289085,
-          "mae": 0.10742995245362547,
+          "rmse": 0.12500765225092683,
+          "mae": 0.10742995329036858,
           "direction_accuracy": 0.4666666666666667
         },
         {
@@ -3943,8 +3926,8 @@
           "validation_end": "2026-04-14",
           "rows_train": 130,
           "rows_validation": 15,
-          "rmse": 0.059445538448654016,
-          "mae": 0.04790669875355314,
+          "rmse": 0.05944553788514753,
+          "mae": 0.04790669824110989,
           "direction_accuracy": 1.0
         },
         {
@@ -3955,8 +3938,8 @@
           "validation_end": "2026-05-07",
           "rows_train": 145,
           "rows_validation": 15,
-          "rmse": 0.12964359591413424,
-          "mae": 0.11073156706857931,
+          "rmse": 0.12964359533080685,
+          "mae": 0.11073156660914739,
           "direction_accuracy": 1.0
         },
         {
@@ -3967,8 +3950,8 @@
           "validation_end": "2026-05-29",
           "rows_train": 160,
           "rows_validation": 15,
-          "rmse": 0.09219389769413892,
-          "mae": 0.0667276461098191,
+          "rmse": 0.092193897501557,
+          "mae": 0.06672764606355684,
           "direction_accuracy": 0.8666666666666667
         }
       ],
@@ -3978,39 +3961,39 @@
           "rmse": 0.13747129122718887,
           "mae": 0.11402044392181687,
           "direction_accuracy": 0.16666666666666666,
-          "baseline_improvement": -0.3038237397832264,
+          "baseline_improvement": -0.3038237408569365,
           "failed_reason": null
         },
         {
           "name": "historical_mean_return",
-          "rmse": 0.10543702114984103,
-          "mae": 0.08319896609639424,
+          "rmse": 0.10543702106301274,
+          "mae": 0.08319896605104567,
           "direction_accuracy": 0.8333333333333334,
           "baseline_improvement": 0.0,
           "failed_reason": null
         },
         {
           "name": "ridge_regularized",
-          "rmse": 0.14473853541257786,
-          "mae": 0.11582990506478691,
+          "rmse": 0.14473843342365925,
+          "mae": 0.11582981573128599,
           "direction_accuracy": 0.6,
-          "baseline_improvement": -0.37274871609739213,
+          "baseline_improvement": -0.3727477499308203,
           "failed_reason": null
         },
         {
           "name": "hist_gradient_boosting",
-          "rmse": 0.1175647105378238,
-          "mae": 0.09517989316756886,
+          "rmse": 0.11756471601054073,
+          "mae": 0.09517989706332093,
           "direction_accuracy": 0.8166666666666667,
-          "baseline_improvement": -0.11502306548235645,
+          "baseline_improvement": -0.11502311830566678,
           "failed_reason": null
         },
         {
           "name": "hist_quantile_median",
-          "rmse": 0.11236773226878613,
-          "mae": 0.08907861740747161,
+          "rmse": 0.11236773337302432,
+          "mae": 0.08907861875410919,
           "direction_accuracy": 0.8333333333333334,
-          "baseline_improvement": -0.06573318406914748,
+          "baseline_improvement": -0.0657331954197525,
           "failed_reason": null
         }
       ],
@@ -4021,7 +4004,7 @@
         "data_completeness_10": 9.984758420972412,
         "memory_spot_quality_20": 0.0,
         "walk_forward_performance_15": 7.5,
-        "fold_stability_10": 7.215439178021727,
+        "fold_stability_10": 7.215439151085349,
         "probability_calibration_10": 0.0,
         "interval_coverage_5": 0.0,
         "recent_drift_5": 0.0,
@@ -4150,36 +4133,36 @@
       "period_years": 1,
       "horizon_days": 30,
       "selected_model": "hist_quantile_median",
-      "selection_reason": "분리된 walk-forward RMSE 최저이며 기준선 대비 35.83% 개선",
+      "selection_reason": "분리된 walk-forward RMSE 최저이며 기준선 대비 35.84% 개선",
       "validation": {
-        "mae": 0.0908010967281447,
-        "rmse": 0.10662691162114869,
-        "smape": 0.5310721192341818,
+        "mae": 0.09078431095458621,
+        "rmse": 0.10661708767311945,
+        "smape": 0.5309969631842076,
         "direction_accuracy": 0.9166666666666666,
-        "brier_score": 0.06103630147478031,
-        "calibration_error": 0.06975262350555111,
+        "brier_score": 0.061193721390924424,
+        "calibration_error": 0.0598289748736524,
         "interval_coverage": 0.8,
-        "interval_average_width": 0.2673855122469809,
+        "interval_average_width": 0.2673855797278803,
         "interval_nominal_coverage": 0.8
       },
       "isolated_test": {
-        "mae": 0.3510689977631895,
-        "rmse": 0.4056307625513377,
-        "smape": 1.5872777552828579,
+        "mae": 0.3510690068074631,
+        "rmse": 0.40563077612681636,
+        "smape": 1.5872777454145026,
         "direction_accuracy": 0.2857142857142857,
-        "brier_score": 0.653818993093855,
-        "calibration_error": 0.6764377684326769,
+        "brier_score": 0.6537676045510323,
+        "calibration_error": 0.6763861108820051,
         "interval_coverage": 0.19047619047619047,
-        "interval_average_width": 0.19451454419039851,
+        "interval_average_width": 0.19432095612405084,
         "interval_nominal_coverage": 0.8
       },
-      "baseline_rmse": 0.16616112296121657,
+      "baseline_rmse": 0.16616112294145538,
       "baseline_model": "historical_mean_return",
-      "baseline_improvement": 0.3582920618198017,
-      "isolated_test_baseline_rmse": 0.4472065563029841,
-      "isolated_test_improvement": 0.09296776437123315,
-      "recent_rmse_ratio": 1.0277465221836366,
-      "fold_rmse_cv": 0.12621851349483237,
+      "baseline_improvement": 0.35835118476730243,
+      "isolated_test_baseline_rmse": 0.4472065586188897,
+      "isolated_test_improvement": 0.0929677387122229,
+      "recent_rmse_ratio": 1.0278414557633873,
+      "fold_rmse_cv": 0.12640581518354016,
       "folds": [
         {
           "fold": 1,
@@ -4189,8 +4172,8 @@
           "validation_end": "2026-02-27",
           "rows_train": 75,
           "rows_validation": 15,
-          "rmse": 0.10238355107218908,
-          "mae": 0.08816077565564241,
+          "rmse": 0.10238358184511735,
+          "mae": 0.08816080328761475,
           "direction_accuracy": 0.6666666666666666
         },
         {
@@ -4201,8 +4184,8 @@
           "validation_end": "2026-03-23",
           "rows_train": 90,
           "rows_validation": 15,
-          "rmse": 0.08583879135218933,
-          "mae": 0.07242780306369548,
+          "rmse": 0.08578988990762314,
+          "mae": 0.07236062324679009,
           "direction_accuracy": 1.0
         },
         {
@@ -4213,8 +4196,8 @@
           "validation_end": "2026-04-13",
           "rows_train": 105,
           "rows_validation": 15,
-          "rmse": 0.1213960547634198,
-          "mae": 0.10972867473777057,
+          "rmse": 0.12139604712007408,
+          "mae": 0.10972866175364561,
           "direction_accuracy": 1.0
         },
         {
@@ -4225,8 +4208,8 @@
           "validation_end": "2026-05-06",
           "rows_train": 120,
           "rows_validation": 15,
-          "rmse": 0.11353193993047749,
-          "mae": 0.09288713345547031,
+          "rmse": 0.11353197891965669,
+          "mae": 0.09288715553029438,
           "direction_accuracy": 1.0
         }
       ],
@@ -4236,39 +4219,39 @@
           "rmse": 0.30611354807837177,
           "mae": 0.25772891618523047,
           "direction_accuracy": 0.08333333333333333,
-          "baseline_improvement": -0.8422693745866251,
+          "baseline_improvement": -0.8422693748057223,
           "failed_reason": null
         },
         {
           "name": "historical_mean_return",
-          "rmse": 0.16616112296121657,
-          "mae": 0.15125733102553723,
+          "rmse": 0.16616112294145538,
+          "mae": 0.15125733135052874,
           "direction_accuracy": 0.9166666666666666,
           "baseline_improvement": 0.0,
           "failed_reason": null
         },
         {
           "name": "ridge_regularized",
-          "rmse": 0.3808449554704242,
-          "mae": 0.3064486427039737,
+          "rmse": 0.3808451081530687,
+          "mae": 0.30644876725120557,
           "direction_accuracy": 0.48333333333333334,
-          "baseline_improvement": -1.2920220367029938,
+          "baseline_improvement": -1.2920229558586598,
           "failed_reason": null
         },
         {
           "name": "hist_gradient_boosting",
-          "rmse": 0.12679259043353494,
-          "mae": 0.10680523027832528,
+          "rmse": 0.12679258784495628,
+          "mae": 0.10680522837682808,
           "direction_accuracy": 0.9166666666666666,
-          "baseline_improvement": 0.23692986557914986,
+          "baseline_improvement": 0.23692988106712584,
           "failed_reason": null
         },
         {
           "name": "hist_quantile_median",
-          "rmse": 0.10662691162114869,
-          "mae": 0.0908010967281447,
+          "rmse": 0.10661708767311945,
+          "mae": 0.09078431095458621,
           "direction_accuracy": 0.9166666666666666,
-          "baseline_improvement": 0.3582920618198017,
+          "baseline_improvement": 0.35835118476730243,
           "failed_reason": null
         }
       ],
@@ -4278,12 +4261,12 @@
         "data_freshness_15": 15.0,
         "data_completeness_10": 9.984758420972412,
         "memory_spot_quality_20": 0.0,
-        "walk_forward_performance_15": 13.07806586227399,
-        "fold_stability_10": 8.737814865051677,
+        "walk_forward_performance_15": 13.078064322733375,
+        "fold_stability_10": 8.735941848164599,
         "probability_calibration_10": 0.0,
         "interval_coverage_5": 0.0,
         "recent_drift_5": 0.0,
-        "recent_performance_5": 4.861267389081817,
+        "recent_performance_5": 4.8607927211830635,
         "baseline_improvement_5": 5.0
       },
       "drift_score": 1.0,
@@ -4393,34 +4376,34 @@
       "selected_model": "hist_quantile_median",
       "selection_reason": "분리된 walk-forward RMSE 최저이며 기준선 대비 6.21% 개선",
       "validation": {
-        "mae": 0.11560181019653556,
-        "rmse": 0.13760494673230145,
-        "smape": 0.24318450932280739,
+        "mae": 0.11560180328828776,
+        "rmse": 0.13760493714447522,
+        "smape": 0.2431844919625235,
         "direction_accuracy": 1.0,
         "brier_score": 1.0000000000000016e-06,
         "calibration_error": 0.001000000000000223,
         "interval_coverage": 0.8,
-        "interval_average_width": 0.2310577878562839,
+        "interval_average_width": 0.23105782930577068,
         "interval_nominal_coverage": 0.8
       },
       "isolated_test": {
-        "mae": 0.33592262475596346,
-        "rmse": 0.3794010993918339,
-        "smape": 1.155937122154779,
+        "mae": 0.33592262846058474,
+        "rmse": 0.37940110115876247,
+        "smape": 1.155937127863547,
         "direction_accuracy": 0.6,
         "brier_score": 0.39920100000000003,
         "calibration_error": 0.399,
         "interval_coverage": 0.175,
-        "interval_average_width": 0.11594397409095474,
+        "interval_average_width": 0.11594400339164582,
         "interval_nominal_coverage": 0.8
       },
-      "baseline_rmse": 0.14672170517887795,
+      "baseline_rmse": 0.14672169593789974,
       "baseline_model": "historical_mean_return",
-      "baseline_improvement": 0.0621363992155194,
-      "isolated_test_baseline_rmse": 0.39917046345269136,
-      "isolated_test_improvement": 0.04952611946750528,
-      "recent_rmse_ratio": 1.0550641135336034,
-      "fold_rmse_cv": 0.22561970257604885,
+      "baseline_improvement": 0.062136405493044534,
+      "isolated_test_baseline_rmse": 0.39917046901914954,
+      "isolated_test_improvement": 0.049526128295424264,
+      "recent_rmse_ratio": 1.0550641863880312,
+      "fold_rmse_cv": 0.2256198184673328,
       "folds": [
         {
           "fold": 1,
@@ -4430,8 +4413,8 @@
           "validation_end": "2026-03-03",
           "rows_train": 40,
           "rows_validation": 15,
-          "rmse": 0.10394575713982933,
-          "mae": 0.07958019054554276,
+          "rmse": 0.10394573175481181,
+          "mae": 0.07958017672904712,
           "direction_accuracy": 1.0
         },
         {
@@ -4453,39 +4436,39 @@
           "rmse": 0.5110133385485313,
           "mae": 0.5027088130538157,
           "direction_accuracy": 0.0,
-          "baseline_improvement": -2.482874861122434,
+          "baseline_improvement": -2.482875080484475,
           "failed_reason": null
         },
         {
           "name": "historical_mean_return",
-          "rmse": 0.14672170517887795,
-          "mae": 0.12389490618701902,
+          "rmse": 0.14672169593789974,
+          "mae": 0.12389489719803187,
           "direction_accuracy": 1.0,
           "baseline_improvement": 0.0,
           "failed_reason": null
         },
         {
           "name": "ridge_regularized",
-          "rmse": 0.20837664762411373,
-          "mae": 0.18427617968444743,
+          "rmse": 0.20837620960198358,
+          "mae": 0.18427570317069145,
           "direction_accuracy": 1.0,
-          "baseline_improvement": -0.420216915895765,
+          "baseline_improvement": -0.4202140199509365,
           "failed_reason": null
         },
         {
           "name": "hist_gradient_boosting",
-          "rmse": 0.14672170517887795,
-          "mae": 0.12389490618701902,
+          "rmse": 0.14672169593789974,
+          "mae": 0.12389489719803187,
           "direction_accuracy": 1.0,
           "baseline_improvement": 0.0,
           "failed_reason": null
         },
         {
           "name": "hist_quantile_median",
-          "rmse": 0.13760494673230145,
-          "mae": 0.11560181019653556,
+          "rmse": 0.13760493714447522,
+          "mae": 0.11560180328828776,
           "direction_accuracy": 1.0,
-          "baseline_improvement": 0.0621363992155194,
+          "baseline_improvement": 0.062136405493044534,
           "failed_reason": null
         }
       ],
@@ -4495,12 +4478,12 @@
         "data_freshness_15": 15.0,
         "data_completeness_10": 9.984758420972412,
         "memory_spot_quality_20": 0.0,
-        "walk_forward_performance_15": 10.471567168050317,
-        "fold_stability_10": 7.743802974239511,
+        "walk_forward_performance_15": 10.471567697725456,
+        "fold_stability_10": 7.7438018153266714,
         "probability_calibration_10": 0.0,
         "interval_coverage_5": 0.0,
         "recent_drift_5": 0.0,
-        "recent_performance_5": 4.724679432331983,
+        "recent_performance_5": 4.724679068059844,
         "baseline_improvement_5": 5.0
       },
       "drift_score": 1.0,
@@ -4608,36 +4591,36 @@
       "period_years": 3,
       "horizon_days": 10,
       "selected_model": "hist_quantile_median",
-      "selection_reason": "분리된 walk-forward RMSE 최저이며 기준선 대비 3.03% 개선",
+      "selection_reason": "분리된 walk-forward RMSE 최저이며 기준선 대비 4.31% 개선",
       "validation": {
-        "mae": 0.08632917819543327,
-        "rmse": 0.10294470287564954,
-        "smape": 1.5288686092859352,
-        "direction_accuracy": 0.4666666666666667,
-        "brier_score": 0.16915915732677525,
-        "calibration_error": 0.00035032121773820313,
+        "mae": 0.08464398528879061,
+        "rmse": 0.10158458974025901,
+        "smape": 1.5219283157997732,
+        "direction_accuracy": 0.48333333333333334,
+        "brier_score": 0.16885494951027757,
+        "calibration_error": 0.024024053253062273,
         "interval_coverage": 0.8,
-        "interval_average_width": 0.17841356210354295,
+        "interval_average_width": 0.17405970850078287,
         "interval_nominal_coverage": 0.8
       },
       "isolated_test": {
-        "mae": 0.11152991801695192,
-        "rmse": 0.13636126148984637,
-        "smape": 1.5717316960675283,
-        "direction_accuracy": 0.5454545454545454,
-        "brier_score": 0.24668418654387217,
-        "calibration_error": 0.14282598811356853,
-        "interval_coverage": 0.26573426573426573,
-        "interval_average_width": 0.10055110086516338,
+        "mae": 0.11265013593926951,
+        "rmse": 0.13770617390997802,
+        "smape": 1.591466825583902,
+        "direction_accuracy": 0.4965034965034965,
+        "brier_score": 0.24638377362237845,
+        "calibration_error": 0.14551061812807511,
+        "interval_coverage": 0.25874125874125875,
+        "interval_average_width": 0.10478487874478973,
         "interval_nominal_coverage": 0.8
       },
-      "baseline_rmse": 0.10615791521626262,
+      "baseline_rmse": 0.1061579180448773,
       "baseline_model": "historical_mean_return",
-      "baseline_improvement": 0.030268231380271543,
-      "isolated_test_baseline_rmse": 0.1341472910619658,
-      "isolated_test_improvement": -0.01650402636053149,
-      "recent_rmse_ratio": 1.2533240070276679,
-      "fold_rmse_cv": 0.31043677099809486,
+      "baseline_improvement": 0.0430804257359772,
+      "isolated_test_baseline_rmse": 0.13414729093547184,
+      "isolated_test_improvement": -0.026529667126994713,
+      "recent_rmse_ratio": 1.264011669597931,
+      "fold_rmse_cv": 0.31877073170451975,
       "folds": [
         {
           "fold": 1,
@@ -4647,8 +4630,8 @@
           "validation_end": "2025-10-29",
           "rows_train": 503,
           "rows_validation": 15,
-          "rmse": 0.09586215963681174,
-          "mae": 0.0873364802462354,
+          "rmse": 0.09396857255772083,
+          "mae": 0.08525684623941476,
           "direction_accuracy": 0.2
         },
         {
@@ -4659,8 +4642,8 @@
           "validation_end": "2025-11-19",
           "rows_train": 518,
           "rows_validation": 15,
-          "rmse": 0.06630866706389321,
-          "mae": 0.05299458433237369,
+          "rmse": 0.06583508718324191,
+          "mae": 0.05271780863228025,
           "direction_accuracy": 0.4
         },
         {
@@ -4671,9 +4654,9 @@
           "validation_end": "2025-12-10",
           "rows_train": 533,
           "rows_validation": 15,
-          "rmse": 0.08312938882289636,
-          "mae": 0.07078126127173219,
-          "direction_accuracy": 0.26666666666666666
+          "rmse": 0.0799697204106284,
+          "mae": 0.06695163467040942,
+          "direction_accuracy": 0.3333333333333333
         },
         {
           "fold": 4,
@@ -4683,50 +4666,50 @@
           "validation_end": "2026-01-05",
           "rows_train": 548,
           "rows_validation": 15,
-          "rmse": 0.14796472260823168,
-          "mae": 0.13420438693139186,
+          "rmse": 0.14737098756292624,
+          "mae": 0.133649651613058,
           "direction_accuracy": 1.0
         }
       ],
       "candidates": [
         {
           "name": "last_value_zero_return",
-          "rmse": 0.11078320785577445,
-          "mae": 0.08301521598552682,
+          "rmse": 0.11078321111723978,
+          "mae": 0.08301521380469316,
           "direction_accuracy": 0.21666666666666667,
-          "baseline_improvement": -0.04356992721729015,
+          "baseline_improvement": -0.04356993013377654,
           "failed_reason": null
         },
         {
           "name": "historical_mean_return",
-          "rmse": 0.10615791521626262,
-          "mae": 0.07903945976877313,
+          "rmse": 0.1061579180448773,
+          "mae": 0.079039457249582,
           "direction_accuracy": 0.7833333333333333,
           "baseline_improvement": 0.0,
           "failed_reason": null
         },
         {
           "name": "ridge_regularized",
-          "rmse": 0.148197375244356,
-          "mae": 0.11395078375790249,
+          "rmse": 0.14819719636491477,
+          "mae": 0.11395072675885269,
           "direction_accuracy": 0.6333333333333333,
-          "baseline_improvement": -0.39600871910918267,
+          "baseline_improvement": -0.39600699688049407,
           "failed_reason": null
         },
         {
           "name": "hist_gradient_boosting",
-          "rmse": 0.10547389879257331,
-          "mae": 0.08841660920087106,
+          "rmse": 0.10484739143518776,
+          "mae": 0.08770614564302748,
           "direction_accuracy": 0.45,
-          "baseline_improvement": 0.006443385990539206,
+          "baseline_improvement": 0.01234506698912019,
           "failed_reason": null
         },
         {
           "name": "hist_quantile_median",
-          "rmse": 0.10294470287564954,
-          "mae": 0.08632917819543327,
-          "direction_accuracy": 0.4666666666666667,
-          "baseline_improvement": 0.030268231380271543,
+          "rmse": 0.10158458974025901,
+          "mae": 0.08464398528879061,
+          "direction_accuracy": 0.48333333333333334,
+          "baseline_improvement": 0.0430804257359772,
           "failed_reason": null
         }
       ],
@@ -4736,12 +4719,12 @@
         "data_freshness_15": 15.0,
         "data_completeness_10": 9.900663361029215,
         "memory_spot_quality_20": 0.0,
-        "walk_forward_performance_15": 6.50975841836811,
-        "fold_stability_10": 6.895632290019051,
-        "probability_calibration_10": 2.858700594321574,
+        "walk_forward_performance_15": 5.9082199723803175,
+        "fold_stability_10": 6.812292682954802,
+        "probability_calibration_10": 2.7244690935962446,
         "interval_coverage_5": 0.0,
         "recent_drift_5": 0.0,
-        "recent_performance_5": 3.7333799648616606,
+        "recent_performance_5": 3.6799416520103447,
         "baseline_improvement_5": 0.0
       },
       "drift_score": 1.0,
@@ -4851,34 +4834,34 @@
       "selected_model": "historical_mean_return",
       "selection_reason": "고급 모델이 기준선 historical_mean_return의 walk-forward RMSE를 개선하지 못해 기준 모델 선택",
       "validation": {
-        "mae": 0.17954065164074653,
-        "rmse": 0.21765099475877592,
-        "smape": 1.6796724660991027,
+        "mae": 0.1795406602181645,
+        "rmse": 0.21765100126362602,
+        "smape": 1.6796727533354905,
         "direction_accuracy": 0.9666666666666667,
         "brier_score": 0.03222222484591604,
         "calibration_error": 5.1222005116757785e-05,
         "interval_coverage": 0.8,
-        "interval_average_width": 0.3201957236234923,
+        "interval_average_width": 0.32019572319929035,
         "interval_nominal_coverage": 0.8
       },
       "isolated_test": {
-        "mae": 0.2464136796395095,
-        "rmse": 0.28336767864827594,
-        "smape": 1.5640692852282039,
+        "mae": 0.24641367826976743,
+        "rmse": 0.2833676775521613,
+        "smape": 1.564069257654705,
         "direction_accuracy": 0.7482014388489209,
         "brier_score": 0.23607631509654906,
         "calibration_error": 0.21835812177069047,
         "interval_coverage": 0.16546762589928057,
-        "interval_average_width": 0.17602117674967546,
+        "interval_average_width": 0.17243565053143176,
         "interval_nominal_coverage": 0.8
       },
-      "baseline_rmse": 0.21765099475877592,
+      "baseline_rmse": 0.21765100126362602,
       "baseline_model": "historical_mean_return",
       "baseline_improvement": 0.0,
-      "isolated_test_baseline_rmse": 0.28336767864827594,
+      "isolated_test_baseline_rmse": 0.2833676775521613,
       "isolated_test_improvement": 0.0,
-      "recent_rmse_ratio": 1.3478512170576256,
-      "fold_rmse_cv": 0.546719628814613,
+      "recent_rmse_ratio": 1.347851250081641,
+      "fold_rmse_cv": 0.5467195517250825,
       "folds": [
         {
           "fold": 1,
@@ -4888,8 +4871,8 @@
           "validation_end": "2025-09-30",
           "rows_train": 463,
           "rows_validation": 15,
-          "rmse": 0.2605443009776804,
-          "mae": 0.24680951755728475,
+          "rmse": 0.26054428835340787,
+          "mae": 0.24680948960035712,
           "direction_accuracy": 1.0
         },
         {
@@ -4900,8 +4883,8 @@
           "validation_end": "2025-10-28",
           "rows_train": 478,
           "rows_validation": 15,
-          "rmse": 0.06815675505976591,
-          "mae": 0.0607559401256785,
+          "rmse": 0.06815677104818776,
+          "mae": 0.06075595548611657,
           "direction_accuracy": 1.0
         },
         {
@@ -4912,8 +4895,8 @@
           "validation_end": "2025-11-18",
           "rows_train": 493,
           "rows_validation": 15,
-          "rmse": 0.11208937348356561,
-          "mae": 0.08862048810418945,
+          "rmse": 0.11208940398166276,
+          "mae": 0.08862052205586472,
           "direction_accuracy": 0.8666666666666667
         },
         {
@@ -4924,50 +4907,50 @@
           "validation_end": "2025-12-09",
           "rows_train": 508,
           "rows_validation": 15,
-          "rmse": 0.3231023342499641,
-          "mae": 0.3219766607758333,
+          "rmse": 0.32310234800442494,
+          "mae": 0.3219766737303197,
           "direction_accuracy": 1.0
         }
       ],
       "candidates": [
         {
           "name": "last_value_zero_return",
-          "rmse": 0.22833838145224716,
-          "mae": 0.18955435870969709,
+          "rmse": 0.22833839057090968,
+          "mae": 0.1895543671088105,
           "direction_accuracy": 0.03333333333333333,
-          "baseline_improvement": -0.0491033211463892,
+          "baseline_improvement": -0.04910333168804837,
           "failed_reason": null
         },
         {
           "name": "historical_mean_return",
-          "rmse": 0.21765099475877592,
-          "mae": 0.17954065164074653,
+          "rmse": 0.21765100126362602,
+          "mae": 0.1795406602181645,
           "direction_accuracy": 0.9666666666666667,
           "baseline_improvement": 0.0,
           "failed_reason": null
         },
         {
           "name": "ridge_regularized",
-          "rmse": 0.25526272707232656,
-          "mae": 0.22953202416868876,
+          "rmse": 0.2552623148450969,
+          "mae": 0.22953172000073666,
           "direction_accuracy": 0.36666666666666664,
-          "baseline_improvement": -0.1728075369250482,
+          "baseline_improvement": -0.1728056078911158,
           "failed_reason": null
         },
         {
           "name": "hist_gradient_boosting",
-          "rmse": 0.2319505023222905,
-          "mae": 0.18715524360067476,
-          "direction_accuracy": 0.55,
-          "baseline_improvement": -0.06569925204965328,
+          "rmse": 0.23201921735538905,
+          "mae": 0.1871393948381342,
+          "direction_accuracy": 0.5666666666666667,
+          "baseline_improvement": -0.06601493220037971,
           "failed_reason": null
         },
         {
           "name": "hist_quantile_median",
-          "rmse": 0.23061543376826715,
-          "mae": 0.18648901196925868,
+          "rmse": 0.2310867027589786,
+          "mae": 0.18628505386601205,
           "direction_accuracy": 0.6666666666666666,
-          "baseline_improvement": -0.05956526421512482,
+          "baseline_improvement": -0.06173048328447074,
           "failed_reason": null
         }
       ],
@@ -4978,11 +4961,11 @@
         "data_completeness_10": 9.900663361029215,
         "memory_spot_quality_20": 0.0,
         "walk_forward_performance_15": 7.5,
-        "fold_stability_10": 4.5328037118538695,
+        "fold_stability_10": 4.532804482749175,
         "probability_calibration_10": 0.0,
         "interval_coverage_5": 0.0,
         "recent_drift_5": 0.0,
-        "recent_performance_5": 3.260743914711872,
+        "recent_performance_5": 3.2607437495917946,
         "baseline_improvement_5": 0.0
       },
       "drift_score": 1.0,
@@ -5107,37 +5090,37 @@
       "ticker": "005930.KS",
       "period_years": 3,
       "horizon_days": 60,
-      "selected_model": "hist_quantile_median+hist_gradient_boosting",
-      "selection_reason": "분리된 walk-forward RMSE 최저이며 기준선 대비 10.84% 개선; hist_gradient_boosting도 2% 이상 개선하고 잔차상관 0.60<0.80이라 검증 RMSE 역수 가중 앙상블",
+      "selected_model": "hist_gradient_boosting+hist_quantile_median",
+      "selection_reason": "분리된 walk-forward RMSE 최저이며 기준선 대비 9.31% 개선; hist_quantile_median도 2% 이상 개선하고 잔차상관 0.54<0.80이라 검증 RMSE 역수 가중 앙상블",
       "validation": {
-        "mae": 0.33588250063877384,
-        "rmse": 0.3403191938748259,
-        "smape": 1.615734347197137,
-        "direction_accuracy": 0.8,
+        "mae": 0.34126669351909794,
+        "rmse": 0.34560181562284453,
+        "smape": 1.6510003383951022,
+        "direction_accuracy": 0.7666666666666667,
         "brier_score": 1.000000000000002e-06,
         "calibration_error": 0.0009999999999998899,
         "interval_coverage": 0.8,
-        "interval_average_width": 0.14707100910911491,
+        "interval_average_width": 0.1488168453387661,
         "interval_nominal_coverage": 0.8
       },
       "isolated_test": {
-        "mae": 0.29421868671166207,
-        "rmse": 0.3446381021362409,
-        "smape": 1.1554083133099604,
+        "mae": 0.29561979202525696,
+        "rmse": 0.3463311348558381,
+        "smape": 1.1663578009066935,
         "direction_accuracy": 0.9022556390977443,
         "brier_score": 0.12006115037593987,
         "calibration_error": 0.11930075187969891,
-        "interval_coverage": 0.2556390977443609,
-        "interval_average_width": 0.32977010917841304,
+        "interval_coverage": 0.2631578947368421,
+        "interval_average_width": 0.32303155834747543,
         "interval_nominal_coverage": 0.8
       },
-      "baseline_rmse": 0.38028865878943785,
+      "baseline_rmse": 0.3802886658665261,
       "baseline_model": "last_value_zero_return",
-      "baseline_improvement": 0.10510296321180237,
-      "isolated_test_baseline_rmse": 0.46457040056251653,
-      "isolated_test_improvement": 0.25815742518476814,
-      "recent_rmse_ratio": 0.983569974398784,
-      "fold_rmse_cv": 0.1157058917887235,
+      "baseline_improvement": 0.09121189600706105,
+      "isolated_test_baseline_rmse": 0.46457040598794325,
+      "isolated_test_improvement": 0.254513136454873,
+      "recent_rmse_ratio": 0.9834944683719604,
+      "fold_rmse_cv": 0.05865852384280648,
       "folds": [
         {
           "fold": 1,
@@ -5147,9 +5130,9 @@
           "validation_end": "2025-08-26",
           "rows_train": 403,
           "rows_validation": 15,
-          "rmse": 0.3670643873353385,
-          "mae": 0.3643570689420299,
-          "direction_accuracy": 0.26666666666666666
+          "rmse": 0.31854857741227754,
+          "mae": 0.3166733774785961,
+          "direction_accuracy": 1.0
         },
         {
           "fold": 2,
@@ -5159,9 +5142,9 @@
           "validation_end": "2025-09-16",
           "rows_train": 418,
           "rows_validation": 15,
-          "rmse": 0.38365011629692275,
-          "mae": 0.3821890183724623,
-          "direction_accuracy": 0.6
+          "rmse": 0.34734397795600347,
+          "mae": 0.34475048836775585,
+          "direction_accuracy": 1.0
         },
         {
           "fold": 3,
@@ -5171,9 +5154,9 @@
           "validation_end": "2025-10-15",
           "rows_train": 433,
           "rows_validation": 15,
-          "rmse": 0.299320505186901,
-          "mae": 0.29186536622237225,
-          "direction_accuracy": 0.9333333333333333
+          "rmse": 0.3743872737524699,
+          "mae": 0.3696632326556114,
+          "direction_accuracy": 0.3333333333333333
         },
         {
           "fold": 4,
@@ -5183,50 +5166,50 @@
           "validation_end": "2025-11-05",
           "rows_train": 448,
           "rows_validation": 15,
-          "rmse": 0.2973004885429259,
-          "mae": 0.2919924202377612,
-          "direction_accuracy": 0.9333333333333333
+          "rmse": 0.3369536636626462,
+          "mae": 0.33007530459072393,
+          "direction_accuracy": 0.8666666666666667
         }
       ],
       "candidates": [
         {
           "name": "last_value_zero_return",
-          "rmse": 0.38028865878943785,
-          "mae": 0.37700364219258725,
+          "rmse": 0.3802886658665261,
+          "mae": 0.377003647742166,
           "direction_accuracy": 0.0,
           "baseline_improvement": 0.0,
           "failed_reason": null
         },
         {
           "name": "historical_mean_return",
-          "rmse": 0.3874335032620423,
-          "mae": 0.38450053589972566,
+          "rmse": 0.38743350990256226,
+          "mae": 0.38450054118761123,
           "direction_accuracy": 0.25,
-          "baseline_improvement": -0.01878795043572538,
+          "baseline_improvement": -0.018787948938093935,
           "failed_reason": null
         },
         {
           "name": "ridge_regularized",
-          "rmse": 0.6461872208597326,
-          "mae": 0.6404472801957554,
+          "rmse": 0.6461860858246439,
+          "mae": 0.6404461427514573,
           "direction_accuracy": 0.0,
-          "baseline_improvement": -0.699201924445294,
+          "baseline_improvement": -0.6991989081563703,
           "failed_reason": null
         },
         {
           "name": "hist_gradient_boosting",
-          "rmse": 0.3438406029892535,
-          "mae": 0.33921009378661765,
+          "rmse": 0.3449002165109399,
+          "mae": 0.3402906007731719,
           "direction_accuracy": 0.8,
-          "baseline_improvement": 0.0958431311525524,
+          "baseline_improvement": 0.09305680797756637,
           "failed_reason": null
         },
         {
           "name": "hist_quantile_median",
-          "rmse": 0.3390811191653532,
-          "mae": 0.3326009684436564,
-          "direction_accuracy": 0.6833333333333333,
-          "baseline_improvement": 0.10835858149243638,
+          "rmse": 0.34898693376211865,
+          "mae": 0.3422543519726478,
+          "direction_accuracy": 0.6333333333333333,
+          "baseline_improvement": 0.08231045233252823,
           "failed_reason": null
         }
       ],
@@ -5236,8 +5219,8 @@
         "data_freshness_15": 15.0,
         "data_completeness_10": 9.900663361029215,
         "memory_spot_quality_20": 0.0,
-        "walk_forward_performance_15": 13.806177792708143,
-        "fold_stability_10": 8.842941082112766,
+        "walk_forward_performance_15": 12.972713760423662,
+        "fold_stability_10": 9.413414761571936,
         "probability_calibration_10": 4.034962406015055,
         "interval_coverage_5": 0.0,
         "recent_drift_5": 0.0,
@@ -5351,34 +5334,34 @@
       "selected_model": "last_value_zero_return",
       "selection_reason": "고급 모델이 기준선 last_value_zero_return의 walk-forward RMSE를 개선하지 못해 기준 모델 선택",
       "validation": {
-        "mae": 0.04790640820606394,
-        "rmse": 0.05981589225148778,
+        "mae": 0.047906400705377085,
+        "rmse": 0.05981588402688751,
         "smape": 1.9873015873015873,
         "direction_accuracy": 0.4444444444444444,
         "brier_score": 0.24691358024691493,
         "calibration_error": 3.5834774814169634e-08,
         "interval_coverage": 0.7968253968253968,
-        "interval_average_width": 0.15413408149050034,
+        "interval_average_width": 0.15413408708930706,
         "interval_nominal_coverage": 0.8
       },
       "isolated_test": {
-        "mae": 0.10266430425037902,
-        "rmse": 0.1270111072501744,
+        "mae": 0.10266430535225857,
+        "rmse": 0.12701110841704033,
         "smape": 2.0,
         "direction_accuracy": 0.3112033195020747,
         "brier_score": 0.23210900125954245,
         "calibration_error": 0.1332410891075949,
-        "interval_coverage": 0.2572614107883817,
-        "interval_average_width": 0.10881706933948819,
+        "interval_coverage": 0.24896265560165975,
+        "interval_average_width": 0.10187199133820672,
         "interval_nominal_coverage": 0.8
       },
-      "baseline_rmse": 0.05981589225148778,
+      "baseline_rmse": 0.05981588402688751,
       "baseline_model": "last_value_zero_return",
       "baseline_improvement": 0.0,
-      "isolated_test_baseline_rmse": 0.1270111072501744,
+      "isolated_test_baseline_rmse": 0.12701110841704033,
       "isolated_test_improvement": 0.0,
-      "recent_rmse_ratio": 1.0091471815036746,
-      "fold_rmse_cv": 0.2383524853606159,
+      "recent_rmse_ratio": 1.0091471555391092,
+      "fold_rmse_cv": 0.23835252876728658,
       "folds": [
         {
           "fold": 1,
@@ -5388,8 +5371,8 @@
           "validation_end": "2023-12-28",
           "rows_train": 504,
           "rows_validation": 63,
-          "rmse": 0.03626003037961546,
-          "mae": 0.030044079970816314,
+          "rmse": 0.03626001381512914,
+          "mae": 0.03004409010932644,
           "direction_accuracy": 0.2698412698412698
         },
         {
@@ -5400,8 +5383,8 @@
           "validation_end": "2024-05-24",
           "rows_train": 601,
           "rows_validation": 63,
-          "rmse": 0.06138574716640284,
-          "mae": 0.049021003470505996,
+          "rmse": 0.06138573603186667,
+          "mae": 0.04902098036357673,
           "direction_accuracy": 0.5238095238095238
         },
         {
@@ -5412,8 +5395,8 @@
           "validation_end": "2024-10-18",
           "rows_train": 698,
           "rows_validation": 63,
-          "rmse": 0.07953097798745104,
-          "mae": 0.06739784856220633,
+          "rmse": 0.07953096599956952,
+          "mae": 0.0673978343913481,
           "direction_accuracy": 0.8888888888888888
         },
         {
@@ -5424,8 +5407,8 @@
           "validation_end": "2025-03-14",
           "rows_train": 795,
           "rows_validation": 63,
-          "rmse": 0.05929366647075418,
-          "mae": 0.048311545373987456,
+          "rmse": 0.059293656132624765,
+          "mae": 0.048311539315761924,
           "direction_accuracy": 0.3968253968253968
         },
         {
@@ -5436,50 +5419,50 @@
           "validation_end": "2025-08-06",
           "rows_train": 893,
           "rows_validation": 63,
-          "rmse": 0.05445906469738854,
-          "mae": 0.044757563652803596,
+          "rmse": 0.05445907187185876,
+          "mae": 0.044757559346872255,
           "direction_accuracy": 0.14285714285714285
         }
       ],
       "candidates": [
         {
           "name": "last_value_zero_return",
-          "rmse": 0.05981589225148778,
-          "mae": 0.04790640820606394,
+          "rmse": 0.05981588402688751,
+          "mae": 0.047906400705377085,
           "direction_accuracy": 0.4444444444444444,
           "baseline_improvement": 0.0,
           "failed_reason": null
         },
         {
           "name": "historical_mean_return",
-          "rmse": 0.06080936367723482,
-          "mae": 0.04881759418830373,
+          "rmse": 0.060809355162015785,
+          "mae": 0.04881758660643506,
           "direction_accuracy": 0.27936507936507937,
-          "baseline_improvement": -0.016608820638671227,
+          "baseline_improvement": -0.01660881806380564,
           "failed_reason": null
         },
         {
           "name": "ridge_regularized",
-          "rmse": 0.0842918960314928,
-          "mae": 0.061916056747274274,
+          "rmse": 0.08429182224324124,
+          "mae": 0.061916008506083524,
           "direction_accuracy": 0.546031746031746,
-          "baseline_improvement": -0.4091889773557,
+          "baseline_improvement": -0.4091879375276252,
           "failed_reason": null
         },
         {
           "name": "hist_gradient_boosting",
-          "rmse": 0.07712066519102534,
-          "mae": 0.05968727511244183,
-          "direction_accuracy": 0.473015873015873,
-          "baseline_improvement": -0.28930059033111133,
+          "rmse": 0.07714648468249573,
+          "mae": 0.059765293353845866,
+          "direction_accuracy": 0.4793650793650794,
+          "baseline_improvement": -0.289732417025184,
           "failed_reason": null
         },
         {
           "name": "hist_quantile_median",
-          "rmse": 0.06964303438734028,
-          "mae": 0.05445241498145512,
+          "rmse": 0.06966499592961238,
+          "mae": 0.05435961819962843,
           "direction_accuracy": 0.473015873015873,
-          "baseline_improvement": -0.1642898194101263,
+          "baseline_improvement": -0.16465713184641134,
           "failed_reason": null
         }
       ],
@@ -5490,11 +5473,11 @@
         "data_completeness_10": 9.901858780687888,
         "memory_spot_quality_20": 0.0,
         "walk_forward_performance_15": 7.5,
-        "fold_stability_10": 7.6164751463938405,
+        "fold_stability_10": 7.616474712327134,
         "probability_calibration_10": 3.337945544620254,
         "interval_coverage_5": 0.0,
         "recent_drift_5": 0.0,
-        "recent_performance_5": 4.954264092481627,
+        "recent_performance_5": 4.954264222304454,
         "baseline_improvement_5": 0.0
       },
       "drift_score": 1.0,
@@ -5622,34 +5605,34 @@
       "selected_model": "last_value_zero_return",
       "selection_reason": "고급 모델이 기준선 last_value_zero_return의 walk-forward RMSE를 개선하지 못해 기준 모델 선택",
       "validation": {
-        "mae": 0.08098613306932623,
-        "rmse": 0.10505968270737434,
+        "mae": 0.08098611122566175,
+        "rmse": 0.10505966547646445,
         "smape": 1.9873015873015873,
         "direction_accuracy": 0.40634920634920635,
         "brier_score": 0.2412295288867637,
         "calibration_error": 6.179582098031489e-06,
         "interval_coverage": 0.7968253968253968,
-        "interval_average_width": 0.2861134146398749,
+        "interval_average_width": 0.28611348193666913,
         "interval_nominal_coverage": 0.8
       },
       "isolated_test": {
-        "mae": 0.23130126757734368,
-        "rmse": 0.2711286558870896,
+        "mae": 0.23130126987139416,
+        "rmse": 0.2711286583771876,
         "smape": 2.0,
         "direction_accuracy": 0.15611814345991562,
         "brier_score": 0.19435776096864302,
         "calibration_error": 0.2502248833071927,
         "interval_coverage": 0.1518987341772152,
-        "interval_average_width": 0.18179204277528802,
+        "interval_average_width": 0.1821924803727883,
         "interval_nominal_coverage": 0.8
       },
-      "baseline_rmse": 0.10505968270737434,
+      "baseline_rmse": 0.10505966547646445,
       "baseline_model": "last_value_zero_return",
       "baseline_improvement": 0.0,
-      "isolated_test_baseline_rmse": 0.2711286558870896,
+      "isolated_test_baseline_rmse": 0.2711286583771876,
       "isolated_test_improvement": 0.0,
-      "recent_rmse_ratio": 0.9658390988962986,
-      "fold_rmse_cv": 0.508084428725453,
+      "recent_rmse_ratio": 0.9658391527839394,
+      "fold_rmse_cv": 0.5080846361363832,
       "folds": [
         {
           "fold": 1,
@@ -5659,8 +5642,8 @@
           "validation_end": "2024-02-02",
           "rows_train": 504,
           "rows_validation": 63,
-          "rmse": 0.04228593332011803,
-          "mae": 0.0334802221335231,
+          "rmse": 0.042285900900874245,
+          "mae": 0.033480190341024216,
           "direction_accuracy": 0.42857142857142855
         },
         {
@@ -5671,8 +5654,8 @@
           "validation_end": "2024-06-14",
           "rows_train": 591,
           "rows_validation": 63,
-          "rmse": 0.07743166782206971,
-          "mae": 0.06295105477920078,
+          "rmse": 0.07743162160089608,
+          "mae": 0.06295102121624424,
           "direction_accuracy": 0.31746031746031744
         },
         {
@@ -5683,8 +5666,8 @@
           "validation_end": "2024-10-24",
           "rows_train": 678,
           "rows_validation": 63,
-          "rmse": 0.1726198706393661,
-          "mae": 0.1573994852742974,
+          "rmse": 0.17261985904201851,
+          "mae": 0.15739946737886626,
           "direction_accuracy": 1.0
         },
         {
@@ -5695,8 +5678,8 @@
           "validation_end": "2025-03-06",
           "rows_train": 765,
           "rows_validation": 63,
-          "rmse": 0.05541748690919791,
-          "mae": 0.041331083722255926,
+          "rmse": 0.05541747139601442,
+          "mae": 0.041331065020602666,
           "direction_accuracy": 0.25396825396825395
         },
         {
@@ -5707,50 +5690,50 @@
           "validation_end": "2025-07-15",
           "rows_train": 853,
           "rows_validation": 63,
-          "rmse": 0.12056203266172742,
-          "mae": 0.10976881943735398,
+          "rmse": 0.12056202237759511,
+          "mae": 0.10976881217157135,
           "direction_accuracy": 0.031746031746031744
         }
       ],
       "candidates": [
         {
           "name": "last_value_zero_return",
-          "rmse": 0.10505968270737434,
-          "mae": 0.08098613306932623,
+          "rmse": 0.10505966547646445,
+          "mae": 0.08098611122566175,
           "direction_accuracy": 0.40634920634920635,
           "baseline_improvement": 0.0,
           "failed_reason": null
         },
         {
           "name": "historical_mean_return",
-          "rmse": 0.10852628280137003,
-          "mae": 0.08430869423785556,
+          "rmse": 0.10852626570545518,
+          "mae": 0.08430866858995544,
           "direction_accuracy": 0.27936507936507937,
-          "baseline_improvement": -0.032996483566881736,
+          "baseline_improvement": -0.03299649026359521,
           "failed_reason": null
         },
         {
           "name": "ridge_regularized",
-          "rmse": 0.11177430992231878,
-          "mae": 0.0880464323742803,
+          "rmse": 0.11177439483102525,
+          "mae": 0.08804642877826378,
           "direction_accuracy": 0.6190476190476191,
-          "baseline_improvement": -0.0639125023216268,
+          "baseline_improvement": -0.06391348500976371,
           "failed_reason": null
         },
         {
           "name": "hist_gradient_boosting",
-          "rmse": 0.14168540967283647,
-          "mae": 0.11339073278718155,
-          "direction_accuracy": 0.43174603174603177,
-          "baseline_improvement": -0.3486182903052999,
+          "rmse": 0.14175239933042413,
+          "mae": 0.11342501727074983,
+          "direction_accuracy": 0.43492063492063493,
+          "baseline_improvement": -0.349256145901013,
           "failed_reason": null
         },
         {
           "name": "hist_quantile_median",
-          "rmse": 0.12884463300202867,
-          "mae": 0.10224963076149589,
-          "direction_accuracy": 0.4380952380952381,
-          "baseline_improvement": -0.22639465189423055,
+          "rmse": 0.12861971459041535,
+          "mae": 0.10199480732327772,
+          "direction_accuracy": 0.44126984126984126,
+          "baseline_improvement": -0.224253989455438,
           "failed_reason": null
         }
       ],
@@ -5761,7 +5744,7 @@
         "data_completeness_10": 9.901858780687888,
         "memory_spot_quality_20": 0.0,
         "walk_forward_performance_15": 7.5,
-        "fold_stability_10": 4.91915571274547,
+        "fold_stability_10": 4.919153638636168,
         "probability_calibration_10": 0.0,
         "interval_coverage_5": 0.0,
         "recent_drift_5": 0.0,
@@ -5893,34 +5876,34 @@
       "selected_model": "last_value_zero_return",
       "selection_reason": "고급 모델이 기준선 last_value_zero_return의 walk-forward RMSE를 개선하지 못해 기준 모델 선택",
       "validation": {
-        "mae": 0.12041277229622971,
-        "rmse": 0.15813932849112594,
+        "mae": 0.12041276422794152,
+        "rmse": 0.15813931109664706,
         "smape": 2.0,
         "direction_accuracy": 0.3746031746031746,
         "brier_score": 0.23427563622946948,
         "calibration_error": 7.005095551293472e-06,
         "interval_coverage": 0.7968253968253968,
-        "interval_average_width": 0.4491152799259345,
+        "interval_average_width": 0.4491150419030293,
         "interval_nominal_coverage": 0.8
       },
       "isolated_test": {
-        "mae": 0.39981409228375187,
-        "rmse": 0.427001769162891,
+        "mae": 0.3998140945333383,
+        "rmse": 0.4270017729630495,
         "smape": 2.0,
         "direction_accuracy": 0.06926406926406926,
         "brier_score": 0.15769424941219118,
         "calibration_error": 0.30533210024355406,
         "interval_coverage": 0.06926406926406926,
-        "interval_average_width": 0.3130942757534129,
+        "interval_average_width": 0.3083555722300535,
         "interval_nominal_coverage": 0.8
       },
-      "baseline_rmse": 0.15813932849112594,
+      "baseline_rmse": 0.15813931109664706,
       "baseline_model": "last_value_zero_return",
       "baseline_improvement": 0.0,
-      "isolated_test_baseline_rmse": 0.427001769162891,
+      "isolated_test_baseline_rmse": 0.4270017729630495,
       "isolated_test_improvement": 0.0,
-      "recent_rmse_ratio": 0.9136815688395441,
-      "fold_rmse_cv": 0.46154144729840935,
+      "recent_rmse_ratio": 0.9136815713547781,
+      "fold_rmse_cv": 0.461541457242661,
       "folds": [
         {
           "fold": 1,
@@ -5930,8 +5913,8 @@
           "validation_end": "2024-03-28",
           "rows_train": 504,
           "rows_validation": 63,
-          "rmse": 0.07238586632295145,
-          "mae": 0.0631782196600981,
+          "rmse": 0.0723858629913299,
+          "mae": 0.06317822812648102,
           "direction_accuracy": 0.015873015873015872
         },
         {
@@ -5942,8 +5925,8 @@
           "validation_end": "2024-07-15",
           "rows_train": 576,
           "rows_validation": 63,
-          "rmse": 0.17748700918173005,
-          "mae": 0.13248952367011838,
+          "rmse": 0.17748697654617143,
+          "mae": 0.13248950880119284,
           "direction_accuracy": 0.6031746031746031
         },
         {
@@ -5954,8 +5937,8 @@
           "validation_end": "2024-11-01",
           "rows_train": 648,
           "rows_validation": 63,
-          "rmse": 0.23040807130007845,
-          "mae": 0.20334637356545698,
+          "rmse": 0.23040805475138354,
+          "mae": 0.20334635633124976,
           "direction_accuracy": 1.0
         },
         {
@@ -5966,8 +5949,8 @@
           "validation_end": "2025-02-20",
           "rows_train": 720,
           "rows_validation": 63,
-          "rmse": 0.05976455375338039,
-          "mae": 0.047408320701027684,
+          "rmse": 0.05976454290797285,
+          "mae": 0.04740831561730301,
           "direction_accuracy": 0.1746031746031746
         },
         {
@@ -5978,50 +5961,50 @@
           "validation_end": "2025-06-11",
           "rows_train": 793,
           "rows_validation": 63,
-          "rmse": 0.17787412066109765,
-          "mae": 0.1556414238844475,
+          "rmse": 0.1778741023386888,
+          "mae": 0.15564141226348108,
           "direction_accuracy": 0.07936507936507936
         }
       ],
       "candidates": [
         {
           "name": "last_value_zero_return",
-          "rmse": 0.15813932849112594,
-          "mae": 0.12041277229622971,
+          "rmse": 0.15813931109664706,
+          "mae": 0.12041276422794152,
           "direction_accuracy": 0.3746031746031746,
           "baseline_improvement": 0.0,
           "failed_reason": null
         },
         {
           "name": "historical_mean_return",
-          "rmse": 0.16560479096168876,
-          "mae": 0.12620899355835527,
+          "rmse": 0.16560477420892294,
+          "mae": 0.12620898609802936,
           "direction_accuracy": 0.326984126984127,
-          "baseline_improvement": -0.04720813311776358,
+          "baseline_improvement": -0.0472081423683031,
           "failed_reason": null
         },
         {
           "name": "ridge_regularized",
-          "rmse": 0.2721096703108842,
-          "mae": 0.20039804161794203,
+          "rmse": 0.2721091249545612,
+          "mae": 0.2003977776179279,
           "direction_accuracy": 0.4793650793650794,
-          "baseline_improvement": -0.7206957491675053,
+          "baseline_improvement": -0.7206924898532113,
           "failed_reason": null
         },
         {
           "name": "hist_gradient_boosting",
-          "rmse": 0.22006481919893361,
-          "mae": 0.18088247666458884,
-          "direction_accuracy": 0.37777777777777777,
-          "baseline_improvement": -0.39158817290211684,
+          "rmse": 0.21939856066577307,
+          "mae": 0.18021056632421076,
+          "direction_accuracy": 0.38095238095238093,
+          "baseline_improvement": -0.3873752145770215,
           "failed_reason": null
         },
         {
           "name": "hist_quantile_median",
-          "rmse": 0.19236254802506458,
-          "mae": 0.15094367239397125,
+          "rmse": 0.19201278685036008,
+          "mae": 0.15075658106932638,
           "direction_accuracy": 0.3619047619047619,
-          "baseline_improvement": -0.21641181773362023,
+          "baseline_improvement": -0.21420022332721053,
           "failed_reason": null
         }
       ],
@@ -6032,7 +6015,7 @@
         "data_completeness_10": 9.901858780687888,
         "memory_spot_quality_20": 0.0,
         "walk_forward_performance_15": 7.5,
-        "fold_stability_10": 5.384585527015906,
+        "fold_stability_10": 5.3845854275733895,
         "probability_calibration_10": 0.0,
         "interval_coverage_5": 0.0,
         "recent_drift_5": 0.0,
@@ -6164,34 +6147,34 @@
       "selected_model": "last_value_zero_return",
       "selection_reason": "고급 모델이 기준선 last_value_zero_return의 walk-forward RMSE를 개선하지 못해 기준 모델 선택",
       "validation": {
-        "mae": 0.03727632068761256,
-        "rmse": 0.045496573022267825,
+        "mae": 0.03727629977064343,
+        "rmse": 0.04549657103236044,
         "smape": 1.9746031746031747,
         "direction_accuracy": 0.4888888888888889,
         "brier_score": 0.24987654321029326,
         "calibration_error": 6.455145805661644e-07,
         "interval_coverage": 0.7968253968253968,
-        "interval_average_width": 0.11714625450891168,
+        "interval_average_width": 0.11714626173912776,
         "interval_nominal_coverage": 0.8
       },
       "isolated_test": {
-        "mae": 0.09925335385997629,
-        "rmse": 0.12443468036101855,
+        "mae": 0.09925335269966179,
+        "rmse": 0.12443468112321215,
         "smape": 2.0,
         "direction_accuracy": 0.30158730158730157,
         "brier_score": 0.2457145275265136,
         "calibration_error": 0.18730223281616787,
-        "interval_coverage": 0.31746031746031744,
-        "interval_average_width": 0.11668610137135033,
+        "interval_coverage": 0.3134920634920635,
+        "interval_average_width": 0.11576666889204507,
         "interval_nominal_coverage": 0.8
       },
-      "baseline_rmse": 0.045496573022267825,
+      "baseline_rmse": 0.04549657103236044,
       "baseline_model": "last_value_zero_return",
       "baseline_improvement": 0.0,
-      "isolated_test_baseline_rmse": 0.12443468036101855,
+      "isolated_test_baseline_rmse": 0.12443468112321215,
       "isolated_test_improvement": 0.0,
-      "recent_rmse_ratio": 0.9895167114243081,
-      "fold_rmse_cv": 0.19529166714866614,
+      "recent_rmse_ratio": 0.9895171894954348,
+      "fold_rmse_cv": 0.19529196654100028,
       "folds": [
         {
           "fold": 1,
@@ -6201,8 +6184,8 @@
           "validation_end": "2019-01-07",
           "rows_train": 504,
           "rows_validation": 63,
-          "rmse": 0.05281522007198368,
-          "mae": 0.04542593607280502,
+          "rmse": 0.05281520802682021,
+          "mae": 0.04542589364858759,
           "direction_accuracy": 0.6666666666666666
         },
         {
@@ -6213,8 +6196,8 @@
           "validation_end": "2020-08-20",
           "rows_train": 905,
           "rows_validation": 63,
-          "rmse": 0.04909030378691358,
-          "mae": 0.04059014708452804,
+          "rmse": 0.04909032279474235,
+          "mae": 0.04059013623779543,
           "direction_accuracy": 0.36507936507936506
         },
         {
@@ -6225,8 +6208,8 @@
           "validation_end": "2022-04-08",
           "rows_train": 1306,
           "rows_validation": 63,
-          "rmse": 0.03388687335102456,
-          "mae": 0.02744891527837554,
+          "rmse": 0.03388684762982775,
+          "mae": 0.02744885819641733,
           "direction_accuracy": 0.8095238095238095
         },
         {
@@ -6237,8 +6220,8 @@
           "validation_end": "2023-11-23",
           "rows_train": 1707,
           "rows_validation": 63,
-          "rmse": 0.03434696233843527,
-          "mae": 0.02903573792901519,
+          "rmse": 0.03434694571053929,
+          "mae": 0.029035735955866743,
           "direction_accuracy": 0.42857142857142855
         },
         {
@@ -6249,50 +6232,50 @@
           "validation_end": "2025-07-22",
           "rows_train": 2109,
           "rows_validation": 63,
-          "rmse": 0.053125807093379246,
-          "mae": 0.04388086707333897,
+          "rmse": 0.053125820140256734,
+          "mae": 0.04388087481455003,
           "direction_accuracy": 0.1746031746031746
         }
       ],
       "candidates": [
         {
           "name": "last_value_zero_return",
-          "rmse": 0.045496573022267825,
-          "mae": 0.03727632068761256,
+          "rmse": 0.04549657103236044,
+          "mae": 0.03727629977064343,
           "direction_accuracy": 0.4888888888888889,
           "baseline_improvement": 0.0,
           "failed_reason": null
         },
         {
           "name": "historical_mean_return",
-          "rmse": 0.04596207023466568,
-          "mae": 0.0381147456862475,
+          "rmse": 0.04596206831530061,
+          "mae": 0.03811473281750477,
           "direction_accuracy": 0.5111111111111111,
-          "baseline_improvement": -0.010231478581255464,
+          "baseline_improvement": -0.010231480579252255,
           "failed_reason": null
         },
         {
           "name": "ridge_regularized",
-          "rmse": 0.0534452811566469,
-          "mae": 0.03959525310449746,
+          "rmse": 0.05344527400507137,
+          "mae": 0.039595296074437035,
           "direction_accuracy": 0.6317460317460317,
-          "baseline_improvement": -0.17471004091865697,
+          "baseline_improvement": -0.17470993510823568,
           "failed_reason": null
         },
         {
           "name": "hist_gradient_boosting",
-          "rmse": 0.06600585847840429,
-          "mae": 0.053759230002712176,
-          "direction_accuracy": 0.41904761904761906,
-          "baseline_improvement": -0.4507874790063508,
+          "rmse": 0.06604547773123336,
+          "mae": 0.053915924051647,
+          "direction_accuracy": 0.4158730158730159,
+          "baseline_improvement": -0.45165836089618827,
           "failed_reason": null
         },
         {
           "name": "hist_quantile_median",
-          "rmse": 0.06258878380668356,
-          "mae": 0.051380115415847624,
-          "direction_accuracy": 0.3904761904761905,
-          "baseline_improvement": -0.37568127990761263,
+          "rmse": 0.0603966872987326,
+          "mae": 0.04931737925396864,
+          "direction_accuracy": 0.3968253968253968,
+          "baseline_improvement": -0.32749976379042106,
           "failed_reason": null
         }
       ],
@@ -6303,7 +6286,7 @@
         "data_completeness_10": 9.701304269788405,
         "memory_spot_quality_20": 0.0,
         "walk_forward_performance_15": 7.5,
-        "fold_stability_10": 8.047083328513338,
+        "fold_stability_10": 8.047080334589998,
         "probability_calibration_10": 0.6348883591916066,
         "interval_coverage_5": 0.0,
         "recent_drift_5": 0.0,
@@ -6435,34 +6418,34 @@
       "selected_model": "historical_mean_return",
       "selection_reason": "고급 모델이 기준선 historical_mean_return의 walk-forward RMSE를 개선하지 못해 기준 모델 선택",
       "validation": {
-        "mae": 0.06693931435467063,
-        "rmse": 0.08162206817600527,
-        "smape": 1.4631309113795288,
+        "mae": 0.06693932163763106,
+        "rmse": 0.08162208281095742,
+        "smape": 1.4631309042565284,
         "direction_accuracy": 0.6126984126984127,
         "brier_score": 0.21988491001813207,
         "calibration_error": 0.21122169900574694,
         "interval_coverage": 0.7968253968253968,
-        "interval_average_width": 0.21200336092644662,
+        "interval_average_width": 0.21200342781454948,
         "interval_nominal_coverage": 0.8
       },
       "isolated_test": {
-        "mae": 0.21690092869388086,
-        "rmse": 0.25743887434362134,
-        "smape": 1.6853881588892183,
+        "mae": 0.21690093051638237,
+        "rmse": 0.2574388761043284,
+        "smape": 1.6853882662676902,
         "direction_accuracy": 0.8531746031746031,
         "brier_score": 0.1590096329787683,
         "calibration_error": 0.1836897746373124,
-        "interval_coverage": 0.21031746031746032,
-        "interval_average_width": 0.19580564795296138,
+        "interval_coverage": 0.20634920634920634,
+        "interval_average_width": 0.19266472597947784,
         "interval_nominal_coverage": 0.8
       },
-      "baseline_rmse": 0.08162206817600527,
+      "baseline_rmse": 0.08162208281095742,
       "baseline_model": "historical_mean_return",
       "baseline_improvement": 0.0,
-      "isolated_test_baseline_rmse": 0.25743887434362134,
+      "isolated_test_baseline_rmse": 0.2574388761043284,
       "isolated_test_improvement": 0.0,
-      "recent_rmse_ratio": 0.9703945471893043,
-      "fold_rmse_cv": 0.34163142409325126,
+      "recent_rmse_ratio": 0.9703942965789099,
+      "fold_rmse_cv": 0.34163140374420276,
       "folds": [
         {
           "fold": 1,
@@ -6472,8 +6455,8 @@
           "validation_end": "2019-02-13",
           "rows_train": 504,
           "rows_validation": 63,
-          "rmse": 0.11296194712443508,
-          "mae": 0.0952848511439036,
+          "rmse": 0.11296198283337949,
+          "mae": 0.09528486506159872,
           "direction_accuracy": 0.6031746031746031
         },
         {
@@ -6484,8 +6467,8 @@
           "validation_end": "2020-09-08",
           "rows_train": 894,
           "rows_validation": 63,
-          "rmse": 0.05762038919997755,
-          "mae": 0.04823917399100402,
+          "rmse": 0.0576204086631385,
+          "mae": 0.04823919620330912,
           "direction_accuracy": 0.8888888888888888
         },
         {
@@ -6496,8 +6479,8 @@
           "validation_end": "2022-04-12",
           "rows_train": 1284,
           "rows_validation": 63,
-          "rmse": 0.08108728873500615,
-          "mae": 0.07740659311200415,
+          "rmse": 0.08108731238431884,
+          "mae": 0.07740660403315958,
           "direction_accuracy": 0.0
         },
         {
@@ -6508,8 +6491,8 @@
           "validation_end": "2023-11-10",
           "rows_train": 1674,
           "rows_validation": 63,
-          "rmse": 0.038920560891964925,
-          "mae": 0.032020281247576915,
+          "rmse": 0.03892056820512788,
+          "mae": 0.03202028080469243,
           "direction_accuracy": 0.7936507936507936
         },
         {
@@ -6520,50 +6503,50 @@
           "validation_end": "2025-06-24",
           "rows_train": 2065,
           "rows_validation": 63,
-          "rmse": 0.09560512989584977,
-          "mae": 0.08174567227886445,
+          "rmse": 0.09560511541081901,
+          "mae": 0.08174566208539549,
           "direction_accuracy": 0.7777777777777778
         }
       ],
       "candidates": [
         {
           "name": "last_value_zero_return",
-          "rmse": 0.0841619759431391,
-          "mae": 0.06813317840164639,
+          "rmse": 0.08416199409873863,
+          "mae": 0.06813319150021756,
           "direction_accuracy": 0.3873015873015873,
-          "baseline_improvement": -0.031117905045690675,
+          "baseline_improvement": -0.03111794259972296,
           "failed_reason": null
         },
         {
           "name": "historical_mean_return",
-          "rmse": 0.08162206817600527,
-          "mae": 0.06693931435467063,
+          "rmse": 0.08162208281095742,
+          "mae": 0.06693932163763106,
           "direction_accuracy": 0.6126984126984127,
           "baseline_improvement": 0.0,
           "failed_reason": null
         },
         {
           "name": "ridge_regularized",
-          "rmse": 0.13312433773554247,
-          "mae": 0.11206756734123761,
+          "rmse": 0.13312473554182266,
+          "mae": 0.11206789625552872,
           "direction_accuracy": 0.5904761904761905,
-          "baseline_improvement": -0.6309846186264305,
+          "baseline_improvement": -0.63098919994665,
           "failed_reason": null
         },
         {
           "name": "hist_gradient_boosting",
-          "rmse": 0.1132624174578593,
-          "mae": 0.09659658253114621,
-          "direction_accuracy": 0.4253968253968254,
-          "baseline_improvement": -0.3876445425718268,
+          "rmse": 0.11351541689481921,
+          "mae": 0.09696854595866874,
+          "direction_accuracy": 0.43174603174603177,
+          "baseline_improvement": -0.39074393822722003,
           "failed_reason": null
         },
         {
           "name": "hist_quantile_median",
-          "rmse": 0.099918910327921,
-          "mae": 0.08299571659136207,
-          "direction_accuracy": 0.5111111111111111,
-          "baseline_improvement": -0.22416538273033507,
+          "rmse": 0.09922914976061462,
+          "mae": 0.0825902048556811,
+          "direction_accuracy": 0.5206349206349207,
+          "baseline_improvement": -0.21571450204764336,
           "failed_reason": null
         }
       ],
@@ -6574,7 +6557,7 @@
         "data_completeness_10": 9.701304269788405,
         "memory_spot_quality_20": 0.0,
         "walk_forward_performance_15": 7.5,
-        "fold_stability_10": 6.583685759067488,
+        "fold_stability_10": 6.583685962557972,
         "probability_calibration_10": 0.8155112681343801,
         "interval_coverage_5": 0.0,
         "recent_drift_5": 0.0,
@@ -6706,34 +6689,34 @@
       "selected_model": "historical_mean_return",
       "selection_reason": "고급 모델이 기준선 historical_mean_return의 walk-forward RMSE를 개선하지 못해 기준 모델 선택",
       "validation": {
-        "mae": 0.09933556571831072,
-        "rmse": 0.12405863988838484,
-        "smape": 1.3422012932837126,
+        "mae": 0.09933557847536355,
+        "rmse": 0.12405865332438086,
+        "smape": 1.3422010472879193,
         "direction_accuracy": 0.6317460317460317,
         "brier_score": 0.209382182579688,
         "calibration_error": 0.23640019271884707,
         "interval_coverage": 0.7968253968253968,
-        "interval_average_width": 0.3423771296312003,
+        "interval_average_width": 0.34237705430242027,
         "interval_nominal_coverage": 0.8
       },
       "isolated_test": {
-        "mae": 0.3634779886328842,
-        "rmse": 0.3920196601922057,
-        "smape": 1.7579357842738323,
+        "mae": 0.36347798726947295,
+        "rmse": 0.39201966198287913,
+        "smape": 1.7579357726285016,
         "direction_accuracy": 0.9365079365079365,
         "brier_score": 0.10321876111574553,
         "calibration_error": 0.2091839854055807,
         "interval_coverage": 0.06349206349206349,
-        "interval_average_width": 0.2415274557117822,
+        "interval_average_width": 0.23796498796199334,
         "interval_nominal_coverage": 0.8
       },
-      "baseline_rmse": 0.12405863988838484,
+      "baseline_rmse": 0.12405865332438086,
       "baseline_model": "historical_mean_return",
       "baseline_improvement": 0.0,
-      "isolated_test_baseline_rmse": 0.3920196601922057,
+      "isolated_test_baseline_rmse": 0.39201966198287913,
       "isolated_test_improvement": 0.0,
-      "recent_rmse_ratio": 0.7476594546429154,
-      "fold_rmse_cv": 0.3705792507382467,
+      "recent_rmse_ratio": 0.7476593424999324,
+      "fold_rmse_cv": 0.370579423013329,
       "folds": [
         {
           "fold": 1,
@@ -6743,8 +6726,8 @@
           "validation_end": "2019-04-05",
           "rows_train": 504,
           "rows_validation": 63,
-          "rmse": 0.08803466860690584,
-          "mae": 0.07366354828923531,
+          "rmse": 0.0880346610364747,
+          "mae": 0.07366354356519686,
           "direction_accuracy": 0.5555555555555556
         },
         {
@@ -6755,8 +6738,8 @@
           "validation_end": "2020-10-08",
           "rows_train": 877,
           "rows_validation": 63,
-          "rmse": 0.15544474736504785,
-          "mae": 0.1284258535849672,
+          "rmse": 0.155444789242298,
+          "mae": 0.12842589117708536,
           "direction_accuracy": 0.9682539682539683
         },
         {
@@ -6767,8 +6750,8 @@
           "validation_end": "2022-04-15",
           "rows_train": 1251,
           "rows_validation": 63,
-          "rmse": 0.17273261016657268,
-          "mae": 0.16783295551628932,
+          "rmse": 0.17273263632896066,
+          "mae": 0.16783297824719512,
           "direction_accuracy": 0.0
         },
         {
@@ -6779,8 +6762,8 @@
           "validation_end": "2023-10-24",
           "rows_train": 1625,
           "rows_validation": 63,
-          "rmse": 0.05514693506883103,
-          "mae": 0.0437454569381597,
+          "rmse": 0.05514691159519475,
+          "mae": 0.04374547240460761,
           "direction_accuracy": 0.8571428571428571
         },
         {
@@ -6791,50 +6774,50 @@
           "validation_end": "2025-05-09",
           "rows_train": 1999,
           "rows_validation": 63,
-          "rmse": 0.11028063851930414,
-          "mae": 0.08301001426290193,
+          "rmse": 0.11028063186826573,
+          "mae": 0.08301000698273274,
           "direction_accuracy": 0.7777777777777778
         }
       ],
       "candidates": [
         {
           "name": "last_value_zero_return",
-          "rmse": 0.12619255593183862,
-          "mae": 0.10047616801275744,
+          "rmse": 0.12619257252273944,
+          "mae": 0.10047619714370327,
           "direction_accuracy": 0.3682539682539683,
-          "baseline_improvement": -0.017200866020888664,
+          "baseline_improvement": -0.017200889588724927,
           "failed_reason": null
         },
         {
           "name": "historical_mean_return",
-          "rmse": 0.12405863988838484,
-          "mae": 0.09933556571831072,
+          "rmse": 0.12405865332438086,
+          "mae": 0.09933557847536355,
           "direction_accuracy": 0.6317460317460317,
           "baseline_improvement": 0.0,
           "failed_reason": null
         },
         {
           "name": "ridge_regularized",
-          "rmse": 0.13770290626727988,
-          "mae": 0.11669090960740491,
+          "rmse": 0.13770327224177428,
+          "mae": 0.11669122783665646,
           "direction_accuracy": 0.6888888888888889,
-          "baseline_improvement": -0.10998239535086589,
+          "baseline_improvement": -0.1099852251476269,
           "failed_reason": null
         },
         {
           "name": "hist_gradient_boosting",
-          "rmse": 0.1967788257912571,
-          "mae": 0.15856031639681295,
-          "direction_accuracy": 0.4158730158730159,
-          "baseline_improvement": -0.5861759081697042,
+          "rmse": 0.19632536136486625,
+          "mae": 0.15848114364476634,
+          "direction_accuracy": 0.4222222222222222,
+          "baseline_improvement": -0.5825204941692128,
           "failed_reason": null
         },
         {
           "name": "hist_quantile_median",
-          "rmse": 0.20294526992262796,
-          "mae": 0.16826207758158904,
-          "direction_accuracy": 0.41904761904761906,
-          "baseline_improvement": -0.6358817902986618,
+          "rmse": 0.20193714313895075,
+          "mae": 0.1674716353998159,
+          "direction_accuracy": 0.4031746031746032,
+          "baseline_improvement": -0.6277554022042949,
           "failed_reason": null
         }
       ],
@@ -6845,7 +6828,7 @@
         "data_completeness_10": 9.701304269788405,
         "memory_spot_quality_20": 0.0,
         "walk_forward_performance_15": 7.5,
-        "fold_stability_10": 6.294207492617533,
+        "fold_stability_10": 6.29420576986671,
         "probability_calibration_10": 0.0,
         "interval_coverage_5": 0.0,
         "recent_drift_5": 0.0,
@@ -6977,34 +6960,34 @@
       "selected_model": "historical_mean_return",
       "selection_reason": "고급 모델이 기준선 historical_mean_return의 walk-forward RMSE를 개선하지 못해 기준 모델 선택",
       "validation": {
-        "mae": 0.03778463115546527,
-        "rmse": 0.04733510399611568,
-        "smape": 1.577955027590905,
+        "mae": 0.03778464531468544,
+        "rmse": 0.04733512884317289,
+        "smape": 1.5779561309874914,
         "direction_accuracy": 0.5523809523809524,
         "brier_score": 0.2463672414085556,
         "calibration_error": 3.2364551886265858e-06,
         "interval_coverage": 0.7968253968253968,
-        "interval_average_width": 0.11802006103197185,
+        "interval_average_width": 0.11801990953299632,
         "interval_nominal_coverage": 0.8
       },
       "isolated_test": {
-        "mae": 0.09717472202713155,
-        "rmse": 0.1222994743320129,
-        "smape": 1.750996122966474,
+        "mae": 0.09717472200639081,
+        "rmse": 0.12229947511310114,
+        "smape": 1.7509962966790393,
         "direction_accuracy": 0.6984126984126984,
         "brier_score": 0.22988232051488325,
         "calibration_error": 0.13874407881524753,
-        "interval_coverage": 0.3531746031746032,
-        "interval_average_width": 0.1317407030605758,
+        "interval_coverage": 0.3333333333333333,
+        "interval_average_width": 0.12710117542698848,
         "interval_nominal_coverage": 0.8
       },
-      "baseline_rmse": 0.04733510399611568,
+      "baseline_rmse": 0.04733512884317289,
       "baseline_model": "historical_mean_return",
       "baseline_improvement": 0.0,
-      "isolated_test_baseline_rmse": 0.1222994743320129,
+      "isolated_test_baseline_rmse": 0.12229947511310114,
       "isolated_test_improvement": 0.0,
-      "recent_rmse_ratio": 0.9592000961538254,
-      "fold_rmse_cv": 0.1579308844452755,
+      "recent_rmse_ratio": 0.9591996870397003,
+      "fold_rmse_cv": 0.15793129367151432,
       "folds": [
         {
           "fold": 1,
@@ -7014,8 +6997,8 @@
           "validation_end": "2013-12-18",
           "rows_train": 504,
           "rows_validation": 63,
-          "rmse": 0.035497796708149704,
-          "mae": 0.028900600569679382,
+          "rmse": 0.03549775315801944,
+          "mae": 0.028900566839600943,
           "direction_accuracy": 0.49206349206349204
         },
         {
@@ -7026,8 +7009,8 @@
           "validation_end": "2016-11-08",
           "rows_train": 1214,
           "rows_validation": 63,
-          "rmse": 0.042192797340829195,
-          "mae": 0.035061131942316644,
+          "rmse": 0.04219282743173813,
+          "mae": 0.035061150872345105,
           "direction_accuracy": 0.4603174603174603
         },
         {
@@ -7038,8 +7021,8 @@
           "validation_end": "2019-10-07",
           "rows_train": 1924,
           "rows_validation": 63,
-          "rmse": 0.0488594728838146,
-          "mae": 0.03925885484458909,
+          "rmse": 0.048859555710716256,
+          "mae": 0.039258928080847424,
           "direction_accuracy": 0.6507936507936508
         },
         {
@@ -7050,8 +7033,8 @@
           "validation_end": "2022-08-23",
           "rows_train": 2634,
           "rows_validation": 63,
-          "rmse": 0.05725886590077291,
-          "mae": 0.04487074403291112,
+          "rmse": 0.057258890736565884,
+          "mae": 0.04487074632849562,
           "direction_accuracy": 0.3333333333333333
         },
         {
@@ -7062,50 +7045,50 @@
           "validation_end": "2025-07-22",
           "rows_train": 3345,
           "rows_validation": 63,
-          "rmse": 0.049969078621794887,
-          "mae": 0.04083182438783014,
+          "rmse": 0.04996909239135926,
+          "mae": 0.04083183445213813,
           "direction_accuracy": 0.8253968253968254
         }
       ],
       "candidates": [
         {
           "name": "last_value_zero_return",
-          "rmse": 0.047343717639480004,
-          "mae": 0.0377483920220113,
+          "rmse": 0.047343742941388475,
+          "mae": 0.03774839972610924,
           "direction_accuracy": 0.44761904761904764,
-          "baseline_improvement": -0.0001819715736767267,
+          "baseline_improvement": -0.0001819810873257592,
           "failed_reason": null
         },
         {
           "name": "historical_mean_return",
-          "rmse": 0.04733510399611568,
-          "mae": 0.03778463115546527,
+          "rmse": 0.04733512884317289,
+          "mae": 0.03778464531468544,
           "direction_accuracy": 0.5523809523809524,
           "baseline_improvement": 0.0,
           "failed_reason": null
         },
         {
           "name": "ridge_regularized",
-          "rmse": 0.06228848959155916,
-          "mae": 0.047471260715211946,
+          "rmse": 0.06228849158383187,
+          "mae": 0.047471328116081915,
           "direction_accuracy": 0.6603174603174603,
-          "baseline_improvement": -0.3159047796043831,
+          "baseline_improvement": -0.31590413095105996,
           "failed_reason": null
         },
         {
           "name": "hist_gradient_boosting",
-          "rmse": 0.0572401938022973,
-          "mae": 0.04426434075195222,
-          "direction_accuracy": 0.4984126984126984,
-          "baseline_improvement": -0.20925463281953352,
+          "rmse": 0.05655942836516085,
+          "mae": 0.04369127298108802,
+          "direction_accuracy": 0.4888888888888889,
+          "baseline_improvement": -0.19487217521999778,
           "failed_reason": null
         },
         {
           "name": "hist_quantile_median",
-          "rmse": 0.05288219360707669,
-          "mae": 0.04119698922335433,
-          "direction_accuracy": 0.4793650793650794,
-          "baseline_improvement": -0.11718765023556732,
+          "rmse": 0.05297616667224017,
+          "mae": 0.041168326306076336,
+          "direction_accuracy": 0.46984126984126984,
+          "baseline_improvement": -0.11917233494297089,
           "failed_reason": null
         }
       ],
@@ -7116,7 +7099,7 @@
         "data_completeness_10": 9.591221631933864,
         "memory_spot_quality_20": 0.0,
         "walk_forward_performance_15": 7.5,
-        "fold_stability_10": 8.420691155547246,
+        "fold_stability_10": 8.420687063284857,
         "probability_calibration_10": 3.0627960592376233,
         "interval_coverage_5": 0.0,
         "recent_drift_5": 0.0,
@@ -7248,34 +7231,34 @@
       "selected_model": "last_value_zero_return",
       "selection_reason": "고급 모델이 기준선 last_value_zero_return의 walk-forward RMSE를 개선하지 못해 기준 모델 선택",
       "validation": {
-        "mae": 0.07604538335822093,
-        "rmse": 0.08870491487796926,
+        "mae": 0.07604536686157036,
+        "rmse": 0.08870489276784735,
         "smape": 2.0,
         "direction_accuracy": 0.4222222222222222,
         "brier_score": 0.24395061737684834,
         "calibration_error": 9.638346437412793e-06,
         "interval_coverage": 0.7968253968253968,
-        "interval_average_width": 0.23400120393224993,
+        "interval_average_width": 0.23400107837441106,
         "interval_nominal_coverage": 0.8
       },
       "isolated_test": {
-        "mae": 0.22588602842764222,
-        "rmse": 0.2652218117100356,
+        "mae": 0.2258860297315031,
+        "rmse": 0.26522181363532593,
         "smape": 2.0,
         "direction_accuracy": 0.14682539682539683,
         "brier_score": 0.20110580246398696,
         "calibration_error": 0.2753871870503879,
         "interval_coverage": 0.20634920634920634,
-        "interval_average_width": 0.1960258380406224,
+        "interval_average_width": 0.1964153563516575,
         "interval_nominal_coverage": 0.8
       },
-      "baseline_rmse": 0.08870491487796926,
+      "baseline_rmse": 0.08870489276784735,
       "baseline_model": "last_value_zero_return",
       "baseline_improvement": 0.0,
-      "isolated_test_baseline_rmse": 0.2652218117100356,
+      "isolated_test_baseline_rmse": 0.26522181363532593,
       "isolated_test_improvement": 0.0,
-      "recent_rmse_ratio": 1.0019461383950288,
-      "fold_rmse_cv": 0.11462771479142464,
+      "recent_rmse_ratio": 1.00194620734779,
+      "fold_rmse_cv": 0.11462813132266218,
       "folds": [
         {
           "fold": 1,
@@ -7285,8 +7268,8 @@
           "validation_end": "2014-01-24",
           "rows_train": 504,
           "rows_validation": 63,
-          "rmse": 0.07308525777993292,
-          "mae": 0.06022056047982228,
+          "rmse": 0.07308515043446369,
+          "mae": 0.06022047182532127,
           "direction_accuracy": 0.7619047619047619
         },
         {
@@ -7297,8 +7280,8 @@
           "validation_end": "2016-11-25",
           "rows_train": 1203,
           "rows_validation": 63,
-          "rmse": 0.0817908159825054,
-          "mae": 0.07018533506253796,
+          "rmse": 0.08179077993814458,
+          "mae": 0.0701853133876287,
           "direction_accuracy": 0.2698412698412698
         },
         {
@@ -7309,8 +7292,8 @@
           "validation_end": "2019-10-10",
           "rows_train": 1902,
           "rows_validation": 63,
-          "rmse": 0.094250964236976,
-          "mae": 0.08557604047891441,
+          "rmse": 0.09425096886509705,
+          "mae": 0.08557605906160969,
           "direction_accuracy": 0.2222222222222222
         },
         {
@@ -7321,8 +7304,8 @@
           "validation_end": "2022-08-09",
           "rows_train": 2601,
           "rows_validation": 63,
-          "rmse": 0.08905036996163311,
-          "mae": 0.07634454480001163,
+          "rmse": 0.08905039126141595,
+          "mae": 0.07634456413473907,
           "direction_accuracy": 0.6349206349206349
         },
         {
@@ -7333,50 +7316,50 @@
           "validation_end": "2025-06-24",
           "rows_train": 3301,
           "rows_validation": 63,
-          "rmse": 0.1024617220419025,
-          "mae": 0.08790043596981835,
+          "rmse": 0.1024617089064863,
+          "mae": 0.08790042589855311,
           "direction_accuracy": 0.2222222222222222
         }
       ],
       "candidates": [
         {
           "name": "last_value_zero_return",
-          "rmse": 0.08870491487796926,
-          "mae": 0.07604538335822093,
+          "rmse": 0.08870489276784735,
+          "mae": 0.07604536686157036,
           "direction_accuracy": 0.4222222222222222,
           "baseline_improvement": 0.0,
           "failed_reason": null
         },
         {
           "name": "historical_mean_return",
-          "rmse": 0.09070039057655627,
-          "mae": 0.07753845029201846,
+          "rmse": 0.0907003680306796,
+          "mae": 0.0775384308972354,
           "direction_accuracy": 0.5777777777777777,
-          "baseline_improvement": -0.022495661050260476,
+          "baseline_improvement": -0.022495661745002952,
           "failed_reason": null
         },
         {
           "name": "ridge_regularized",
-          "rmse": 0.22345139858860477,
-          "mae": 0.157012422540938,
+          "rmse": 0.22345140045298273,
+          "mae": 0.1570125520938452,
           "direction_accuracy": 0.6063492063492063,
-          "baseline_improvement": -1.5190419143742524,
+          "baseline_improvement": -1.5190425632753441,
           "failed_reason": null
         },
         {
           "name": "hist_gradient_boosting",
-          "rmse": 0.10472031257618766,
-          "mae": 0.0803040115315087,
-          "direction_accuracy": 0.546031746031746,
-          "baseline_improvement": -0.18054690340722013,
+          "rmse": 0.10317626586780579,
+          "mae": 0.07912907835832422,
+          "direction_accuracy": 0.5492063492063493,
+          "baseline_improvement": -0.16314064138301787,
           "failed_reason": null
         },
         {
           "name": "hist_quantile_median",
-          "rmse": 0.0931357004954471,
-          "mae": 0.07145228520160352,
-          "direction_accuracy": 0.5555555555555556,
-          "baseline_improvement": -0.04994971951185839,
+          "rmse": 0.0912406893335594,
+          "mae": 0.07029284492956855,
+          "direction_accuracy": 0.5746031746031746,
+          "baseline_improvement": -0.028586884968663167,
           "failed_reason": null
         }
       ],
@@ -7387,11 +7370,11 @@
         "data_completeness_10": 9.591221631933864,
         "memory_spot_quality_20": 0.0,
         "walk_forward_performance_15": 7.5,
-        "fold_stability_10": 8.853722852085754,
+        "fold_stability_10": 8.853718686773378,
         "probability_calibration_10": 0.0,
         "interval_coverage_5": 0.0,
         "recent_drift_5": 0.0,
-        "recent_performance_5": 4.990269308024856,
+        "recent_performance_5": 4.99026896326105,
         "baseline_improvement_5": 0.0
       },
       "drift_score": 1.0,
@@ -7519,34 +7502,34 @@
       "selected_model": "historical_mean_return",
       "selection_reason": "고급 모델이 기준선 historical_mean_return의 walk-forward RMSE를 개선하지 못해 기준 모델 선택",
       "validation": {
-        "mae": 0.09473397619800267,
-        "rmse": 0.11085994949332073,
-        "smape": 1.2514686322021384,
+        "mae": 0.09473398581767525,
+        "rmse": 0.11085997766055326,
+        "smape": 1.251468437348524,
         "direction_accuracy": 0.7238095238095238,
         "brier_score": 0.19921980309712162,
         "calibration_error": 6.58472389655218e-05,
         "interval_coverage": 0.7968253968253968,
-        "interval_average_width": 0.2855588829972026,
+        "interval_average_width": 0.28555921480561614,
         "interval_nominal_coverage": 0.8
       },
       "isolated_test": {
-        "mae": 0.3606411610315532,
-        "rmse": 0.38914606862539053,
-        "smape": 1.728622245094743,
+        "mae": 0.36064116030809634,
+        "rmse": 0.389146071088851,
+        "smape": 1.7286222394707937,
         "direction_accuracy": 0.9365079365079365,
         "brier_score": 0.10078774509866512,
         "calibration_error": 0.20329024505145799,
         "interval_coverage": 0.051587301587301584,
-        "interval_average_width": 0.23022779715689537,
+        "interval_average_width": 0.2316977198943719,
         "interval_nominal_coverage": 0.8
       },
-      "baseline_rmse": 0.11085994949332073,
+      "baseline_rmse": 0.11085997766055326,
       "baseline_model": "historical_mean_return",
       "baseline_improvement": 0.0,
-      "isolated_test_baseline_rmse": 0.38914606862539053,
+      "isolated_test_baseline_rmse": 0.389146071088851,
       "isolated_test_improvement": 0.0,
-      "recent_rmse_ratio": 0.9986248976589533,
-      "fold_rmse_cv": 0.22541651962152182,
+      "recent_rmse_ratio": 0.9986246644584572,
+      "fold_rmse_cv": 0.22541698245873468,
       "folds": [
         {
           "fold": 1,
@@ -7556,8 +7539,8 @@
           "validation_end": "2014-03-19",
           "rows_train": 504,
           "rows_validation": 63,
-          "rmse": 0.06394131544434538,
-          "mae": 0.039804345568393094,
+          "rmse": 0.06394125495734379,
+          "mae": 0.03980426475072742,
           "direction_accuracy": 0.8412698412698413
         },
         {
@@ -7568,8 +7551,8 @@
           "validation_end": "2016-12-22",
           "rows_train": 1186,
           "rows_validation": 63,
-          "rmse": 0.13819888556221913,
-          "mae": 0.13368441149330507,
+          "rmse": 0.13819900432108478,
+          "mae": 0.13368453105209074,
           "direction_accuracy": 1.0
         },
         {
@@ -7580,8 +7563,8 @@
           "validation_end": "2019-10-15",
           "rows_train": 1869,
           "rows_validation": 63,
-          "rmse": 0.11246853371905369,
-          "mae": 0.10421184977767156,
+          "rmse": 0.11246853334080538,
+          "mae": 0.10421183524338896,
           "direction_accuracy": 1.0
         },
         {
@@ -7592,8 +7575,8 @@
           "validation_end": "2022-07-21",
           "rows_train": 2552,
           "rows_validation": 63,
-          "rmse": 0.11791905758957118,
-          "mae": 0.11424312230579933,
+          "rmse": 0.11791909036061768,
+          "mae": 0.11424315766472609,
           "direction_accuracy": 0.0
         },
         {
@@ -7604,50 +7587,50 @@
           "validation_end": "2025-05-09",
           "rows_train": 3235,
           "rows_validation": 63,
-          "rmse": 0.10820417273464539,
-          "mae": 0.08172615184484427,
+          "rmse": 0.1082041657715876,
+          "mae": 0.08172614037744302,
           "direction_accuracy": 0.7777777777777778
         }
       ],
       "candidates": [
         {
           "name": "last_value_zero_return",
-          "rmse": 0.12453277462248127,
-          "mae": 0.10934818857594748,
+          "rmse": 0.12453279959289726,
+          "mae": 0.10934820304235153,
           "direction_accuracy": 0.2761904761904762,
-          "baseline_improvement": -0.12333421755693949,
+          "baseline_improvement": -0.12333415738373475,
           "failed_reason": null
         },
         {
           "name": "historical_mean_return",
-          "rmse": 0.11085994949332073,
-          "mae": 0.09473397619800267,
+          "rmse": 0.11085997766055326,
+          "mae": 0.09473398581767525,
           "direction_accuracy": 0.7238095238095238,
           "baseline_improvement": 0.0,
           "failed_reason": null
         },
         {
           "name": "ridge_regularized",
-          "rmse": 0.2685109036024232,
-          "mae": 0.22417405280450234,
+          "rmse": 0.2685108255766238,
+          "mae": 0.22417416361141082,
           "direction_accuracy": 0.5746031746031746,
-          "baseline_improvement": -1.4220731186477842,
+          "baseline_improvement": -1.4220717994260126,
           "failed_reason": null
         },
         {
           "name": "hist_gradient_boosting",
-          "rmse": 0.17270682057211173,
-          "mae": 0.1465502514003543,
-          "direction_accuracy": 0.41904761904761906,
-          "baseline_improvement": -0.5578829086740406,
+          "rmse": 0.1745179620801458,
+          "mae": 0.1485766808378809,
+          "direction_accuracy": 0.4158730158730159,
+          "baseline_improvement": -0.5742197117746997,
           "failed_reason": null
         },
         {
           "name": "hist_quantile_median",
-          "rmse": 0.19265796519974843,
-          "mae": 0.16271502686335187,
-          "direction_accuracy": 0.43174603174603177,
-          "baseline_improvement": -0.7378500177952543,
+          "rmse": 0.19167894969178037,
+          "mae": 0.16119601164971065,
+          "direction_accuracy": 0.43492063492063493,
+          "baseline_improvement": -0.7290184766110097,
           "failed_reason": null
         }
       ],
@@ -7658,7 +7641,7 @@
         "data_completeness_10": 9.591221631933864,
         "memory_spot_quality_20": 0.0,
         "walk_forward_performance_15": 7.5,
-        "fold_stability_10": 7.745834803784781,
+        "fold_stability_10": 7.745830175412653,
         "probability_calibration_10": 0.0,
         "interval_coverage_5": 0.0,
         "recent_drift_5": 0.0,
@@ -9369,10 +9352,10 @@
         },
         {
           "name": "ridge_regularized",
-          "rmse": 0.314114044454379,
-          "mae": 0.25359984248568773,
+          "rmse": 0.3141140390966784,
+          "mae": 0.25359984135107405,
           "direction_accuracy": 0.4,
-          "baseline_improvement": -0.9513762161711916,
+          "baseline_improvement": -0.9513761828874536,
           "failed_reason": null
         },
         {
@@ -9621,10 +9604,10 @@
         },
         {
           "name": "ridge_regularized",
-          "rmse": 0.5340626391240546,
-          "mae": 0.475933305133012,
+          "rmse": 0.5340626323609974,
+          "mae": 0.47593330004278206,
           "direction_accuracy": 0.4,
-          "baseline_improvement": -1.0786600382397251,
+          "baseline_improvement": -1.0786600119167888,
           "failed_reason": null
         },
         {
@@ -9860,10 +9843,10 @@
         },
         {
           "name": "ridge_regularized",
-          "rmse": 0.8256093101534432,
-          "mae": 0.7051270029187069,
+          "rmse": 0.8256093644185147,
+          "mae": 0.7051270438253446,
           "direction_accuracy": 0.8666666666666667,
-          "baseline_improvement": -0.9796664941652969,
+          "baseline_improvement": -0.9796666242834323,
           "failed_reason": null
         },
         {
@@ -10112,10 +10095,10 @@
         },
         {
           "name": "ridge_regularized",
-          "rmse": 0.314114044454379,
-          "mae": 0.25359984248568773,
+          "rmse": 0.3141140390966784,
+          "mae": 0.25359984135107405,
           "direction_accuracy": 0.4,
-          "baseline_improvement": -0.9513762161711916,
+          "baseline_improvement": -0.9513761828874536,
           "failed_reason": null
         },
         {
@@ -10364,10 +10347,10 @@
         },
         {
           "name": "ridge_regularized",
-          "rmse": 0.5340626391240546,
-          "mae": 0.475933305133012,
+          "rmse": 0.5340626323609974,
+          "mae": 0.47593330004278206,
           "direction_accuracy": 0.4,
-          "baseline_improvement": -1.0786600382397251,
+          "baseline_improvement": -1.0786600119167888,
           "failed_reason": null
         },
         {
@@ -10603,10 +10586,10 @@
         },
         {
           "name": "ridge_regularized",
-          "rmse": 0.8256093101534432,
-          "mae": 0.7051270029187069,
+          "rmse": 0.8256093644185147,
+          "mae": 0.7051270438253446,
           "direction_accuracy": 0.8666666666666667,
-          "baseline_improvement": -0.9796664941652969,
+          "baseline_improvement": -0.9796666242834323,
           "failed_reason": null
         },
         {
@@ -10855,10 +10838,10 @@
         },
         {
           "name": "ridge_regularized",
-          "rmse": 0.314114044454379,
-          "mae": 0.25359984248568773,
+          "rmse": 0.3141140390966784,
+          "mae": 0.25359984135107405,
           "direction_accuracy": 0.4,
-          "baseline_improvement": -0.9513762161711916,
+          "baseline_improvement": -0.9513761828874536,
           "failed_reason": null
         },
         {
@@ -11107,10 +11090,10 @@
         },
         {
           "name": "ridge_regularized",
-          "rmse": 0.5340626391240546,
-          "mae": 0.475933305133012,
+          "rmse": 0.5340626323609974,
+          "mae": 0.47593330004278206,
           "direction_accuracy": 0.4,
-          "baseline_improvement": -1.0786600382397251,
+          "baseline_improvement": -1.0786600119167888,
           "failed_reason": null
         },
         {
@@ -11346,10 +11329,10 @@
         },
         {
           "name": "ridge_regularized",
-          "rmse": 0.8256093101534432,
-          "mae": 0.7051270029187069,
+          "rmse": 0.8256093644185147,
+          "mae": 0.7051270438253446,
           "direction_accuracy": 0.8666666666666667,
-          "baseline_improvement": -0.9796664941652969,
+          "baseline_improvement": -0.9796666242834323,
           "failed_reason": null
         },
         {
@@ -11598,10 +11581,10 @@
         },
         {
           "name": "ridge_regularized",
-          "rmse": 0.314114044454379,
-          "mae": 0.25359984248568773,
+          "rmse": 0.3141140390966784,
+          "mae": 0.25359984135107405,
           "direction_accuracy": 0.4,
-          "baseline_improvement": -0.9513762161711916,
+          "baseline_improvement": -0.9513761828874536,
           "failed_reason": null
         },
         {
@@ -11850,10 +11833,10 @@
         },
         {
           "name": "ridge_regularized",
-          "rmse": 0.5340626391240546,
-          "mae": 0.475933305133012,
+          "rmse": 0.5340626323609974,
+          "mae": 0.47593330004278206,
           "direction_accuracy": 0.4,
-          "baseline_improvement": -1.0786600382397251,
+          "baseline_improvement": -1.0786600119167888,
           "failed_reason": null
         },
         {
@@ -12089,10 +12072,10 @@
         },
         {
           "name": "ridge_regularized",
-          "rmse": 0.8256093101534432,
-          "mae": 0.7051270029187069,
+          "rmse": 0.8256093644185147,
+          "mae": 0.7051270438253446,
           "direction_accuracy": 0.8666666666666667,
-          "baseline_improvement": -0.9796664941652969,
+          "baseline_improvement": -0.9796666242834323,
           "failed_reason": null
         },
         {
